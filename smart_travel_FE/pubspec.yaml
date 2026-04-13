@@ -1,0 +1,99 @@
+name: smart_travel
+description: "Smart Travel Of 6 Members"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.1.1
+  dio: ^5.4.3+1
+  dio_cookie_manager: ^2.0.0
+  cookie_jar: ^3.0.1
+  path_provider: ^2.1.0   # để lưu cookie vào bộ nhớ thiết bị
+  flutter_tts: ^4.2.2 #Đọc nội dung bằng giọng nói
+  confetti: ^0.8.0           # Hiệu ứng pháo giấy
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_bloc: ^8.1.3
+  equatable: ^2.0.5
+
+  # Networking
+  http: ^1.1.0
+  connectivity_plus: ^5.0.2
+
+  # Dependency Injection
+  get_it: ^7.6.4
+
+  # Functional Programming
+  dartz: ^0.10.1
+
+  shared_preferences: ^2.2.3 #Lưu dữ liệu nhẹ
+
+  # Security
+  flutter_secure_storage: ^9.0.0 #Lưu dữ liệu bảo mật
+
+  # UI
+  awesome_snackbar_content: ^0.1.3 #Snackbar có icon & animation
+  lottie: ^2.6.0
+  cupertino_icons: ^1.0.8
+  intl: ^0.20.2 #Đa ngôn ngữ
+  webview_flutter: ^4.13.0 #Hiển thị website trong app
+
+  flutter_quill: ^9.2.3  #Rich Text Editor
+  # Để chuyển đổi dữ liệu sang HTML gửi lên server
+  vsc_quill_delta_to_html: ^1.0.0 #Chuyển Quill thành HTML
+
+  # Firebase
+  firebase_auth: ^4.17.8
+  firebase_core: ^2.30.0
+  cloud_firestore: ^4.13.0
+  google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^6.0.3
+
+  # Image Picker for Avatar Upload
+  image_picker: ^1.0.7 #image_picker
+  #logo
+  flutter_launcher_icons: ^0.13.1 #Tạo icon app cho Android & iOS
+
+
+  # Maps & Location
+  google_maps_flutter: ^2.7.0 #Hiển thị Google Map
+  url_launcher: ^6.2.1  #Mở: Trình duyệt Google Maps
+  flutter_localizations:
+    sdk: flutter
+
+
+  # --- AI CHAT DISPLAY (Thêm mới) ---
+  flutter_markdown: ^0.6.14
+
+
+  fl_chart: ^0.68.0 #Vẽ biểu đồ
+  flutter_screenutil: ^5.9.0 #Responsive UI
+  google_fonts: ^6.1.0
+  material_design_icons_flutter: ^7.0.7296
+
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/images/
+    - assets/lottie/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/logo.png"
