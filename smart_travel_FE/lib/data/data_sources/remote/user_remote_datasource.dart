@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:smart_travel/core/constants/api_constants.dart';
+import 'package:smart_travel/core/error/exceptions.dart';
 import 'package:smart_travel/core/network/dio_client.dart';
 import 'package:smart_travel/data/models/user/user_model.dart';
 import 'package:smart_travel/data/models/user/user_level_model.dart';
@@ -49,41 +50,14 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   Future<UserModel> getProfile() async {
     try {
       final response = await dioClient.get(ApiConstants.getProfile);
-
-      if (response.data == null) {
-        throw DioException(
-          requestOptions: RequestOptions(path: ApiConstants.getProfile),
-          message: 'Response data is null',
-          type: DioExceptionType.badResponse,
-        );
-      }
-
-      if (response.data['code'] == 1000) {
         final data = response.data['data'];
-
-        if (data == null) {
-          throw DioException(
-            requestOptions: RequestOptions(path: ApiConstants.getProfile),
-            message: 'Profile data is null in response',
-            type: DioExceptionType.badResponse,
-          );
-        }
-
-        // Debug: Print response data
-        print('Profile API Response: ${response.data}');
-
         return UserModel.fromJson(data as Map<String, dynamic>);
-      } else {
-        throw DioException(
-          requestOptions: RequestOptions(path: ApiConstants.getProfile),
-          response: response,
-          message: response.data['message'] ?? 'Failed to get profile',
-          type: DioExceptionType.badResponse,
-        );
-      }
+
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      print('Error in getProfile: $e');
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 

@@ -48,35 +48,16 @@ class AuthRemoteDataSourceImpl implements AuthDataSource{
        '${ApiConstants.baseUrl}${ApiConstants.register}',
         data: request.toJson(),
       ).timeout(ApiConstants.connectionTimeout);
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final apiResponse = ApiResponseModel<Map<String, dynamic>>.fromJson(
+       final apiResponse = ApiResponseModel<Map<String, dynamic>>.fromJson(
           response.data,
               (data) => data as Map<String, dynamic>,
         );
-
-        if (apiResponse.data == null) {
-          throw const ServerException('Không nhận được dữ liệu từ server');
-        }
-
         return RegisterResponseModel.fromJson(apiResponse.data!);
-      } else if (response.statusCode == 400) {
-        final apiResponse = ApiResponseModel.fromJson(
-          response.data,
-          null,
-        );
-        throw ServerException(apiResponse.msg);
-      } else {
-        throw ServerException(
-            'Đăng ký thất bại với mã lỗi: ${response.statusCode}');
-      }
-    } on http.ClientException catch (e) {
-      throw NetworkException('Lỗi kết nối: ${e.message}');
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      if (e is ServerException || e is NetworkException) {
-        rethrow;
-      }
-      throw ServerException('Đã xảy ra lỗi không mong muốn: ${e.toString()}');
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -94,10 +75,7 @@ class AuthRemoteDataSourceImpl implements AuthDataSource{
       );
       return LoginResponseModal.fromJson(apiResponse.data!);
     } on DioException catch (e) {
-      if (e.error is ServerException) {
-        throw e.error as ServerException;
-      }
-      throw NetworkException('Lỗi kết nối tới server');
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException('Lỗi không mong muốn: ${e.toString()}');
@@ -116,10 +94,7 @@ class AuthRemoteDataSourceImpl implements AuthDataSource{
       final msg = apiResponse['msg'] ?? 'Không có thông báo từ server';
       return msg; // Trả message thành công
     } on DioException catch (e) {
-      if (e.error is ServerException) {
-        throw e.error as ServerException;
-      }
-      throw NetworkException('Lỗi kết nối tới server');
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException('Lỗi không mong muốn: ${e.toString()}');
@@ -139,10 +114,7 @@ class AuthRemoteDataSourceImpl implements AuthDataSource{
               (data) => data as Map<String, dynamic>);
         return LoginResponseModal.fromJson(apiResponse.data!);
     } on DioException catch (e) {
-      if (e.error is ServerException) {
-        throw e.error as ServerException;
-      }
-      throw NetworkException('Lỗi kết nối tới server');
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException('Lỗi không mong muốn: ${e.toString()}');
@@ -163,10 +135,7 @@ class AuthRemoteDataSourceImpl implements AuthDataSource{
                 (data) => data as Map<String, dynamic>);
         return LoginResponseModal.fromJson(apiResponse.data!);
     } on DioException catch (e) {
-      if (e.error is ServerException) {
-        throw e.error as ServerException;
-      }
-      throw NetworkException('Lỗi kết nối tới server');
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException('Lỗi không mong muốn: ${e.toString()}');
@@ -182,8 +151,11 @@ class AuthRemoteDataSourceImpl implements AuthDataSource{
       );
       final json = response.data as Map<String, dynamic>;
       return LoginResponseModal.fromJson(json['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      throw ServerException("Lỗi không mong muốn: $e");
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 }

@@ -18,7 +18,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
 
   AuthLocalDataSourceImpl({required this.storage});
 
-  static const _keyToken = 'token';
+  static const _keyToken = 'auth_token';
   static const _keyRole = 'role';
   static const _keyRefreshToken = 'refresh_token';
   static const _keyFullName = 'fullName';

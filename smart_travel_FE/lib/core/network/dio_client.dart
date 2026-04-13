@@ -20,7 +20,8 @@ class DioClient {
     },
 
   )) {
-    // Chỉ thêm 2 interceptor cơ bản trước
+
+    // // Chỉ thêm 2 interceptor cơ bản trước
     // dio.interceptors.add(LogInterceptor(
     //   requestBody: true,
     //   responseBody: true,
@@ -87,7 +88,7 @@ class AuthInterceptor extends Interceptor {
     }
 
     // Lấy token từ storage
-    final String? token = await _storage.read(key: 'token');
+    final String? token = await _storage.read(key: 'auth_token');
 
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';

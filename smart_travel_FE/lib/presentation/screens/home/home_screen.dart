@@ -21,11 +21,12 @@ import 'package:smart_travel/presentation/widgets/province/province_is_popular_c
 import 'package:smart_travel/router/route_names.dart';
 import '../../theme/app_colors.dart';
 import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
-import 'package:smart_travel/router/route_names.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
-
+import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
+import 'package:smart_travel/presentation/blocs/auth/auth_event.dart';
+import 'package:smart_travel/presentation/blocs/auth/auth_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -37,12 +38,22 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0; // Index cho thanh điều hướng dưới
+  bool _isLoggedIn  = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     context.read<ProfileBloc>().add(LoadProfile());
+    _checkAuthStatus();
+  }
+
+  void _checkAuthStatus() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is UserAuthenticated) {  // Thay vì AdminAuthenticated
+      setState(() {
+        _isLoggedIn = true;
+      });
+    }
   }
 
   @override
@@ -52,7 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onNavItemTapped(int index) {
-    // Nếu ấn vào tab đang đứng thì không làm gì
     if (index == _selectedIndex) return;
 
     switch (index) {
@@ -60,23 +70,19 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.home);
         break;
-
       case 1: // Khám phá
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.explore);
         break;
-
       case 2: // Khách sạn
         Navigator.pushNamed(context, RouteNames.hotelList);
         break;
-
       case 3: // AI Chat
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const AIChatScreen()),
         );
         break;
-
       case 4: // Profile
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.profile);
@@ -84,9 +90,49 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _logout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Đăng xuất'),
+        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Sửa lại tên event phù hợp với AuthEvent của bạn
+              context.read<ProfileBloc>().add(Logout()); // Hoặc tên event tương tự
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Đăng xuất'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _goToLogin() {
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              // Cập nhật trạng thái đăng nhập khi AuthBloc thay đổi
+              setState(() {
+                _isLoggedIn = state is UserAuthenticated;
+              });
+            },
+          ),
+        ],
+    child:  Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshableScrollView(
         slivers: [
@@ -101,9 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
-
       floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end, // Đẩy các nút xuống góc dưới
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           SizedBox(
             width: 56,
@@ -119,8 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Icon(Icons.headset_rounded, color: Colors.white),
             ),
           ),
-
-          const SizedBox(height: 12), // Khoảng cách giữa 2 nút
+          const SizedBox(height: 12),
           SizedBox(
             width: 56,
             height: 56,
@@ -141,32 +185,28 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _selectedIndex,
         onTap: _onNavItemTapped,
       ),
+    ),
     );
   }
-
 
   /// Dialog chọn nhóm để chia sẻ
   void _showShareToGroupDialog() {
     final profileState = context.read<ProfileBloc>().state;
-    //CHƯA ĐĂNG NHẬP
     if (profileState is! ProfileLoaded) {
-      // Chưa đăng nhập / chưa load xong
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Vui lòng đăng nhập để sử dụng tính năng này!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng đăng nhập để sử dụng tính năng này!'))
+      );
       return;
     }
-    //ĐÃ ĐĂNG NHẬP
     final user = profileState.user;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (_) => ShareToGroupScreen(
-              currentUserId: user.id.toString(),
-              currentUserName: user.fullName,
-              currentUserAvatar: user.avatarUrl,
-            ),
+        builder: (_) => ShareToGroupScreen(
+          currentUserId: user.id.toString(),
+          currentUserName: user.fullName,
+          currentUserAvatar: user.avatarUrl,
+        ),
       ),
     );
   }
@@ -174,11 +214,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Hàm mở danh sách Audio
   void _showAudioGuideBottomSheet() {
     final profileState = context.read<ProfileBloc>().state;
-    //CHƯA ĐĂNG NHẬP
     if (profileState is! ProfileLoaded) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Vui lòng đăng nhập để sử dụng tính năng này!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng đăng nhập để sử dụng tính năng này!'))
+      );
       return;
     }
     showModalBottomSheet(
@@ -218,14 +257,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: Colors.white,
-                  backgroundImage:
-                      avatarUrl != null && avatarUrl.isNotEmpty
-                          ? NetworkImage(avatarUrl)
-                          : null,
-                  child:
-                      avatarUrl == null || avatarUrl.isEmpty
-                          ? Icon(Icons.person, color: AppColors.primary)
-                          : null,
+                  backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                      ? NetworkImage(avatarUrl)
+                      : null,
+                  child: avatarUrl == null || avatarUrl.isEmpty
+                      ? Icon(Icons.person, color: AppColors.primary)
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -253,13 +290,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
+                             // Nút thông báo
                 IconButton(
                   icon: Stack(
                     children: [
-                      const Icon(
-                        Icons.notifications_outlined,
-                        color: Colors.white,
-                      ),
+                      const Icon(Icons.notifications_outlined, color: Colors.white),
                       Positioned(
                         right: 0,
                         top: 0,
@@ -278,6 +313,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     // TODO: Navigate to notifications
                   },
                 ),
+                // Nút logout (chỉ hiển thị cho admin) - nằm kế bên nút thông báo
+                if (_isLoggedIn )
+                  IconButton(
+                    icon: const Icon(Icons.logout, color: Colors.white),
+                    onPressed: _logout,
+                    tooltip: 'Đăng xuất',
+                  ),
               ],
             ),
           ),
@@ -339,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // AI Chat Banner - liên quan đến tính năng AI chatbot
+  // AI Chat Banner
   Widget _buildAIChatBanner() {
     return SliverToBoxAdapter(
       child: GestureDetector(
@@ -374,16 +416,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       AppLocalizations.of(context)!.aiAssistantTitle,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       AppLocalizations.of(context)!.aiAssistantSubtitle,
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      style: const TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                   ],
                 ),
@@ -400,16 +442,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  //NEW: Hiển thị danh sách destinations được lọc theo category
+  // Các hàm còn lại giữ nguyên...
   Widget _buildDestinationsListByCategory() {
     return BlocBuilder<DestinationBloc, DestinationState>(
       builder: (context, state) {
         if (state is FilterDestinationLoading) {
-          return SliverToBoxAdapter(
+          return const SliverToBoxAdapter(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: const CircularProgressIndicator(),
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
               ),
             ),
           );
@@ -432,7 +474,6 @@ class _HomeScreenState extends State<HomeScreen> {
           return SliverToBoxAdapter(
             child: Column(
               children: [
-                //
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
@@ -463,9 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-
-                // Horizontal Scroll List
-                Container(
+                SizedBox(
                   height: 280,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -498,18 +537,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }
-
         return const SliverToBoxAdapter(child: SizedBox.shrink());
       },
     );
   }
 
-  // Featured Destinations - từ bảng destinations với is_featured = true
   Widget _buildFeaturedDestinations() {
     return BlocBuilder<DestinationBloc, DestinationState>(
       builder: (context, state) {
         if (state is FilterDestinationLoading) {
-          return SliverToBoxAdapter(
+          return const SliverToBoxAdapter(
             child: Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -518,8 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         } else if (state is FilterDestinationLoaded) {
-          final featuredDestinations =
-              state.destinations.where((d) => d.isFeatured == true).toList();
+          final featuredDestinations = state.destinations.where((d) => d.isFeatured == true).toList();
           if (featuredDestinations.isEmpty) {
             return SliverToBoxAdapter(
               child: Center(
@@ -566,8 +602,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-
-                Container(
+                SizedBox(
                   height: 280,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -577,8 +612,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       final destination = featuredDestinations[index];
                       return Padding(
                         padding: EdgeInsets.only(
-                          right:
-                              index == featuredDestinations.length - 1 ? 0 : 12,
+                          right: index == featuredDestinations.length - 1 ? 0 : 12,
                         ),
                         child: DestinationCart(destination),
                       );
@@ -604,12 +638,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Popular Provinces - từ bảng provinces với is_popular = true
   Widget _buildPopularProvinces() {
     return BlocBuilder<ProvinceBloc, ProvinceState>(
       builder: (context, state) {
         if (state is ProvinceLoading) {
-          return SliverToBoxAdapter(
+          return const SliverToBoxAdapter(
             child: Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -618,8 +651,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         } else if (state is ProvinceLoaded) {
-          final provinceIsPopulars =
-              state.province.where((d) => d.isPopular == true).toList();
+          final provinceIsPopulars = state.province.where((d) => d.isPopular == true).toList();
           if (provinceIsPopulars.isEmpty) {
             return SliverToBoxAdapter(
               child: Center(
@@ -666,13 +698,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 1.2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
                     itemCount: provinceIsPopulars.length,
                     itemBuilder: (context, index) {
                       final province = provinceIsPopulars[index];
