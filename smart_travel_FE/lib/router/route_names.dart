@@ -31,7 +31,7 @@ class RouteNames {
   static const String tourDetail = '/tour-detail';
 
   // Hotel routes
-  static const String hotelList = '/hotel-list';
+  static const String homestayList = '/hotel-list';
   static const String hotelDetail = '/hotel-detail';
 
   // Profile routes
