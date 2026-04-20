@@ -63,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onNavItemTapped(int index) {
+    // Nếu ấn vào tab đang đứng thì không làm gì
     if (index == _selectedIndex) return;
 
     switch (index) {
@@ -70,20 +71,28 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.home);
         break;
+
       case 1: // Khám phá
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.explore);
         break;
-      case 2: // Khách sạn
-        Navigator.pushNamed(context, RouteNames.hotelList);
+
+      case 2: // Tour
+        Navigator.pushReplacementNamed(context, RouteNames.explore);
         break;
-      case 3: // AI Chat
+
+      case 3: // Khách sạn
+        Navigator.pushNamed(context, RouteNames.homestayList);
+        break;
+
+      case 4: // AI Chat
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const AIChatScreen()),
         );
         break;
-      case 4: // Profile
+
+      case 5: // Profile
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.profile);
         break;
