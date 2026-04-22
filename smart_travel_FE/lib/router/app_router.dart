@@ -14,6 +14,12 @@ import 'package:smart_travel/presentation/screens/auth/register_screen.dart';
 import 'package:smart_travel/presentation/screens/home/home_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
+import 'package:smart_travel/presentation/screens/profile/profile_screen.dart';
+import 'package:smart_travel/presentation/screens/profile/edit_profile_screen.dart';
+import 'package:smart_travel/presentation/screens/profile/change_password_screen.dart';
+import 'package:smart_travel/presentation/screens/profile/settings_screen.dart';
+import 'package:smart_travel/presentation/screens/profile/account_management_screen.dart';
+import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
 class AppRouter {
@@ -40,6 +46,20 @@ class AppRouter {
           ),
           settings: settings,
         );
+
+      // Profile
+      case RouteNames.profile:
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case RouteNames.editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+      case RouteNames.changePassword:
+        return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
+      case RouteNames.settings:
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
+      case RouteNames.accountManagement:
+        return MaterialPageRoute(builder: (_) => const AccountManagementScreen());
+      case RouteNames.userLevel:
+        return MaterialPageRoute(builder: (_) => const UserLevelScreen());
 
       default:
         return MaterialPageRoute(
