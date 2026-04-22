@@ -293,7 +293,7 @@ public class UserService {
         refreshTokenRepository.deleteByUser(currentUser);
         log.info("Deleted all refresh tokens for user: {}", currentUser.getEmail());
 
-        // Xóa tất cả bookings của user (sẽ cascade xóa payments và invoices)
+        // Xóa tất cả bookings của user (sẽ cascade xóa payments và invoice)
         log.info("Deleted all bookings for user: {}", currentUser.getEmail());
 
         // Xóa UserProfile

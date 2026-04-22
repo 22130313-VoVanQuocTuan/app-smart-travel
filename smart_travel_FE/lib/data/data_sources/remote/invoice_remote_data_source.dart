@@ -38,7 +38,7 @@ class InvoiceRemoteDataSourceImpl implements InvoiceRemoteDataSource {
       final List<dynamic> dataList = response.data['data'];
       return dataList.map((json) => InvoiceModel.fromJson(json as Map<String, dynamic>)).toList();
     } else {
-      throw Exception(response.data['msg'] ?? 'Failed to load active invoices');
+      throw Exception(response.data['msg'] ?? 'Failed to load active invoice');
     }
   }
   @override
@@ -81,7 +81,7 @@ class InvoiceRemoteDataSourceImpl implements InvoiceRemoteDataSource {
       final List<dynamic> dataList = response.data['data'];
       return dataList.map((json) => InvoiceModel.fromJson(json as Map<String, dynamic>)).toList();
     } else {
-      throw Exception(response.data['msg'] ?? 'Failed to load refunded invoices');
+      throw Exception(response.data['msg'] ?? 'Failed to load refunded invoice');
     }
   }
 
@@ -93,7 +93,7 @@ class InvoiceRemoteDataSourceImpl implements InvoiceRemoteDataSource {
       final List<dynamic> dataList = response.data['data'];
       return dataList.map((json) => InvoiceModel.fromJson(json as Map<String, dynamic>)).toList();
     } else {
-      throw Exception(response.data['msg'] ?? 'Failed to load reviewable invoices');
+      throw Exception(response.data['msg'] ?? 'Failed to load reviewable invoice');
     }
   }
 
@@ -109,7 +109,7 @@ class InvoiceRemoteDataSourceImpl implements InvoiceRemoteDataSource {
       final List<dynamic> dataList = response.data['data'];
       return dataList.map((json) => InvoiceModel.fromJson(json as Map<String, dynamic>)).toList();
     } else {
-      throw Exception(response.data['msg'] ?? 'Failed to search invoices');
+      throw Exception(response.data['msg'] ?? 'Failed to search invoice');
     }
   }
 
@@ -169,7 +169,7 @@ class InvoiceRemoteDataSourceImpl implements InvoiceRemoteDataSource {
       final List<dynamic> dataList = response.data['data'];
       return dataList.map((json) => AdminInvoiceModel.fromJson(json as Map<String, dynamic>)).toList();
     } else {
-      throw Exception(response.data['msg'] ?? 'Failed to load admin invoices');
+      throw Exception(response.data['msg'] ?? 'Failed to load admin invoice');
     }
   }
 
