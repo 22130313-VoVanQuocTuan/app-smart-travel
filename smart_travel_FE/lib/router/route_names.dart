@@ -9,7 +9,7 @@ class RouteNames {
   static const String adminTourDetail = 'admin/tours/';
   static const String adminBanner = '/admin/banner';
   static const String adminVoucher = '/admin/voucher';
-  static const String adminInvoices = '/admin/invoices';
+  static const String adminInvoices = '/admin/invoice';
   static const String adminAudio = '/admin/audio';
 
   /// USER
@@ -31,7 +31,7 @@ class RouteNames {
   static const String tourDetail = '/tour-detail';
 
   // Hotel routes
-  static const String hotelList = '/hotel-list';
+  static const String homestayList = '/hotel-list';
   static const String hotelDetail = '/hotel-detail';
 
   // Profile routes
@@ -42,7 +42,7 @@ class RouteNames {
   static const String accountManagement = '/profile/account-management';
   static const String userLevel = '/profile/level';
 
-  static const String myInvoices = '/my-invoices';
+  static const String myInvoices = '/my-invoice';
 
   static const String myFriend = '/my-friend';
 

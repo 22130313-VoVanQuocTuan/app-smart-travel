@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/invoices")
+@RequestMapping("/api/v1/invoice")
 @RequiredArgsConstructor
 public class InvoiceController {
 
@@ -143,7 +143,7 @@ public class InvoiceController {
                 .build();
     }
 
-    @GetMapping("/admin-get-invoices")
+    @GetMapping("/admin-get-invoice")
     public APIResponse<List<AdminInvoiceResponse>> getAdminInvoices(
             @RequestParam(required = false) String invoiceNumber,
             @RequestParam(required = false) String status) {
