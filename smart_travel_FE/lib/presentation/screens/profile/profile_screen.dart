@@ -24,7 +24,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int _selectedIndex = 5; // Profile tab index (Cá nhân)
+  int _selectedIndex = 4; // Profile tab index (Cá nhân)
 
   @override
   void initState() {

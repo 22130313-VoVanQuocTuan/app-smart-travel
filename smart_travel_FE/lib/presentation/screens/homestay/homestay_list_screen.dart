@@ -21,7 +21,7 @@ class HomestayListScreen extends StatefulWidget {
 class _HomestayListScreenState extends State<HomestayListScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  int _selectedIndex = 3;
+  int _selectedIndex = 2 ;
   String _selectedFilter = "popular";
 
   // --- KHAI BÁO MÀU SẮC (CẤU HÌNH UI) ---
