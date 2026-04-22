@@ -6,8 +6,8 @@ import 'package:smart_travel/domain/usecases/hotel/delete_hotel_use_case.dart';
 import 'package:smart_travel/domain/usecases/hotel/get_hotels_use_case.dart';
 import 'package:smart_travel/domain/usecases/hotel/update_hotel_use_case.dart';
 import 'package:smart_travel/domain/usecases/hotel/upload_hotel_images_use_case.dart';
-import 'package:smart_travel/presentation/blocs/hotel/hotel_event.dart';
-import 'package:smart_travel/presentation/blocs/hotel/hotel_state.dart';
+import 'package:smart_travel/presentation/blocs/hotel/homestay_event.dart';
+import 'package:smart_travel/presentation/blocs/hotel/homestay_state.dart';
 
 class HotelBloc extends Bloc<HotelEvent, HotelState> {
   final GetHotelsUseCase getHotelsUseCase;
