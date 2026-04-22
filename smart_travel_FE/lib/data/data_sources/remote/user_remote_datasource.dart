@@ -81,8 +81,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -101,8 +104,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -120,8 +126,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -144,8 +153,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -163,8 +175,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -185,8 +200,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -202,8 +220,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -271,9 +292,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      print('Error in getUserList: $e');
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -322,9 +345,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      print('Error in updateUser: $e');
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -355,9 +380,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      print('Error in lockUser: $e');
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -388,9 +415,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    }  on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      print('Error in unlockUser: $e');
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 
@@ -433,9 +462,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
           type: DioExceptionType.badResponse,
         );
       }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? "Lỗi không xác định");
     } catch (e) {
-      print('Error in createUser: $e');
-      rethrow;
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException('Lỗi không mong muốn: ${e.toString()}');
     }
   }
 }
