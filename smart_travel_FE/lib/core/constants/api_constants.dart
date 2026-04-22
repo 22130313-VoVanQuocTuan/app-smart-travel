@@ -69,21 +69,21 @@ class ApiConstants {
   static const String adminTourSchedules = '/admin/tours/schedules/';
 
   // Invoice
-  static const String invoiceActive = '/invoices/active';
-  static const String invoiceRefunded = '/invoices/refunded';
-  static const String invoiceReviewable = '/invoices/reviewable';
-  static const String invoiceDetail = '/invoices/detail/';
-  static const String invoiceActiveSearch = '/invoices/active/search';
-  static const String invoiceRefundedSearch = '/invoices/refunded/search';
-  static const String invoiceHistory = '/invoices/history';
-  static const String invoiceRefund = '/invoices/refund';
+  static const String invoiceActive = '/invoice/active';
+  static const String invoiceRefunded = '/invoice/refunded';
+  static const String invoiceReviewable = '/invoice/reviewable';
+  static const String invoiceDetail = '/invoice/detail/';
+  static const String invoiceActiveSearch = '/invoice/active/search';
+  static const String invoiceRefundedSearch = '/invoice/refunded/search';
+  static const String invoiceHistory = '/invoice/history';
+  static const String invoiceRefund = '/invoice/refund';
 
-  static const String adminGetInvoice = '/invoices/admin-get-invoices';
-  static const String adminGetDetailInvoice = '/invoices/admin-get-detail-invoice/';
-  static const String adminApproveRefund = '/invoices/admin/approve-refund';
-  static const String adminCheckIn = '/invoices/admin/check-in';
-  static const String adminCheckOut = '/invoices/admin/check-out';
-  static const String adminCancelOrder = '/invoices/admin/cancel-order';
+  static const String adminGetInvoice = '/invoice/admin-get-invoice';
+  static const String adminGetDetailInvoice = '/invoice/admin-get-detail-invoice/';
+  static const String adminApproveRefund = '/invoice/admin/approve-refund';
+  static const String adminCheckIn = '/invoice/admin/check-in';
+  static const String adminCheckOut = '/invoice/admin/check-out';
+  static const String adminCancelOrder = '/invoice/admin/cancel-order';
 
 
   //Banner
