@@ -11,6 +11,7 @@ class ApiConstants {
   static const String googleLogin = '/auth/google-login';
   static const String facebookLogin = '/auth/facebook-login';
   static const String forgotPassword = '/auth/forgot-password';
+  static const String chatAsk = '/chat/ask';
   static const String deleteAccount = '/users/account';
   static const String logout = '/auth/logout';
 
