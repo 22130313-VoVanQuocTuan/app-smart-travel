@@ -11,6 +11,8 @@ import 'package:smart_travel/presentation/blocs/hotel/homestay_bloc.dart';
 import 'package:smart_travel/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/login_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/register_screen.dart';
+import 'package:smart_travel/presentation/screens/destination/detail_destination_screen.dart';
+import 'package:smart_travel/presentation/screens/explore/explore_screen.dart';
 import 'package:smart_travel/presentation/screens/home/home_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
@@ -35,6 +37,13 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
       case RouteNames.forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+      case RouteNames.destinationDetail:
+        return MaterialPageRoute(
+          builder: (context) => DetailDestinationScreen(),
+          settings: settings,
+        );
+      case RouteNames.explore:
+        return MaterialPageRoute(builder: (_) => const ExploreScreen());
 
     // Hotel
       case RouteNames.homestayList:
