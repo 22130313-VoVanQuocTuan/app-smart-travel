@@ -6,7 +6,9 @@ import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
 import 'package:smart_travel/presentation/widgets/common/custom_button.dart';
+import 'package:smart_travel/presentation/widgets/common/custom_textfield.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
+import 'package:smart_travel/core/utils/auth_helper.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);
@@ -74,18 +76,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               ..showSnackBar(snackBar);
             Navigator.pop(context);
           } else if (state is ProfileError) {
-            // Check if error is related to token expiration
-            if (state.message.toLowerCase().contains('unauthorized') ||
-                state.message.toLowerCase().contains('401') ||
-                state.message.toLowerCase().contains(
-                  'phiên đăng nhập hết hạn',
-                ) ||
-                state.message.toLowerCase().contains('token')) {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
-              );
+            if (AuthHelper.isTokenExpiredError(state.message)) {
+              AuthHelper.handleAuthError(context, state.message);
               return;
             }
 
@@ -143,42 +135,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   const SizedBox(height: 24),
 
                   // Current Password
-                  Text(
-                    AppLocalizations.of(context)!.currentPasswordLabel,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
+                  CustomTextField(
+                    label: AppLocalizations.of(context)!.currentPasswordLabel,
+                    hintText: '••••••••',
                     controller: _currentPasswordController,
                     obscureText: _obscureCurrentPassword,
-                    decoration: InputDecoration(
-                      hintText: '••••••••',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureCurrentPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureCurrentPassword = !_obscureCurrentPassword;
-                          });
-                        },
+                    prefixIcon: Icons.lock_outline,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureCurrentPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureCurrentPassword = !_obscureCurrentPassword;
+                        });
+                      },
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return AppLocalizations.of(
-                          context,
-                        )!.pleaseEnterCurrentPassword;
+                        return AppLocalizations.of(context)!.pleaseEnterCurrentPassword;
                       }
                       return null;
                     },
@@ -186,50 +163,33 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   const SizedBox(height: 16),
 
                   // New Password
-                  Text(
-                    AppLocalizations.of(context)!.newPasswordLabel,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
+                  CustomTextField(
+                    label: AppLocalizations.of(context)!.newPasswordLabel,
+                    hintText: '••••••••',
                     controller: _newPasswordController,
                     obscureText: _obscureNewPassword,
-                    decoration: InputDecoration(
-                      hintText: '••••••••',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureNewPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureNewPassword = !_obscureNewPassword;
-                          });
-                        },
+                    prefixIcon: Icons.lock_outline,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureNewPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureNewPassword = !_obscureNewPassword;
+                        });
+                      },
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return AppLocalizations.of(
-                          context,
-                        )!.pleaseEnterNewPassword;
+                        return AppLocalizations.of(context)!.pleaseEnterNewPassword;
                       }
                       if (value.length < 8) {
                         return AppLocalizations.of(context)!.passwordAtLeast8;
                       }
                       if (value == _currentPasswordController.text) {
-                        return AppLocalizations.of(
-                          context,
-                        )!.newPasswordDifferent;
+                        return AppLocalizations.of(context)!.newPasswordDifferent;
                       }
                       return null;
                     },
@@ -237,42 +197,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   const SizedBox(height: 16),
 
                   // Confirm New Password
-                  Text(
-                    AppLocalizations.of(context)!.confirmNewPasswordLabel,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
+                  CustomTextField(
+                    label: AppLocalizations.of(context)!.confirmNewPasswordLabel,
+                    hintText: '••••••••',
                     controller: _confirmPasswordController,
                     obscureText: _obscureConfirmPassword,
-                    decoration: InputDecoration(
-                      hintText: '••••••••',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
-                        },
+                    prefixIcon: Icons.lock_outline,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return AppLocalizations.of(
-                          context,
-                        )!.pleaseConfirmNewPassword;
+                        return AppLocalizations.of(context)!.pleaseConfirmNewPassword;
                       }
                       if (value != _newPasswordController.text) {
                         return AppLocalizations.of(context)!.confirmNotMatch;
