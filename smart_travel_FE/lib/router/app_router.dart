@@ -15,6 +15,7 @@ import 'package:smart_travel/presentation/screens/destination/detail_destination
 import 'package:smart_travel/presentation/screens/explore/explore_screen.dart';
 import 'package:smart_travel/presentation/screens/home/home_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.dart';
+import 'package:smart_travel/presentation/screens/homestay/homestay_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/profile_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/edit_profile_screen.dart';
@@ -53,6 +54,11 @@ class AppRouter {
             create: (_) => di.sl<HotelBloc>(),
             child: const HomestayListScreen(),
           ),
+          settings: settings,
+        );
+      case RouteNames.hotelDetail:
+        return MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
           settings: settings,
         );
 
