@@ -22,9 +22,40 @@ import 'package:smart_travel/presentation/screens/profile/account_management_scr
 import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
+import '../presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
+import '../presentation/blocs/admin_voucher/voucher_bloc.dart';
+import '../presentation/blocs/admin_voucher/voucher_event.dart';
+import '../presentation/screens/admin/admin_dashboard.dart';
+import '../presentation/screens/admin/invoice/admin_invoice_screen.dart';
+import '../presentation/screens/admin/voucher/voucher_management_screen.dart';
+import '../presentation/screens/invoice/my_invoices_screen.dart';
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      //Admin
+      case RouteNames.dashboard:
+        return MaterialPageRoute(builder: (_) => const AdminDashboardScreen());
+
+      case RouteNames.adminInvoices:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => di.sl<AdminInvoiceBloc>()..add(LoadAdminInvoices()),
+            child: const AdminInvoiceScreen(),
+          ),
+        );
+      //Voucher
+        case RouteNames.adminVoucher:
+          return MaterialPageRoute(
+            // Vì bên trong VoucherManagementScreen bạn đã bọc BlocProvider rồi
+            // nên ở đây chỉ cần gọi màn hình là được.
+            builder: (_) => BlocProvider(
+              create: (_) => di.sl<VoucherBloc>()..add(LoadAllVoucher()),
+              child: const VoucherManagementScreen(),
+            ),
+          );
+
+
+      //User
       case RouteNames.home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case RouteNames.splashScreen:
@@ -46,7 +77,6 @@ class AppRouter {
           ),
           settings: settings,
         );
-
       // Profile
       case RouteNames.profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
@@ -60,7 +90,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const AccountManagementScreen());
       case RouteNames.userLevel:
         return MaterialPageRoute(builder: (_) => const UserLevelScreen());
-
+      case RouteNames.myInvoices:
+        return MaterialPageRoute(builder: (_) => const MyInvoicesScreen(),);
       default:
         return MaterialPageRoute(
           builder:
