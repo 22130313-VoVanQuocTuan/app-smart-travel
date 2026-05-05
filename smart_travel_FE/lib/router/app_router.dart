@@ -22,6 +22,8 @@ import 'package:smart_travel/presentation/screens/profile/change_password_screen
 import 'package:smart_travel/presentation/screens/profile/settings_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/account_management_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart';
+import 'package:smart_travel/presentation/screens/tour/tour_list_screen.dart';
+import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
 class AppRouter {
@@ -44,6 +46,14 @@ class AppRouter {
         );
       case RouteNames.explore:
         return MaterialPageRoute(builder: (_) => const ExploreScreen());
+
+      // Tour
+      case RouteNames.tourList:
+        return MaterialPageRoute(builder: (_) => const TourListScreen());
+        
+      // AI Chat
+      case RouteNames.aiChat:
+        return MaterialPageRoute(builder: (_) => const AIChatScreen());
 
     // Hotel
       case RouteNames.homestayList:

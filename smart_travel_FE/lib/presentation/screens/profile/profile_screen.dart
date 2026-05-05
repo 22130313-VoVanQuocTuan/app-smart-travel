@@ -14,6 +14,7 @@ import 'package:smart_travel/presentation/screens/tour/tour_list_screen.dart';
 import 'package:smart_travel/presentation/widgets/profile/profile_menu_item_widget.dart';
 import 'package:smart_travel/presentation/widgets/common/bottom_navigation.dart';
 import 'package:smart_travel/router/route_names.dart';
+import 'package:smart_travel/core/utils/auth_helper.dart';
 import '../../theme/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -65,22 +66,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.pushReplacementNamed(context, RouteNames.explore);
         break;
 
-      case 2: // Tour (Push màn hình mới)
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const TourListScreen()),
-        );
+      case 2: // Tour
+        setState(() => _selectedIndex = index);
+        Navigator.pushReplacementNamed(context, RouteNames.tourList);
         break;
 
-      case 3: // Khách sạn (Push màn hình mới - Dùng RouteNames chuẩn)
-        Navigator.pushNamed(context, RouteNames.homestayList);
+      case 3: // Khách sạn
+        setState(() => _selectedIndex = index);
+        Navigator.pushReplacementNamed(context, RouteNames.homestayList);
         break;
 
-      case 4: // AI Chat (Push màn hình mới)
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AIChatScreen()),
-        );
+      case 4: // AI Chat
+        setState(() => _selectedIndex = index);
+        Navigator.pushReplacementNamed(context, RouteNames.aiChat);
         break;
 
       case 5: // Profile
@@ -97,15 +95,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
           if (state is ProfileError) {
-            // Check if error is related to token expiration
-            if (state.message.toLowerCase().contains('unauthorized') ||
-                state.message.toLowerCase().contains('401') ||
-                state.message.toLowerCase().contains(
-                  'phiên đăng nhập hết hạn',
-                ) ||
-                state.message.toLowerCase().contains('token')) {
-              // Redirect to login immediately without showing error
-              Navigator.pushReplacementNamed(context, '/login');
+            if (AuthHelper.isTokenExpiredError(state.message)) {
+              AuthHelper.handleAuthError(context, state.message);
               return;
             }
 
