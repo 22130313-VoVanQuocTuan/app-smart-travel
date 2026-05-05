@@ -11,8 +11,11 @@ import 'package:smart_travel/presentation/blocs/hotel/homestay_bloc.dart';
 import 'package:smart_travel/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/login_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/register_screen.dart';
+import 'package:smart_travel/presentation/screens/destination/detail_destination_screen.dart';
+import 'package:smart_travel/presentation/screens/explore/explore_screen.dart';
 import 'package:smart_travel/presentation/screens/home/home_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.dart';
+import 'package:smart_travel/presentation/screens/homestay/homestay_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/profile_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/edit_profile_screen.dart';
@@ -20,6 +23,8 @@ import 'package:smart_travel/presentation/screens/profile/change_password_screen
 import 'package:smart_travel/presentation/screens/profile/settings_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/account_management_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart';
+import 'package:smart_travel/presentation/screens/tour/tour_list_screen.dart';
+import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
 import '../presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
@@ -66,6 +71,21 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
       case RouteNames.forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+      case RouteNames.destinationDetail:
+        return MaterialPageRoute(
+          builder: (context) => DetailDestinationScreen(),
+          settings: settings,
+        );
+      case RouteNames.explore:
+        return MaterialPageRoute(builder: (_) => const ExploreScreen());
+
+      // Tour
+      case RouteNames.tourList:
+        return MaterialPageRoute(builder: (_) => const TourListScreen());
+        
+      // AI Chat
+      case RouteNames.aiChat:
+        return MaterialPageRoute(builder: (_) => const AIChatScreen());
 
     // Hotel
       case RouteNames.homestayList:
@@ -75,6 +95,12 @@ class AppRouter {
             create: (_) => di.sl<HotelBloc>(),
             child: const HomestayListScreen(),
           ),
+          settings: settings,
+        );
+
+      case RouteNames.hotelDetail:
+        return MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
           settings: settings,
         );
       // Profile

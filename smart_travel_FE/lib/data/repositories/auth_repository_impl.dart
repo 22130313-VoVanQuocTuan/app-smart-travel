@@ -10,6 +10,7 @@ import 'package:smart_travel/data/data_sources/remote/auth_remote_datasource.dar
 import 'package:smart_travel/data/models/auth/facebook_login_request.dart';
 import 'package:smart_travel/data/models/auth/google_login_request.dart';
 import 'package:smart_travel/data/models/auth/login_request_modal.dart';
+import 'package:smart_travel/data/models/auth/login_response_modal.dart';
 import 'package:smart_travel/data/models/auth/refresh_token_request.dart';
 import 'package:smart_travel/data/models/auth/register_request_model.dart';
 import 'package:smart_travel/domain/entities/auth.dart';
@@ -36,6 +37,25 @@ class AuthRepositoryImpl implements AuthRepository {
     required this.localDataSource,
     required this.facebookAuth,
   });
+
+  Future<void> _saveAuthSession(LoginResponseModal responseModel) async {
+    await localDataSource.saveToken(responseModel.token);
+
+    final refreshToken = responseModel.refreshToken;
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await localDataSource.saveRefreshToken(refreshToken);
+    }
+
+    final role = responseModel.role;
+    if (role != null && role.isNotEmpty) {
+      await localDataSource.saveRole(role);
+    }
+
+    final fullName = responseModel.fullName;
+    if (fullName != null && fullName.isNotEmpty) {
+      await localDataSource.saveFullName(fullName);
+    }
+  }
 
 
   @override
@@ -85,11 +105,8 @@ class AuthRepositoryImpl implements AuthRepository {
       // Gọi remote data source
       final responseModel = await dataSource.login(requestModel);
 
-      // Lưu token sau khi login thành công
-      await localDataSource.saveToken(responseModel.token);
-      await localDataSource.saveRole(responseModel.role!);
-      await localDataSource.saveFullName(responseModel.fullName!);
-      await localDataSource.saveRefreshToken(responseModel.refreshToken!);
+      // Lưu token/refresh token sau khi login thành công
+      await _saveAuthSession(responseModel);
       final entity = responseModel.toEntity();
 
       return  Right(entity);
@@ -159,9 +176,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final responseModel = await dataSource.googleLogin(requestModel);
 
       // Lưu token, refresh token và thông tin user vào local storage
-      await localDataSource.saveToken(responseModel.token);
-      await localDataSource.saveRole(responseModel.role!);
-      await localDataSource.saveFullName(responseModel.fullName!);
+      await _saveAuthSession(responseModel);
 
       //Chuyển đổi Model  sang Entity
       final entity = responseModel.toEntity();
@@ -234,9 +249,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final responseModel = await dataSource.facebookLogin(requestModel);
 
       // Lưu token, refresh token và thông tin user vào local storage
-      await localDataSource.saveToken(responseModel.token);
-      await localDataSource.saveRole(responseModel.role!);
-      await localDataSource.saveFullName(responseModel.fullName!);
+      await _saveAuthSession(responseModel);
 
       // Chuyển đổi Model sang Entity
       final entity = responseModel.toEntity();
@@ -265,14 +278,24 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Left(NetworkFailure('Không có kết nối internet. Vui lòng kiểm tra lại.'));
     }
 
-    // Chuyển Domain → Data
-    final requestModel = RefreshTokenRequest(refreshToken: refreshToken.refreshToken
-    );
-    final loginResponse = await dataSource.refreshToken(requestModel);
-    // Lưu vào local storage
-    await localDataSource.saveToken(loginResponse.token);
+    try {
+      // Chuyển Domain → Data
+      final requestModel = RefreshTokenRequest(
+        refreshToken: refreshToken.refreshToken,
+      );
+      final loginResponse = await dataSource.refreshToken(requestModel);
 
-    final entity = loginResponse.toEntity();
-    return right(entity);
+      // Lưu lại access token; nếu BE có trả refresh token mới thì cập nhật luôn
+      await _saveAuthSession(loginResponse);
+
+      final entity = loginResponse.toEntity();
+      return right(entity);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('Đã xảy ra lỗi không mong muốn: ${e.toString()}'));
+    }
   }
 }
