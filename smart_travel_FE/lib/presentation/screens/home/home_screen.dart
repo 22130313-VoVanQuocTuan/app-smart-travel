@@ -77,22 +77,18 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.pushReplacementNamed(context, RouteNames.explore);
         break;
 
-      case 2: // Tour
-        Navigator.pushReplacementNamed(context, RouteNames.explore);
-        break;
-
-      case 3: // Khách sạn
+      case 2: // Khách sạn
         Navigator.pushNamed(context, RouteNames.homestayList);
         break;
 
-      case 4: // AI Chat
+      case 3: // AI Chat
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const AIChatScreen()),
         );
         break;
 
-      case 5: // Profile
+      case 4: // Profile
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.profile);
         break;
