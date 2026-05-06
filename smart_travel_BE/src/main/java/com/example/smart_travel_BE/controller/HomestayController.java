@@ -2,12 +2,16 @@ package com.example.smart_travel_BE.controller;
 
 import com.example.smart_travel_BE.dto.hotel.request.HomestayFilterRequest;
 import com.example.smart_travel_BE.dto.hotel.response.HomestayResponse;
+import com.example.smart_travel_BE.dto.hotel.response.HomestayDetailResponse;
 import com.example.smart_travel_BE.service.HomestayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/hotels")
@@ -45,5 +49,29 @@ public class HomestayController {
         req.setSortDir(sortDir);
 
         return hotelService.getHotels(req);
+    }
+    /**
+     * Lấy thông tin chi tiết khách sạn + phòng trống theo ngày
+     * Ví dụ: GET /api/hotels/5/detail?checkIn=2025-10-15&checkOut=2025-10-20
+     */
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<HomestayDetailResponse> getHotelDetail(
+            @PathVariable("id") Long hotelId,
+            @RequestParam(value = "checkIn", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+
+            @RequestParam(value = "checkOut", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut
+    ) {
+        // Nếu không truyền → dùng ngày hôm nay và mai
+        LocalDate in = (checkIn != null) ? checkIn : LocalDate.now();
+        LocalDate out = (checkOut != null) ? checkOut : in.plusDays(1);
+
+        // Đảm bảo checkOut > checkIn
+        if (out.isBefore(in) || out.equals(in)) {
+            out = in.plusDays(1);
+        }
+        HomestayDetailResponse response = hotelService.getHotelDetail(hotelId, in, out);
+        return ResponseEntity.ok(response);
     }
 }

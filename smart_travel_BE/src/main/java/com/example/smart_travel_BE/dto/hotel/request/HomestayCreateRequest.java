@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HotelCreateRequest {
+public class HomestayCreateRequest {
 
     private String name;
     private String address;
