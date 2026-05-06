@@ -108,11 +108,6 @@ class AppRouter {
           settings: settings,
         );
 
-      case RouteNames.hotelDetail:
-        return MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
-          settings: settings,
-        );
       // Profile
       case RouteNames.profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
