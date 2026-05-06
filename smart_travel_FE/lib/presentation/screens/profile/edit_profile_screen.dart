@@ -8,6 +8,7 @@ import 'package:smart_travel/presentation/widgets/common/custom_button.dart';
 import 'package:smart_travel/presentation/widgets/common/custom_textfield.dart';
 import 'package:smart_travel/presentation/widgets/profile/avatar_picker_widget.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
+import 'package:smart_travel/core/utils/auth_helper.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);
@@ -142,18 +143,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ..showSnackBar(snackBar);
             Navigator.pop(context);
           } else if (state is ProfileError) {
-            // Check if error is related to token expiration
-            if (state.message.toLowerCase().contains('unauthorized') ||
-                state.message.toLowerCase().contains('401') ||
-                state.message.toLowerCase().contains(
-                  'phiên đăng nhập hết hạn',
-                ) ||
-                state.message.toLowerCase().contains('token')) {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
-              );
+            if (AuthHelper.isTokenExpiredError(state.message)) {
+              AuthHelper.handleAuthError(context, state.message);
               return;
             }
 
@@ -170,8 +161,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(snackBar);
-          } else if (state is ProfileLoaded) {
-            _loadProfileData();
           }
         },
         builder: (context, state) {
@@ -225,8 +214,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     prefixIcon: Icons.phone_outlined,
                     validator: (value) {
                       if (value != null && value.isNotEmpty) {
-                        if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-                          return 'Số điện thoại phải có 10 chữ số';
+                        if (!RegExp(r'^(\+84|0)[0-9\s.-]{9,13}$').hasMatch(value)) {
+                          return 'Số điện thoại không hợp lệ';
                         }
                       }
                       return null;

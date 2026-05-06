@@ -28,7 +28,11 @@ class RouteNames {
   static const String provinceDetail = '/province/detail';
 
   // Tour routes
+  static const String tourList = '/tour-list';
   static const String tourDetail = '/tour-detail';
+
+  // AI Chat
+  static const String aiChat = '/ai-chat';
 
   // Hotel routes
   static const String homestayList = '/homestay-list';
