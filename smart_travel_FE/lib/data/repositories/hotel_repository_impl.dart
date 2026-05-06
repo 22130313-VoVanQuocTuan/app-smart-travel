@@ -73,12 +73,15 @@ class HotelRepositoryImpl implements HotelRepository {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure('Không có kết nối internet.'));
     }
+
     try {
+      print('--- BẮT ĐẦU GỌI API DETAIL ---');
       final responseModal = await hotelDataSource.getHotelDetail(
         hotelId: hotelId,
         checkIn: checkIn,
         checkOut: checkOut,
       );
+      print('--- GỌI XONG, ĐANG TO ENTITY ---');
       return Right(responseModal.toEntity());
     } on ServerException catch (e, s) {
       _logError('getHotelDetail', e, s);

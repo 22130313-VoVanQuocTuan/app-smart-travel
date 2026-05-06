@@ -33,9 +33,9 @@ abstract class HotelDataSource {
   Future<HotelDetailResponseModel> createHotel(HotelCreateRequest request);
 
   Future<HotelDetailResponseModel> updateHotel(
-    int id,
-    HotelCreateRequest request,
-  );
+      int id,
+      HotelCreateRequest request,
+      );
 
   Future<String> deleteHotel(int id);
 
