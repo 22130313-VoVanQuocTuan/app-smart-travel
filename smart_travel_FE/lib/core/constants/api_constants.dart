@@ -106,8 +106,11 @@
     static const String updateVoucher = '/admin/vouchers/';
     static const String deleteVoucher = '/admin/vouchers/';
 
+    static const String chatAsk = '/chat/ask/';
+
     //Weather
     static const String weather = 'https://api.openweathermap.org/data/2.5/';
+
 
 
     // Timeout
