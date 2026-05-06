@@ -1,5 +1,5 @@
 import 'package:smart_travel/domain/entities/destination_image.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 import 'package:smart_travel/domain/entities/province.dart';
 import 'package:smart_travel/domain/entities/review.dart';
 import 'package:smart_travel/domain/entities/tour.dart';

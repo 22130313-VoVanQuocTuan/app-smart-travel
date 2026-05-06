@@ -4,11 +4,11 @@ import 'package:dartz/dartz.dart';
 import 'package:smart_travel/core/error/exceptions.dart';
 import 'package:smart_travel/core/error/failures.dart';
 import 'package:smart_travel/core/network/network_info.dart';
-import 'package:smart_travel/data/data_sources/remote/hotel_data_source.dart';
-import 'package:smart_travel/data/models/hotel/hotel_create_request.dart';
-import 'package:smart_travel/domain/entities/hotel_page.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
-import 'package:smart_travel/domain/repositories/hotel_repository.dart';
+import 'package:smart_travel/data/data_sources/remote/homestay_data_source.dart';
+import 'package:smart_travel/data/models/homestay/homestay_create_request.dart';
+import 'package:smart_travel/domain/entities/homestay_page.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
+import 'package:smart_travel/domain/repositories/homestay_repository.dart';
 
 class HotelRepositoryImpl implements HotelRepository {
   final HotelDataSource hotelDataSource;
@@ -73,12 +73,15 @@ class HotelRepositoryImpl implements HotelRepository {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure('Không có kết nối internet.'));
     }
+
     try {
+      print('--- BẮT ĐẦU GỌI API DETAIL ---');
       final responseModal = await hotelDataSource.getHotelDetail(
         hotelId: hotelId,
         checkIn: checkIn,
         checkOut: checkOut,
       );
+      print('--- GỌI XONG, ĐANG TO ENTITY ---');
       return Right(responseModal.toEntity());
     } on ServerException catch (e, s) {
       _logError('getHotelDetail', e, s);

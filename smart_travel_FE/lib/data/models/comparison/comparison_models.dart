@@ -1,5 +1,5 @@
 import 'package:smart_travel/domain/entities/tour.dart'; // Đảm bảo import đúng entity Tour của bạn
-import 'package:smart_travel/domain/entities/hotel.dart'; // Đảm bảo import đúng entity Hotel của bạn
+import 'package:smart_travel/domain/entities/homestay.dart'; // Đảm bảo import đúng entity Hotel của bạn
 
 // 1. Generic Response Wrapper
 class ComparisonResponse<T> {

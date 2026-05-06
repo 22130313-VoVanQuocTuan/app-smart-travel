@@ -35,8 +35,8 @@ class RouteNames {
   static const String aiChat = '/ai-chat';
 
   // Hotel routes
-  static const String homestayList = '/hotel-list';
-  static const String hotelDetail = '/hotel-detail';
+  static const String homestayList = '/homestay-list';
+  static const String hotelDetail = '/homestay-detail';
 
   // Profile routes
   static const String profile = '/profile';

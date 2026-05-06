@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HotelDetailResponse {
+public class HomestayDetailResponse {
     private Long id;
     private String name;
     private String address;

@@ -2,9 +2,9 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:smart_travel/core/error/failures.dart';
 import 'package:smart_travel/core/usecases/usecase.dart';
-import 'package:smart_travel/data/models/hotel/hotel_create_request.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
-import 'package:smart_travel/domain/repositories/hotel_repository.dart';
+import 'package:smart_travel/data/models/homestay/homestay_create_request.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
+import 'package:smart_travel/domain/repositories/homestay_repository.dart';
 
 class UpdateHotelUseCase extends UseCase<Hotel, UpdateHotelParams> {
   final HotelRepository repository;
