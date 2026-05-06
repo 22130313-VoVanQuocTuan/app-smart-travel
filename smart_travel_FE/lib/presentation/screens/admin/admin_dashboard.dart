@@ -9,6 +9,7 @@ import 'package:smart_travel/presentation/widgets/statistic/statistics_overview_
 
 import 'package:smart_travel/presentation/theme/app_colors.dart';
 import 'package:smart_travel/injection_container.dart' as di;
+import 'package:smart_travel/router/route_names.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -40,7 +41,7 @@ class AdminDashboardScreen extends StatelessWidget {
       'color': Colors.teal,
     },
     {
-      'id': 'admin/invoices',
+      'route': RouteNames.adminInvoices,
       'icon': Icons.receipt_long,
       'label': 'Quản lý đơn hàng',
       'color': Colors.blue,
@@ -62,12 +63,6 @@ class AdminDashboardScreen extends StatelessWidget {
       'icon': Icons.add_photo_alternate,
       'label': 'Banner',
       'color': Colors.amberAccent,
-    },
-    {
-      'id': 'admin/audio',
-      'icon': Icons.audio_file,
-      'label': 'audio',
-      'color': Colors.deepPurpleAccent,
     },
   ];
 
@@ -134,8 +129,7 @@ class AdminDashboardScreen extends StatelessWidget {
                       icon: item['icon'],
                       label: item['label'],
                       color: item['color'],
-                      route:
-                          item['id'] == 'dashboard' ? null : '/${item['id']}',
+                      route: item['route'] ?? (item['id'] == 'dashboard' ? null : '/${item['id']}'),
                     );
                   },
                 ),

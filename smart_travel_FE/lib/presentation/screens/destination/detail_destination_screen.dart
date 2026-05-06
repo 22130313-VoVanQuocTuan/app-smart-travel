@@ -457,7 +457,7 @@ class _DetailDestinationScreenState extends State<DetailDestinationScreen>
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         tabs: [
           const Tab(text: 'Tổng quan'),
-          Tab(text: 'Khách sạn (${destination.hotels?.length ?? 0})'),
+          Tab(text: 'Homestay (${destination.hotels?.length ?? 0})'),
         ],
       ),
     );
