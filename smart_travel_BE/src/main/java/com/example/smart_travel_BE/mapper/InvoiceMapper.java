@@ -2,7 +2,7 @@ package com.example.smart_travel_BE.mapper;
 
 import com.example.smart_travel_BE.dto.invoice.response.ActiveInvoiceResponse;
 import com.example.smart_travel_BE.entity.*;
-import com.example.smart_travel_BE.repository.HotelRepository;
+import com.example.smart_travel_BE.repository.HomestayRepository;
 import com.example.smart_travel_BE.repository.TourRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit;
 @RequiredArgsConstructor
 public class InvoiceMapper {
 
-    private final HotelRepository hotelRepository;
+    private final HomestayRepository hotelRepository;
     private final TourRepository tourRepository;
 
     /**

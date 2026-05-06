@@ -8,7 +8,7 @@ abstract class BookingEvent extends Equatable {
 
 class CreateBookingSubmitted extends BookingEvent {
   final String bookingType; // 'TOUR' hoặc 'HOTEL'
-  final int id;             // ID của tour hoặc hotel
+  final int id;             // ID của tour hoặc homestay
   final DateTime startDate;
   final DateTime? endDate;  // Null nếu là Tour (Optional)
   final int numberOfPeople;

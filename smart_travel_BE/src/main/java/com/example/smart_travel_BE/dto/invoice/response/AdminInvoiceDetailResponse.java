@@ -21,7 +21,7 @@ public class AdminInvoiceDetailResponse {
     private Long hotelId;
     private Long tourId;
 
-    private String serviceName;         // Tên hotel hoặc tour
+    private String serviceName;         // Tên homestay hoặc tour
     private String roomTypeName;        // Tên loại phòng (null nếu tour)
 
     private LocalDate startDate;

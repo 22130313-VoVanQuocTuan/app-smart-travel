@@ -1,4 +1,4 @@
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 
 class HotelsPage {
   final List<Hotel> content;

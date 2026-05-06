@@ -1,9 +1,9 @@
 package com.example.smart_travel_BE.service;
 
 import com.example.smart_travel_BE.dto.hotel.request.HomestayFilterRequest;
-//import com.example.smart_travel_BE.dto.hotel.request.HotelCreateRequest;
-//import com.example.smart_travel_BE.dto.hotel.request.RoomTypeCreateRequest;
-//import com.example.smart_travel_BE.dto.hotel.response.HotelDetailResponse;
+//import com.example.smart_travel_BE.dto.homestay.request.HotelCreateRequest;
+//import com.example.smart_travel_BE.dto.homestay.request.RoomTypeCreateRequest;
+//import com.example.smart_travel_BE.dto.homestay.response.HotelDetailResponse;
 import com.example.smart_travel_BE.dto.hotel.request.HomestayCreateRequest;
 import com.example.smart_travel_BE.dto.hotel.request.RoomTypeCreateRequest;
 import com.example.smart_travel_BE.dto.hotel.response.HomestayResponse;

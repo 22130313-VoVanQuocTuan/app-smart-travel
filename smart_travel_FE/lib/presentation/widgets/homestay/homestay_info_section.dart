@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 
 class HotelInfoSection extends StatelessWidget {
   final Hotel hotel;

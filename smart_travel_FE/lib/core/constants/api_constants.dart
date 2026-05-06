@@ -96,7 +96,7 @@
     static const String invoiceReview = '/reviews/invoice-review';
     static const String destinationReview = '/reviews/destination-review';
     static const String tourReview = '/reviews/tour/';
-    static const String hotelReview = '/reviews/hotel/';
+    static const String hotelReview = '/reviews/homestay/';
     static const String desReview = '/reviews/destination/';
     static const String allReview = '/reviews/get-reviews';
 
