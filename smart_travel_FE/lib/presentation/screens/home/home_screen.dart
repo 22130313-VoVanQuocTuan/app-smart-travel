@@ -155,20 +155,6 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          SizedBox(
-            width: 56,
-            height: 56,
-            child: FloatingActionButton(
-              heroTag: "audio_fab",
-              backgroundColor: const Color(0x9651FDDB),
-              elevation: 0,
-              shape: const CircleBorder(),
-              onPressed: () {
-                _showAudioGuideBottomSheet();
-              },
-              child: const Icon(Icons.headset_rounded, color: Colors.white),
-            ),
-          ),
           const SizedBox(height: 12),
           SizedBox(
             width: 56,
