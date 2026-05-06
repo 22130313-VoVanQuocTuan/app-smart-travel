@@ -5,9 +5,9 @@ import 'package:dio/dio.dart';
 import 'package:smart_travel/core/constants/api_constants.dart';
 import 'package:smart_travel/core/error/exceptions.dart';
 import 'package:smart_travel/core/network/dio_client.dart';
-import 'package:smart_travel/data/models/hotel/hotel_create_request.dart';
-import 'package:smart_travel/data/models/hotel/hotel_page_modal.dart';
-import 'package:smart_travel/data/models/hotel/hotel_detail_response_modal.dart';
+import 'package:smart_travel/data/models/homestay/homestay_create_request.dart';
+import 'package:smart_travel/data/models/homestay/homestay_detail_response_modal.dart';
+import 'package:smart_travel/data/models/homestay/homestay_page_modal.dart';
 
 abstract class HotelDataSource {
   Future<HotelsPageModel> getHotels({
@@ -33,9 +33,9 @@ abstract class HotelDataSource {
   Future<HotelDetailResponseModel> createHotel(HotelCreateRequest request);
 
   Future<HotelDetailResponseModel> updateHotel(
-    int id,
-    HotelCreateRequest request,
-  );
+      int id,
+      HotelCreateRequest request,
+      );
 
   Future<String> deleteHotel(int id);
 

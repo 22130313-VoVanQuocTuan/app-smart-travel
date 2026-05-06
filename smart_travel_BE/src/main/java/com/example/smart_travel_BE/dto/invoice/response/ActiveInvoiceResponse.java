@@ -21,7 +21,7 @@ public class ActiveInvoiceResponse {
     private String itemName;         // Tên khách sạn + loại phòng HOẶC tên tour
     private LocalDate startDate;     // Ngày check-in / ngày khởi hành
     private LocalDate endDate;       // Ngày check-out / ngày kết thúc tour
-    private Integer nights;          // Số đêm (hotel) hoặc số đêm tour (durationNights)
+    private Integer nights;          // Số đêm (homestay) hoặc số đêm tour (durationNights)
     private String status;           // Trạng thái đơn hàng
     private boolean isReviewed;      // Đã đánh giá chưa
 }

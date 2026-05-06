@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:smart_travel/data/models/destination/destination_image_response_modal.dart';
-import 'package:smart_travel/data/models/hotel/hotel_summary_response_modal.dart';
+import 'package:smart_travel/data/models/homestay/homestay_summary_response_modal.dart';
 import 'package:smart_travel/data/models/province/province_response_modal.dart';
 import 'package:smart_travel/data/models/review/review_response_modal.dart';
 import 'package:smart_travel/data/models/tour/tour_summary_response_modal.dart';
 import 'package:smart_travel/domain/entities/destinations.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 
 class DestinationDetailResponse {
 

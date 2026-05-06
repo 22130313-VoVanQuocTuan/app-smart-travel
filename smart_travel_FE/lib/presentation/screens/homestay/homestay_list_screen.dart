@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart'; // Đã thêm thư viện này để format tiền
-import 'package:smart_travel/domain/entities/hotel.dart';
-import 'package:smart_travel/presentation/blocs/hotel/homestay_bloc.dart';
-import 'package:smart_travel/presentation/blocs/hotel/homestay_event.dart';
-import 'package:smart_travel/presentation/blocs/hotel/homestay_state.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_event.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_state.dart';
 import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
 import 'package:smart_travel/presentation/screens/tour/tour_list_screen.dart';
 import 'package:smart_travel/presentation/widgets/common/bottom_navigation.dart';

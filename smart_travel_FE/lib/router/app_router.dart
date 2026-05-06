@@ -6,14 +6,15 @@ import 'package:smart_travel/presentation/blocs/adminTour/tour_event.dart';
 import 'package:smart_travel/presentation/blocs/admin_audio/audio_bloc.dart';
 import 'package:smart_travel/presentation/blocs/admin_audio/audio_event.dart';
 import 'package:smart_travel/presentation/blocs/admin_user/admin_user_bloc.dart';
-import 'package:smart_travel/presentation/blocs/hotel/homestay_detail_bloc.dart';
-import 'package:smart_travel/presentation/blocs/hotel/homestay_bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/login_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/register_screen.dart';
 import 'package:smart_travel/presentation/screens/destination/detail_destination_screen.dart';
 import 'package:smart_travel/presentation/screens/explore/explore_screen.dart';
 import 'package:smart_travel/presentation/screens/home/home_screen.dart';
+import 'package:smart_travel/presentation/screens/homestay/detail_homestay_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
@@ -94,6 +95,15 @@ class AppRouter {
               (context) => BlocProvider(
             create: (_) => di.sl<HotelBloc>(),
             child: const HomestayListScreen(),
+          ),
+          settings: settings,
+        );
+      case RouteNames.hotelDetail:
+        return MaterialPageRoute(
+          builder:
+              (context) => BlocProvider(
+            create: (_) => di.sl<HotelDetailBloc>(),
+            child: const DetailHomestayScreen(),
           ),
           settings: settings,
         );

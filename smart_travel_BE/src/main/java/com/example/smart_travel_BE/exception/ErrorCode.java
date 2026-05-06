@@ -115,7 +115,7 @@ public enum ErrorCode {
     IMAGE_URL_BLANK(1081, "Đường dẫn hình ảnh không được để trống", HttpStatus.BAD_REQUEST),
     BANNER_NOT_EXISTED(1082, "Banner không tồn tại", HttpStatus.NOT_FOUND),
     /// INVOICE
-    INVALID_TYPE(1018, "Sai type cua hotel, tour, destination", HttpStatus.UNAUTHORIZED),
+    INVALID_TYPE(1018, "Sai type cua homestay, tour, destination", HttpStatus.UNAUTHORIZED),
 
 
     // ADMIN PERMISSIONS

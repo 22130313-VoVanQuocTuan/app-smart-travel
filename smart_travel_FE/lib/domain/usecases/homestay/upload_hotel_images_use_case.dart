@@ -3,7 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:smart_travel/core/error/failures.dart';
 import 'package:smart_travel/core/usecases/usecase.dart';
-import 'package:smart_travel/domain/repositories/hotel_repository.dart';
+import 'package:smart_travel/domain/repositories/homestay_repository.dart';
 
 class UploadHotelImagesUseCase extends UseCase<String, UploadHotelImagesParams> {
   final HotelRepository repository;

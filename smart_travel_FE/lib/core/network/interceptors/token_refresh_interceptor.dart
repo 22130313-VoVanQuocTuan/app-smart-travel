@@ -99,11 +99,11 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
 
       String? newToken;
       result.fold(
-        (failure) {
+            (failure) {
           print('Refresh token failed: ${failure.message}');
           throw Exception(failure.message);
         },
-        (auth) {
+            (auth) {
           newToken = auth.token;
           if (newToken != null) {
             localDataSource.saveToken(newToken!);

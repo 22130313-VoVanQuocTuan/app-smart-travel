@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:smart_travel/data/models/hotel/room_type_response_modal.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/data/models/homestay/room_type_response_modal.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 
 class HotelDetailResponseModel {
   final int id;

@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:smart_travel/domain/repositories/tour_repository.dart';
-import 'package:smart_travel/domain/repositories/hotel_repository.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/domain/repositories/homestay_repository.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 import '../../../domain/repositories/comparison_repository.dart';
 import 'comparison_event.dart';
 import 'comparison_state.dart';
