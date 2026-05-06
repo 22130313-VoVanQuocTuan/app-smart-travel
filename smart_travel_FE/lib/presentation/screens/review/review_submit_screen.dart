@@ -11,7 +11,7 @@ import '../../blocs/review/submit_review_state.dart';
 
 class ReviewSubmitScreen extends StatefulWidget {
   final String invoiceNumber;
-  final String serviceName; // ← Thêm để hiển thị tên hotel/tour
+  final String serviceName; // ← Thêm để hiển thị tên homestay/tour
 
   const ReviewSubmitScreen({
     Key? key,

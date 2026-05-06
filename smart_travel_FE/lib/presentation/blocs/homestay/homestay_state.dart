@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 
 abstract class HotelState extends Equatable {
   const HotelState();

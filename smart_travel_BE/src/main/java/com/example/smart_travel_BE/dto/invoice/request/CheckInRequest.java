@@ -10,5 +10,5 @@ public class CheckInRequest {
     private Long bookingId;
 
     @Min(value = 1, message = "Số phòng phải lớn hơn 0")
-    private Integer numberOfRooms;  // Bắt buộc cho hotel, tour thì null hoặc bỏ qua
+    private Integer numberOfRooms;  // Bắt buộc cho homestay, tour thì null hoặc bỏ qua
 }

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:smart_travel/domain/entities/tour.dart';
-import 'package:smart_travel/domain/entities/hotel.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 
 abstract class ComparisonState extends Equatable {
   const ComparisonState();

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:equatable/equatable.dart';
-import 'package:smart_travel/data/models/hotel/hotel_create_request.dart';
+import 'package:smart_travel/data/models/homestay/homestay_create_request.dart';
 
 abstract class HotelEvent extends Equatable {
   const HotelEvent();

@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:smart_travel/core/error/failures.dart';
 import 'package:smart_travel/core/usecases/usecase.dart';
-import 'package:smart_travel/domain/entities/hotel_page.dart';
-import 'package:smart_travel/domain/repositories/hotel_repository.dart';
+import 'package:smart_travel/domain/entities/homestay_page.dart';
+import 'package:smart_travel/domain/repositories/homestay_repository.dart';
 
 class GetHotelsUseCase extends UseCase<HotelsPage, GetHotelsParams> {
   final HotelRepository hotelRepository;

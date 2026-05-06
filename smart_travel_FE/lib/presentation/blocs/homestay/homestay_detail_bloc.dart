@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/domain/usecases/hotel/hotel_detail_use_case.dart';
+import 'package:smart_travel/domain/usecases/homestay/hotel_detail_use_case.dart';
 import 'homestay_detail_event.dart';
 import 'homestay_detail_state.dart';
 

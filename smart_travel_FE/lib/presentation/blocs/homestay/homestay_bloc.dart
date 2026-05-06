@@ -1,13 +1,14 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/domain/usecases/hotel/create_hotel_use_case.dart';
-import 'package:smart_travel/domain/usecases/hotel/delete_hotel_use_case.dart';
-import 'package:smart_travel/domain/usecases/hotel/get_hotels_use_case.dart';
-import 'package:smart_travel/domain/usecases/hotel/update_hotel_use_case.dart';
-import 'package:smart_travel/domain/usecases/hotel/upload_hotel_images_use_case.dart';
-import 'package:smart_travel/presentation/blocs/hotel/homestay_event.dart';
-import 'package:smart_travel/presentation/blocs/hotel/homestay_state.dart';
+import 'package:smart_travel/domain/usecases/homestay/create_hotel_use_case.dart';
+import 'package:smart_travel/domain/usecases/homestay/delete_hotel_use_case.dart';
+import 'package:smart_travel/domain/usecases/homestay/get_hotels_use_case.dart';
+import 'package:smart_travel/domain/usecases/homestay/update_hotel_use_case.dart';
+import 'package:smart_travel/domain/usecases/homestay/upload_hotel_images_use_case.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_event.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_state.dart';
+
 
 class HotelBloc extends Bloc<HotelEvent, HotelState> {
   final GetHotelsUseCase getHotelsUseCase;
