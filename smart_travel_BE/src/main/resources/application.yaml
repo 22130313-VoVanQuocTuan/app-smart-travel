@@ -39,17 +39,9 @@ jwt:
   valid-duration: ${JWT_VALID_DURATION}
   refreshable-duration: ${JWT_REFRESHABLE_DURATION}
 
-gemini:
-  api:
-    key: ${GEMINI_API_KEY}
-
-huggingface:
-  api:
-    key: ${HUGGINGFACE_API_KEY}
-
-deepseek:
-  api:
-    key: ${DEEPSEEK_API_KEY}
+github:
+    token: ${GITHUB_API_KEY}
+    model: ${GITHUB_MODELS}
 
 ai:
   service:

@@ -11,50 +11,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   ChatBloc(this.chatRepository) : super(ChatInitial()) {
     on<SendMessageEvent>(_onSendMessage);
-    on<SendImageEvent>(_onSendImage);
   }
 
-  // --- 1. XỬ LÝ GỬI ẢNH (Code bạn đã ổn, chỉ chỉnh lại chút cho gọn) ---
-  Future<void> _onSendImage(SendImageEvent event, Emitter<ChatState> emit) async {
-    _messages.insert(0, ChatMessage(
-      text: "[Đã gửi 1 hình ảnh...]",
-      isUser: true,
-      timestamp: DateTime.now(),
-    ));
-    emit(ChatLoaded(messages: List.from(_messages), isTyping: true));
-
-    try {
-      final response = await chatRepository.sendImageToAI(event.imageFile);
-
-      if (response['success'] == true) {
-        // Parse list
-        List<dynamic> rawData = response['data'] ?? [];
-        List<AIDestinationResponse> suggestions = rawData
-            .map((json) => AIDestinationResponse.fromJson(json))
-            .toList();
-
-        String aiType = response['mapped_category'] ?? "Địa điểm";
-
-        _messages.insert(0, ChatMessage(
-          text: "AI nhận diện: **$aiType**. Gợi ý cho bạn:",
-          isUser: false,
-          timestamp: DateTime.now(),
-          recommendations: suggestions, // <--- LIST CARD TỪ ẢNH
-        ));
-      } else {
-        _messages.insert(0, ChatMessage(
-          text: response['message'] ?? "Không nhận diện được.",
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
-      }
-      emit(ChatLoaded(messages: List.from(_messages), isTyping: false));
-    } catch (e) {
-      _handleError(e, emit);
-    }
-  }
-
-  // --- 2. XỬ LÝ CHAT TEXT (SỬA LẠI HOÀN TOÀN) ---
+  // --- 2. XỬ LÝ CHAT TEXT
   Future<void> _onSendMessage(SendMessageEvent event, Emitter<ChatState> emit) async {
     // UI: Hiện tin nhắn user
     _messages.insert(0, ChatMessage(
@@ -69,19 +28,19 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final responseData = await chatRepository.sendMessage(event.message);
 
       String replyText = responseData['message'] ?? "Không có nội dung";
-      List<dynamic> rawRecs = responseData['recommendations'] ?? [];
+      List<dynamic> rawRecs = responseData['suggestions'] ?? responseData['recommendations'] ?? [];
 
       // Parse List DTO
       List<AIDestinationResponse> suggestions = rawRecs
           .map((json) => AIDestinationResponse.fromJson(json))
           .toList();
 
-      // UI: Hiện tin nhắn AI kèm List Cards (nếu có)
+      // UI: Hiện tin nhắn AI
       _messages.insert(0, ChatMessage(
         text: replyText,
         isUser: false,
         timestamp: DateTime.now(),
-        recommendations: suggestions, // <--- LIST CARD TỪ TEXT CHAT
+        recommendations: suggestions,
       ));
 
       emit(ChatLoaded(messages: List.from(_messages), isTyping: false));
