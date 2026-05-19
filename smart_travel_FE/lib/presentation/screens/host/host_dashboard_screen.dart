@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
+import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
+import 'package:smart_travel/presentation/screens/host/host_statistics_screen.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
 
 class HostDashboardScreen extends StatelessWidget {
@@ -60,6 +62,7 @@ class HostDashboardScreen extends StatelessWidget {
                   mainAxisSpacing: 16,
                 ),
                 children: [
+                  _buildStatisticsCard(context),
                   _buildMenuCard(
                     context: context,
                     icon: Icons.home,
@@ -91,6 +94,57 @@ class HostDashboardScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildStatisticsCard(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        int hostId = 0;
+        final profileState = context.read<ProfileBloc>().state;
+        if (profileState is ProfileLoaded) {
+          hostId = profileState.user.id;
+        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HostStatisticsScreen(hostId: hostId),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [const Color(0xFF7C4DFF).withValues(alpha: 0.7), const Color(0xFF7C4DFF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.analytics_rounded, size: 48, color: Colors.white),
+            SizedBox(height: 16),
+            Text(
+              'Thống Kê Doanh Thu',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
