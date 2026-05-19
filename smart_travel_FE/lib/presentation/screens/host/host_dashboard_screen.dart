@@ -2,16 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
+import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
+import 'package:smart_travel/presentation/blocs/statistics/statistics_bloc.dart';
+import 'package:smart_travel/presentation/blocs/statistics/statistics_event.dart';
+import 'package:smart_travel/presentation/blocs/statistics/statistics_state.dart';
+import 'package:smart_travel/presentation/widgets/statistic/host_statistics_overview_widget.dart';
+import 'package:smart_travel/injection_container.dart' as di;
 
 class HostDashboardScreen extends StatelessWidget {
   const HostDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return BlocProvider(
+      create: (context) {
+        final bloc = di.sl<StatisticsBloc>();
+        final profileState = context.read<ProfileBloc>().state;
+        if (profileState is ProfileLoaded) {
+          bloc.add(LoadHostDashboardStats(profileState.user.id));
+        }
+        return bloc;
+      },
+      child: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileLoaded) {
+            context.read<StatisticsBloc>().add(LoadHostDashboardStats(state.user.id));
+          }
+        },
+        child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
         title: const Text('Quản Lý Homestay'),
         centerTitle: true,
         elevation: 2,
@@ -49,7 +70,53 @@ class HostDashboardScreen extends StatelessWidget {
                 color: AppColors.textGray,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
+            // Statistics Overview
+            BlocBuilder<StatisticsBloc, StatisticsState>(
+              builder: (context, state) {
+                if (state is StatisticsLoaded) {
+                  final profileState = context.read<ProfileBloc>().state;
+                  final currentHostId = (profileState is ProfileLoaded) ? profileState.user.id : 0;
+                  return HostStatisticsOverviewWidget(stats: state.stats, hostId: currentHostId);
+                }
+                if (state is StatisticsError) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Lỗi: ${state.message}',
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+                if (state is StatisticsLoading) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [const Color(0xFF7C4DFF).withValues(alpha: 0.7), const Color(0xFF7C4DFF)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            const SizedBox(height: 16),
             // Menu Grid
             Expanded(
               child: GridView(
@@ -94,6 +161,8 @@ class HostDashboardScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      ),
       ),
     );
   }

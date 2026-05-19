@@ -34,6 +34,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             "AND up.hostVerified = true " +       // ĐÃ được duyệt
             "ORDER BY u.createdAt DESC")
     Page<User> findApprovedHosts(String role, Boolean emailVerified, Pageable pageable);
-    // Find all users with specific role
+    // Tìm tất cả user theo role
     List<User> findByRole(String role);
+
+    // Đếm số lượng user theo role (for statistics)
+    long countByRole(String role);
 }
