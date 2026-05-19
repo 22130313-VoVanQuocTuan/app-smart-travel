@@ -42,6 +42,8 @@ import '../presentation/screens/admin/admin_host_approval_screen.dart';
 import '../presentation/screens/invoice/my_invoices_screen.dart';
 import '../presentation/screens/host/host_dashboard_screen.dart';
 import '../presentation/screens/host/host_pending_approval_screen.dart';
+import '../presentation/screens/admin/statistic/statistics_detail_screen.dart';
+import '../presentation/screens/host/host_statistics_screen.dart';
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -54,6 +56,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ProvinceManagementScreen ());
       case RouteNames.adminUsers:
         return MaterialPageRoute(builder: (_) => const UserManagementScreen ());
+      case '/admin/statistics':
+        return MaterialPageRoute(builder: (_) => const StatisticsDetailScreen());
       case RouteNames.adminBanner:
         return MaterialPageRoute(builder: (_) => const BannerManagementScreen ());
 
@@ -161,6 +165,10 @@ class AppRouter {
         );
       case RouteNames.hostPendingApproval:
         return MaterialPageRoute(builder: (_) => const HostPendingApprovalScreen());
+      case '/host-statistics':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final hostId = args?['hostId'] as int? ?? 0;
+        return MaterialPageRoute(builder: (_) => HostStatisticsScreen(hostId: hostId));
 
       case RouteNames.hostBookings:
         return MaterialPageRoute(builder: (_) => const HostBookingListScreen());

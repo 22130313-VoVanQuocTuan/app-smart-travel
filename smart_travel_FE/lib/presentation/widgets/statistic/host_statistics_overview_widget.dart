@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_travel/data/models/statistics/dashboard_stats.dart';
-import 'package:smart_travel/presentation/screens/admin/statistic/statistics_detail_screen.dart';
+import 'package:smart_travel/presentation/screens/host/host_statistics_screen.dart';
 
-class StatisticsOverviewWidget extends StatelessWidget {
+class HostStatisticsOverviewWidget extends StatelessWidget {
   final DashboardStats stats;
+  final int hostId;
 
-  const StatisticsOverviewWidget({Key? key, required this.stats})
+  const HostStatisticsOverviewWidget({Key? key, required this.stats, required this.hostId})
     : super(key: key);
 
   @override
@@ -17,7 +18,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const StatisticsDetailScreen()),
+          MaterialPageRoute(builder: (_) => HostStatisticsScreen(hostId: hostId)),
         );
       },
       child: Container(
@@ -25,14 +26,14 @@ class StatisticsOverviewWidget extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue.shade400, Colors.blue.shade600],
+            colors: [const Color(0xFF7C4DFF).withValues(alpha: 0.7), const Color(0xFF7C4DFF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withValues(alpha: 0.3),
+              color: const Color(0xFF7C4DFF).withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -41,13 +42,13 @@ class StatisticsOverviewWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.bar_chart, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
-                const Expanded(
+                Icon(Icons.analytics_rounded, color: Colors.white, size: 28),
+                SizedBox(width: 12),
+                Expanded(
                   child: Text(
-                    'Tổng Quan',
+                    'Tổng Quan Doanh Thu',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -55,7 +56,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
                   color: Colors.white,
                   size: 16,
@@ -71,10 +72,21 @@ class StatisticsOverviewWidget extends StatelessWidget {
                     'Doanh Thu Hôm Nay',
                     currencyFormat.format(stats.todayRevenue),
                     Icons.trending_up_rounded,
-                    isText: true,
                   ),
                 ),
                 const SizedBox(width: 8),
+                Expanded(
+                  child: _buildMiniStat(
+                    'Tổng Doanh Thu',
+                    currencyFormat.format(stats.totalRevenue),
+                    Icons.account_balance_wallet_rounded,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
                 Expanded(
                   child: _buildMiniStat(
                     'Hóa Đơn Hôm Nay',
@@ -82,51 +94,19 @@ class StatisticsOverviewWidget extends StatelessWidget {
                     Icons.receipt_long_rounded,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMiniStat(
-                    'Người Dùng',
-                    stats.totalUsers,
-                    Icons.people,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildMiniStat(
-                    'Tỉnh/Thành',
-                    stats.totalProvinces,
-                    Icons.location_city,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMiniStat(
-                    'Địa Điểm',
-                    stats.totalDestinations,
-                    Icons.place,
-                  ),
-                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildMiniStat(
                     'Homestay',
-                    stats.totalHotels,
-                    Icons.hotel,
+                    stats.totalHotels.toString(),
+                    Icons.hotel_rounded,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             const Text(
-              'Nhấn để xem chi tiết →',
+              'Nhấn để xem biểu đồ chi tiết →',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
@@ -139,7 +119,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMiniStat(String label, dynamic value, IconData icon, {bool isText = false}) {
+  Widget _buildMiniStat(String label, dynamic value, IconData icon) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(

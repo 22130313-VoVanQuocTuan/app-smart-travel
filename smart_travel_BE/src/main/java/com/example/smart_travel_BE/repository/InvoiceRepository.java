@@ -11,11 +11,112 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
+
+    // --- Today stats ---
+    long countByIssueDate(LocalDate date);
+
+    @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i WHERE i.issueDate = :date")
+    BigDecimal sumTotalAmountByDate(@Param("date") LocalDate date);
+
+    @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i")
+    BigDecimal sumTotalAmount();
+
+    // --- Hệ thống doanh thu theo DAY (trong 1 tháng) ---
+    @Query("SELECT DAY(i.issueDate), " +
+           "COALESCE(SUM(i.totalAmount), 0), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i " +
+           "WHERE YEAR(i.issueDate) = :year AND MONTH(i.issueDate) = :month " +
+           "GROUP BY DAY(i.issueDate) ORDER BY DAY(i.issueDate)")
+    List<Object[]> getSystemRevenueByDay(@Param("year") int year, @Param("month") int month);
+
+    // --- Hệ thống doanh thu theo MONTH (trong 1 năm) ---
+    @Query("SELECT MONTH(i.issueDate), " +
+           "COALESCE(SUM(i.totalAmount), 0), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i " +
+           "WHERE YEAR(i.issueDate) = :year " +
+           "GROUP BY MONTH(i.issueDate) ORDER BY MONTH(i.issueDate)")
+    List<Object[]> getSystemRevenueByMonth(@Param("year") int year);
+
+    // --- Hệ thống doanh thu theo YEAR ---
+    @Query("SELECT YEAR(i.issueDate), " +
+           "COALESCE(SUM(i.totalAmount), 0), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i " +
+           "GROUP BY YEAR(i.issueDate) ORDER BY YEAR(i.issueDate)")
+    List<Object[]> getSystemRevenueByYear();
+
+    // --- Chủ Homestay doanh thu theo DAY ---
+    @Query("SELECT DAY(i.issueDate), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i JOIN i.booking b " +
+           "WHERE b.hotelId IN (SELECT h.id FROM Homestay h WHERE h.owner.id = :hostId) " +
+           "AND YEAR(i.issueDate) = :year AND MONTH(i.issueDate) = :month " +
+           "GROUP BY DAY(i.issueDate) ORDER BY DAY(i.issueDate)")
+    List<Object[]> getHostRevenueByDay(@Param("hostId") Long hostId, @Param("year") int year, @Param("month") int month);
+
+    // --- Chủ Homestay doanh thu theo MONTH ---
+    @Query("SELECT MONTH(i.issueDate), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i JOIN i.booking b " +
+           "WHERE b.hotelId IN (SELECT h.id FROM Homestay h WHERE h.owner.id = :hostId) " +
+           "AND YEAR(i.issueDate) = :year " +
+           "GROUP BY MONTH(i.issueDate) ORDER BY MONTH(i.issueDate)")
+    List<Object[]> getHostRevenueByMonth(@Param("hostId") Long hostId, @Param("year") int year);
+
+    // --- Chủ Homestay doanh thu theo YEAR ---
+    @Query("SELECT YEAR(i.issueDate), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i JOIN i.booking b " +
+           "WHERE b.hotelId IN (SELECT h.id FROM Homestay h WHERE h.owner.id = :hostId) " +
+           "GROUP BY YEAR(i.issueDate) ORDER BY YEAR(i.issueDate)")
+    List<Object[]> getHostRevenueByYear(@Param("hostId") Long hostId);
+
+    // --- Chủ Homestay doanh thu theo ngày trong khoảng ---
+    @Query("SELECT i.issueDate, " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i JOIN i.booking b " +
+           "WHERE b.hotelId IN (SELECT h.id FROM Homestay h WHERE h.owner.id = :hostId) " +
+           "AND i.issueDate BETWEEN :startDate AND :endDate " +
+           "GROUP BY i.issueDate ORDER BY i.issueDate")
+    List<Object[]> getHostRevenueByDateRange(@Param("hostId") Long hostId,
+                                              @Param("startDate") LocalDate startDate,
+                                              @Param("endDate") LocalDate endDate);
+
+    // --- Chủ Homestay doanh thu theo CATEGORY (Homestay) ---
+    @Query("SELECT h.id, h.name, " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i JOIN i.booking b " +
+           "JOIN Homestay h ON b.hotelId = h.id " +
+           "WHERE h.owner.id = :hostId " +
+           "AND YEAR(i.issueDate) = :year AND MONTH(i.issueDate) = :month " +
+           "GROUP BY h.id, h.name")
+    List<Object[]> getHostRevenueByCategoryInMonth(@Param("hostId") Long hostId,
+                                                    @Param("year") int year,
+                                                    @Param("month") int month);
+
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 
     Optional<Invoice> findByBooking_Id(Long bookingId);
