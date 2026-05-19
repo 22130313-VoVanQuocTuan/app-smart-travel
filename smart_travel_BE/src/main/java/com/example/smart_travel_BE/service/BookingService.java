@@ -1,12 +1,18 @@
 package com.example.smart_travel_BE.service;
 
 import com.example.smart_travel_BE.dto.booking.request.BookingRequest;
+import com.example.smart_travel_BE.dto.booking.request.CancelBookingRequest;
 import com.example.smart_travel_BE.dto.booking.response.BookingResponse;
+import com.example.smart_travel_BE.dto.booking.response.CancellationPolicyResponse;
+import com.example.smart_travel_BE.dto.booking.response.HostBookingListResponse;
+import com.example.smart_travel_BE.dto.booking.response.UserBookingResponse;
 import com.example.smart_travel_BE.entity.*;
 import com.example.smart_travel_BE.exception.AppException;
 import com.example.smart_travel_BE.exception.ErrorCode;
 import com.example.smart_travel_BE.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +33,9 @@ public class BookingService {
     private final VoucherRepository voucherRepository;
     private final RoomTypeRepository roomTypeRepository;
     private final UserVoucherRepository userVoucherRepository;
-    private final BookingTourRepository bookingTourRepository; // Thêm mới
+    private final BookingTourRepository bookingTourRepository;
+    private final UserRepository userRepository;
+    private final SystemConfigRepository systemConfigRepository;
 
     @Transactional
     public BookingResponse createBooking(BookingRequest request, User currentUser) {
@@ -37,7 +45,7 @@ public class BookingService {
             throw new AppException(ErrorCode.REQUIRED_FIELD_MISSING);
         }
 
-        if (!"HOTEL".equalsIgnoreCase(request.getBookingType())) {
+        if (!"HOMESTAY".equalsIgnoreCase(request.getBookingType())) {
             throw new AppException(ErrorCode.INVALID_BOOKING_TYPE);
         }
 
@@ -87,7 +95,7 @@ public class BookingService {
         // 5. Tạo Booking
         Booking booking = new Booking();
         booking.setUser(currentUser);
-        booking.setBookingType("HOTEL");
+        booking.setBookingType("HOMESTAY");
         booking.setHotelId(homestay.getId());
         booking.setTourId(null);
         booking.setStartDate(request.getStartDate());
@@ -301,6 +309,520 @@ public class BookingService {
                 .couponCode(savedBooking.getCouponCode())
                 .finalPrice(savedBooking.getFinalPrice())
                 .status(savedBooking.getStatus())
+                .message(message)
+                .build();
+    }
+
+    // ==================== HOST BOOKING MANAGEMENT ====================
+
+    /**
+     * Lấy danh sách booking của host
+     */
+    public List<HostBookingListResponse> getHostBookings(Long userId) {
+        // Verify user is a HOST
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        
+        // Get all homestays owned by this host
+        List<Homestay> homestays = homestayRepository.findByOwnerIdAndIsActiveTrue(userId);
+        
+        if (homestays.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Booking> bookings = new ArrayList<>();
+        for (Homestay homestay : homestays) {
+            bookings.addAll(bookingRepository.findByHotelIdOrderByStartDateDesc(homestay.getId()));
+        }
+        
+        return bookings.stream()
+                .map(this::convertToHostBookingListResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Lấy booking detail với full information
+     */
+    public BookingResponse getHostBookingDetail(Long bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+        
+        // Verify authorization - host must own this homestay
+        Homestay homestay = homestayRepository.findById(booking.getHotelId())
+                .orElseThrow(() -> new AppException(ErrorCode.HOMESTAY_NOT_FOUND));
+        
+        if (!homestay.getOwner().getId().equals(userId)) {
+            throw new AppException(ErrorCode.NOT_OWNER);
+        }
+        
+        // Build response
+        return buildBookingResponse(booking);
+    }
+    
+    /**
+     * Get bookings by date range and status for calendar view
+     */
+    public List<HostBookingListResponse> getHostBookingsByDateRange(Long userId, LocalDate startDate, LocalDate endDate, String status) {
+        // Get all homestays
+        List<Homestay> homestays = homestayRepository.findByOwnerIdAndIsActiveTrue(userId);
+        
+        if (homestays.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Booking> bookings = new ArrayList<>();
+        for (Homestay homestay : homestays) {
+            List<Booking> homestayBookings;
+            
+            if (status != null && !status.isEmpty()) {
+                homestayBookings = bookingRepository.findByHotelIdAndStatus(homestay.getId(), status);
+            } else {
+                homestayBookings = bookingRepository.findByHotelIdAndDateRange(
+                    homestay.getId(), startDate, endDate
+                );
+            }
+            
+            // Filter by date range
+            bookings.addAll(homestayBookings.stream()
+                    .filter(b -> !b.getStartDate().isBefore(startDate) && !b.getEndDate().isAfter(endDate))
+                    .collect(Collectors.toList()));
+        }
+        
+        return bookings.stream()
+                .map(this::convertToHostBookingListResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Update booking status
+     */
+    @Transactional
+    public void updateBookingStatus(Long bookingId, String newStatus, Long userId, String cancellationReason) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+        
+        // Verify authorization
+        Homestay homestay = homestayRepository.findById(booking.getHotelId())
+                .orElseThrow(() -> new AppException(ErrorCode.HOMESTAY_NOT_FOUND));
+        
+        if (!homestay.getOwner().getId().equals(userId)) {
+            throw new AppException(ErrorCode.NOT_OWNER);
+        }
+        
+        // Validate status transition
+        if (!isValidStatusTransition(booking.getStatus(), newStatus)) {
+            throw new AppException(ErrorCode.INVALID_BOOKING_STATUS);
+        }
+        
+        // Update status
+        booking.setStatus(newStatus);
+        
+        if ("CANCELLED".equals(newStatus)) {
+            booking.setCancellationReason(cancellationReason);
+            
+            // Restore available rooms
+            if (booking.getRoomType() != null) {
+                RoomType roomType = booking.getRoomType();
+                roomType.setAvailableRooms(roomType.getAvailableRooms() + booking.getNumberOfRooms());
+                roomTypeRepository.save(roomType);
+            }
+            
+            homestay.setAvailableRooms(homestay.getAvailableRooms() + booking.getNumberOfRooms());
+            homestayRepository.save(homestay);
+        }
+        
+        booking.setUpdatedAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+    }
+    
+    /**
+     * Check if status transition is valid
+     */
+    private boolean isValidStatusTransition(String currentStatus, String newStatus) {
+        // Valid transitions:
+        // PENDING -> CONFIRMED, CANCELLED
+        // CONFIRMED -> CHECKED_IN, CANCELLED
+        // CHECKED_IN -> CHECKED_OUT, CANCELLED
+        // CHECKED_OUT -> COMPLETED, CANCELLED
+        // COMPLETED -> (no change)
+        // CANCELLED -> (no change)
+        
+        if (currentStatus.equals(newStatus)) {
+            return false; // No need to update if same status
+        }
+        
+        if (currentStatus.equals("COMPLETED") || currentStatus.equals("CANCELLED")) {
+            return false; // Can't change completed or cancelled bookings
+        }
+        
+        if ("CONFIRMED".equals(newStatus) && "PENDING".equals(currentStatus)) return true;
+        if ("CHECKED_IN".equals(newStatus) && "CONFIRMED".equals(currentStatus)) return true;
+        if ("CHECKED_OUT".equals(newStatus) && "CHECKED_IN".equals(currentStatus)) return true;
+        if ("COMPLETED".equals(newStatus) && "CHECKED_OUT".equals(currentStatus)) return true;
+        if ("CANCELLED".equals(newStatus)) return true;
+        
+        return false;
+    }
+    
+    /**
+     * Convert Booking to HostBookingListResponse
+     */
+    private HostBookingListResponse convertToHostBookingListResponse(Booking booking) {
+        return HostBookingListResponse.builder()
+                .id(booking.getId())
+                .bookingType(booking.getBookingType())
+                .hotelId(booking.getHotelId())
+                .hotelName(booking.getHotelId() != null ? getHomestayName(booking.getHotelId()) : "")
+                .guestName(booking.getUser() != null ? booking.getUser().getFullName() : "")
+                .guestPhone(booking.getUser() != null ? booking.getUser().getPhone() : "")
+                .roomTypeName(booking.getRoomType() != null ? booking.getRoomType().getName() : "")
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
+                .numberOfRooms(booking.getNumberOfRooms())
+                .numberOfPeople(booking.getNumberOfPeople())
+                .totalPrice(booking.getTotalPrice())
+                .finalPrice(booking.getFinalPrice())
+                .status(booking.getStatus())
+                .createdAt(booking.getCreatedAt())
+                .updatedAt(booking.getUpdatedAt())
+                .build();
+    }
+    
+    /**
+     * Helper to get homestay name
+     */
+    private String getHomestayName(Long homestayId) {
+        return homestayRepository.findById(homestayId)
+                .map(Homestay::getName)
+                .orElse("");
+    }
+    
+    /**
+     * Build full BookingResponse
+     */
+    private BookingResponse buildBookingResponse(Booking booking) {
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(
+            booking.getStartDate(), booking.getEndDate()
+        );
+        
+        RoomType roomType = booking.getRoomType();
+        BigDecimal hotelPrice = roomType != null ? 
+            roomType.getPrice()
+                .multiply(BigDecimal.valueOf(booking.getNumberOfRooms()))
+                .multiply(BigDecimal.valueOf(nights)) :
+            BigDecimal.ZERO;
+        
+        List<BookingResponse.TourBookingInfo> tourInfos = new ArrayList<>();
+        BigDecimal totalTourPrice = BigDecimal.ZERO;
+        
+        if (booking.getBookingTours() != null && !booking.getBookingTours().isEmpty()) {
+            for (BookingTour bt : booking.getBookingTours()) {
+                tourInfos.add(BookingResponse.TourBookingInfo.builder()
+                        .tourId(bt.getTour().getId())
+                        .tourName(bt.getTour().getName())
+                        .tourDate(bt.getTourDate())
+                        .numberOfPeople(bt.getNumberOfPeople())
+                        .unitPrice(bt.getUnitPrice())
+                        .totalPrice(bt.getTotalPrice())
+                        .status(bt.getStatus())
+                        .build());
+                totalTourPrice = totalTourPrice.add(bt.getTotalPrice());
+            }
+        }
+        
+        Homestay homestay = homestayRepository.findById(booking.getHotelId()).orElse(null);
+        
+        return BookingResponse.builder()
+                .id(booking.getId())
+                .bookingType(booking.getBookingType())
+                .hotelId(booking.getHotelId())
+                .hotelName(homestay != null ? homestay.getName() : "")
+                .roomTypeId(roomType != null ? roomType.getId() : null)
+                .roomTypeName(roomType != null ? roomType.getName() : "")
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
+                .nights(nights)
+                .numberOfPeople(booking.getNumberOfPeople())
+                .numberOfRooms(booking.getNumberOfRooms())
+                .tours(tourInfos)
+                .hotelPrice(hotelPrice)
+                .totalTourPrice(totalTourPrice)
+                .totalPrice(booking.getTotalPrice())
+                .discountAmount(booking.getDiscountAmount())
+                .couponCode(booking.getCouponCode())
+                .finalPrice(booking.getFinalPrice())
+                .status(booking.getStatus())
+                .cancellationReason(booking.getCancellationReason())
+                .build();
+    }
+
+
+    // ==================== USER BOOKING MANAGEMENT ====================
+
+    /**
+     * Lấy tất cả booking của user hiện tại
+     */
+    public List<UserBookingResponse> getUserBookings(User currentUser) {
+        List<Booking> bookings = bookingRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
+
+        return bookings.stream()
+                .map(this::convertToUserBookingResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy booking hiện tại (đang diễn ra hoặc sắp diễn ra)
+     */
+    public List<UserBookingResponse> getCurrentBookings(User currentUser) {
+        LocalDate today = LocalDate.now();
+
+        List<Booking> bookings = bookingRepository.findByUserIdAndEndDateGreaterThanEqualAndStatusNot(
+                currentUser.getId(),
+                today,
+                "CANCELLED"
+        );
+
+        return bookings.stream()
+                .filter(b -> !"COMPLETED".equals(b.getStatus()))
+                .map(this::convertToUserBookingResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy lịch sử booking (đã kết thúc)
+     */
+    public List<UserBookingResponse> getBookingHistory(User currentUser) {
+        LocalDate today = LocalDate.now();
+
+        List<Booking> bookings = bookingRepository.findByUserIdAndStatusInOrderByCreatedAtDesc(
+                currentUser.getId(),
+                List.of("COMPLETED", "CANCELLED")
+        );
+
+        return bookings.stream()
+                .map(this::convertToUserBookingResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy chi tiết booking cho user
+     */
+    public UserBookingResponse getUserBookingDetail(Long bookingId, User currentUser) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        // Verify ownership
+        if (!booking.getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        return convertToUserBookingResponse(booking);
+    }
+
+    /**
+     * Hủy booking bởi user
+     */
+    @Transactional
+    public void cancelUserBooking(Long bookingId, CancelBookingRequest request, User currentUser) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        // Verify ownership
+        if (!booking.getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // Check if can cancel
+        if (!canUserCancel(booking)) {
+            throw new AppException(ErrorCode.BOOKING_CANNOT_CANCEL);
+        }
+
+        // Update booking
+        booking.setStatus("CANCELLED");
+        booking.setCancellationReason(request.getReason() != null ? request.getReason() : "Khách hàng yêu cầu hủy");
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        // Restore available rooms
+        if (booking.getRoomType() != null) {
+            RoomType roomType = booking.getRoomType();
+            roomType.setAvailableRooms(roomType.getAvailableRooms() + booking.getNumberOfRooms());
+            roomTypeRepository.save(roomType);
+        }
+
+        Homestay homestay = homestayRepository.findById(booking.getHotelId()).orElse(null);
+        if (homestay != null) {
+            homestay.setAvailableRooms(homestay.getAvailableRooms() + booking.getNumberOfRooms());
+            homestayRepository.save(homestay);
+        }
+
+        bookingRepository.save(booking);
+    }
+
+    /**
+     * Tìm booking bằng QR code (booking ID)
+     */
+    public UserBookingResponse findBookingByQR(String qrData, User currentUser) {
+        try {
+            Long bookingId = Long.parseLong(qrData);
+            Booking booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+            // User can only view their own bookings
+            if (!booking.getUser().getId().equals(currentUser.getId())) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+
+            return convertToUserBookingResponse(booking);
+        } catch (NumberFormatException e) {
+            throw new AppException(ErrorCode.INVALID_QR_CODE);
+        }
+    }
+
+    /**
+     * Check if user can cancel booking
+     */
+    private boolean canUserCancel(Booking booking) {
+        String status = booking.getStatus();
+
+        // Can only cancel PENDING or CONFIRMED bookings
+        if (!"PENDING".equals(status) && !"CONFIRMED".equals(status)) {
+            return false;
+        }
+
+        // Cannot cancel if start date is in the past
+        if (booking.getStartDate().isBefore(LocalDate.now())) {
+            return false;
+        }
+
+        // Lấy cấu hình từ SystemConfig
+        SystemConfig config = systemConfigRepository.findFirstConfig()
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+
+        // Lấy số giờ được phép hủy (mặc định 24 nếu null)
+        Integer cancelBeforeHours = config.getCancelBeforeHours();
+        if (cancelBeforeHours == null) {
+            cancelBeforeHours = 24; // Giá trị mặc định
+        }
+
+        // Tính thời hạn hủy: Ví dụ check-in lúc 00:00 ngày startDate, trừ đi số giờ cho phép
+        LocalDateTime cancellationDeadline = booking.getStartDate()
+                .atStartOfDay()
+                .minusHours(cancelBeforeHours);
+
+        // Kiểm tra xem có còn trong thời hạn hủy không (không throw exception ở đây, chỉ return false)
+        if (LocalDateTime.now().isAfter(cancellationDeadline)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Convert Booking to UserBookingResponse
+     */
+    private UserBookingResponse convertToUserBookingResponse(Booking booking) {
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(
+                booking.getStartDate(), booking.getEndDate()
+        );
+
+        Homestay homestay = homestayRepository.findById(booking.getHotelId()).orElse(null);
+
+        return UserBookingResponse.builder()
+                .id(booking.getId())
+                .bookingType(booking.getBookingType())
+                .hotelId(booking.getHotelId())
+                .hotelName(homestay != null ? homestay.getName() : "")
+                .roomTypeName(booking.getRoomType() != null ? booking.getRoomType().getName() : "")
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
+                .nights(nights)
+                .numberOfPeople(booking.getNumberOfPeople())
+                .numberOfRooms(booking.getNumberOfRooms())
+                .totalPrice(booking.getTotalPrice())
+                .discountAmount(booking.getDiscountAmount())
+                .finalPrice(booking.getFinalPrice())
+                .status(booking.getStatus())
+                .cancellationReason(booking.getCancellationReason())
+                .hotelAddress(homestay != null ? homestay.getAddress() : "")
+                .hotelPhone(homestay != null ? homestay.getPhone() : "")
+                .qrCode(String.valueOf(booking.getId())) // QR code = booking ID
+                .createdAt(booking.getCreatedAt())
+                .checkInTime(booking.getCreatedAt())
+                .checkOutTime(booking.getUpdatedAt())
+                .build();
+    }
+    /**
+     * Lấy thông tin chính sách hủy cho booking
+     */
+    public CancellationPolicyResponse getCancellationPolicy(Long bookingId, User currentUser) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        // Verify ownership
+        if (!booking.getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // Lấy cấu hình hệ thống
+        SystemConfig config = systemConfigRepository.findFirstConfig()
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+
+        Integer cancelBeforeHours = config.getCancelBeforeHours() != null ? config.getCancelBeforeHours() : 24;
+        BigDecimal cancellationFeePercent = config.getCancellationFeePercent() != null ? config.getCancellationFeePercent() : BigDecimal.ZERO;
+
+        // Kiểm tra xem có thể hủy không
+        boolean canCancel = canUserCancel(booking);
+
+        // Tính thời hạn hủy
+        LocalDateTime cancellationDeadline = booking.getStartDate()
+                .atStartOfDay()
+                .minusHours(cancelBeforeHours);
+
+        String cancelDeadlineText = cancellationDeadline.format(
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+        );
+
+        // Tính phí hủy ước tính
+        BigDecimal estimatedFee = BigDecimal.ZERO;
+        String message;
+
+        if (!canCancel) {
+            message = "Không thể hủy booking này. ";
+
+            // Kiểm tra lý do không thể hủy
+            if (!"PENDING".equals(booking.getStatus()) && !"CONFIRMED".equals(booking.getStatus())) {
+                message += "Booking đã ở trạng thái không thể hủy (" + booking.getStatus() + ").";
+            } else if (booking.getStartDate().isBefore(LocalDate.now())) {
+                message += "Ngày nhận phòng đã qua.";
+            } else if (LocalDateTime.now().isAfter(cancellationDeadline)) {
+                message += "Đã quá thời hạn hủy (" + cancelBeforeHours + " giờ trước khi nhận phòng).";
+            } else {
+                message += "Booking không đủ điều kiện hủy.";
+            }
+        } else {
+            // Tính phí hủy
+            if (cancellationFeePercent.compareTo(BigDecimal.ZERO) > 0) {
+                estimatedFee = booking.getFinalPrice()
+                        .multiply(cancellationFeePercent)
+                        .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+                message = String.format(
+                        "Bạn có thể hủy booking. Phí hủy là %.0f%% (khoảng %,.0f₫). Hãy hủy trước %s để tránh mất phí.",
+                        cancellationFeePercent, estimatedFee, cancelDeadlineText
+                );
+            } else {
+                message = String.format(
+                        "Bạn có thể hủy booking miễn phí. Hãy hủy trước %s.",
+                        cancelDeadlineText
+                );
+            }
+        }
+
+        return CancellationPolicyResponse.builder()
+                .canCancel(canCancel)
+                .cancelBeforeHours(cancelBeforeHours)
+                .cancelDeadline(cancelDeadlineText)
+                .cancellationFeePercent(cancellationFeePercent)
+                .estimatedCancellationFee(estimatedFee)
                 .message(message)
                 .build();
     }

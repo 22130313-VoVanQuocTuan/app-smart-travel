@@ -1,6 +1,6 @@
 class BookingRequestModel {
-  final String bookingType; //  | "HOTEL"
-  final int? homestayId;       // Có thể null
+  final String bookingType; // "HOMESTAY"
+  final int? homestayId;    // Backend dùng 'homestayId'
   final String startDate;   // String dạng yyyy-MM-dd
   final String? endDate;    // String dạng yyyy-MM-dd
   final int numberOfPeople;
@@ -25,7 +25,7 @@ class BookingRequestModel {
   Map<String, dynamic> toJson() {
     return {
       "bookingType": bookingType,
-      "homestayId": homestayId,
+      "homestayId": homestayId,  // Backend expects 'homestayId'
       "startDate": startDate,
       "endDate": endDate,
       "numberOfPeople": numberOfPeople,
