@@ -14,11 +14,13 @@ import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_management_bloc.dart';
+import 'package:smart_travel/presentation/blocs/host_booking/host_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
 import 'package:smart_travel/presentation/blocs/province/provicne_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/province/province_bloc.dart';
+import 'package:smart_travel/presentation/blocs/user_booking/user_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/weather/weather_bloc.dart';
 import 'package:smart_travel/router/app_router.dart';
 import 'package:smart_travel/router/route_names.dart';
@@ -87,7 +89,9 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<HomestayManagementBloc>()),
         BlocProvider(create: (_) => di.sl<TourBloc>()),
           BlocProvider(create: (_) => di.sl<AdminUserBloc>()),
-          BlocProvider(create: (_) => di.sl<BannerBloc>()),
+          BlocProvider(create: (_) => di.sl<HostBookingBloc>()),
+          BlocProvider(create: (_) => di.sl<UserBookingBloc>()),
+
 
         ],
 

@@ -131,7 +131,7 @@ public enum ErrorCode {
     // Booking errors
     BOOKING_DATE_INVALID(1041, "Ngày đặt không hợp lệ", HttpStatus.BAD_REQUEST),
     REFUND_ALREADY_REQUESTED(1042, "Yêu cầu hoàn tiền đã được gửi trước đó", HttpStatus.BAD_REQUEST),
-    BOOKING_CANNOT_CANCEL(1043, "Không thể hủy booking ở trạng thái hiện tại", HttpStatus.BAD_REQUEST),
+    BOOKING_CANNOT_CANCEL(1043, "Không thể hủy booking ở thời điểm hiện tại!", HttpStatus.BAD_REQUEST),
 
     // Homestay errors
     HOMESTAY_NOT_FOUND(1050, "Không tìm thấy homestay", HttpStatus.NOT_FOUND),
@@ -167,6 +167,13 @@ public enum ErrorCode {
     ROOM_TYPE_REQUIRED(1003, "Khách sạn phải có ít nhất một loại phòng", HttpStatus.BAD_REQUEST),
     NOT_OWNER(1005, "Bạn không có quyền thực hiện thao tác này", HttpStatus.FORBIDDEN),
     HOMESTAY_ALREADY_DELETED(1006, "Khách sạn này đã bị xóa", HttpStatus.BAD_REQUEST),
+    NOT_FOUND(1002, "Không tìm thấy tài nguyên", HttpStatus.NOT_FOUND),
+    INVALID_DATE_RANGE(1004, "Ngày kết thúc phải sau ngày bắt đầu", HttpStatus.BAD_REQUEST),
+    INVALID_NUMBER_OF_PEOPLE(1007, "Số lượng người phải lớn hơn 0", HttpStatus.BAD_REQUEST),
+    NOT_ENOUGH_ROOMS(1009, "Không đủ phòng trống cho yêu cầu này", HttpStatus.BAD_REQUEST),
+    PAYMENT_NOT_COMPLETED(1010, "Thanh toán chưa hoàn tất", HttpStatus.BAD_REQUEST),
+    INVALID_BOOKING_STATUS(1011, "Trạng thái booking không hợp lệ cho thao tác này", HttpStatus.BAD_REQUEST),
+    INVALID_QR_CODE(1012, "Mã QR không hợp lệ", HttpStatus.BAD_REQUEST),
     ;
 
 
