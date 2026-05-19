@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_travel/presentation/blocs/admin_user/admin_user_bloc.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
 import 'package:smart_travel/presentation/blocs/banner/banner_bloc.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_bloc.dart';
@@ -85,7 +86,10 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<WeatherBloc>()),
         BlocProvider(create: (_) => di.sl<HomestayManagementBloc>()),
         BlocProvider(create: (_) => di.sl<TourBloc>()),
-      ],
+          BlocProvider(create: (_) => di.sl<AdminUserBloc>()),
+          BlocProvider(create: (_) => di.sl<BannerBloc>()),
+
+        ],
 
 
       child: BlocListener<ProfileBloc, ProfileState>(

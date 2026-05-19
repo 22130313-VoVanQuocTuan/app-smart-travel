@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
+import 'package:smart_travel/presentation/screens/admin/banner/banner_management_screen.dart';
+import 'package:smart_travel/presentation/screens/admin/destination/destination_management_screen.dart';
+import 'package:smart_travel/presentation/screens/admin/province/province_mgt.dart';
+import 'package:smart_travel/presentation/screens/admin/user/user_mgt.dart';
 import 'package:smart_travel/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/login_screen.dart';
 import 'package:smart_travel/presentation/screens/auth/register_screen.dart';
@@ -41,6 +45,14 @@ class AppRouter {
       //Admin
       case RouteNames.dashboard:
         return MaterialPageRoute(builder: (_) => const AdminDashboardScreen());
+      case RouteNames.adminDestination:
+        return MaterialPageRoute(builder: (_) => const DestinationManagementScreen ());
+      case RouteNames.adminProvinces:
+        return MaterialPageRoute(builder: (_) => const ProvinceManagementScreen ());
+      case RouteNames.adminUsers:
+        return MaterialPageRoute(builder: (_) => const UserManagementScreen ());
+      case RouteNames.adminBanner:
+        return MaterialPageRoute(builder: (_) => const BannerManagementScreen ());
 
       case RouteNames.adminInvoices:
         return MaterialPageRoute(

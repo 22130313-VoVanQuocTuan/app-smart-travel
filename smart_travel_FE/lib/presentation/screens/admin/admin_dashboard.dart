@@ -35,12 +35,6 @@ class AdminDashboardScreen extends StatelessWidget {
       'color': Colors.indigo,
     },
     {
-      'id': 'admin/tours',
-      'icon': Icons.tour,
-      'label': 'Tour',
-      'color': Colors.teal,
-    },
-    {
       'route': RouteNames.adminInvoices,
       'icon': Icons.receipt_long,
       'label': 'Quản lý đơn hàng',
