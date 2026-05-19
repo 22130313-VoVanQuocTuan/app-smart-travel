@@ -88,6 +88,38 @@ public class StatisticsService {
     }
 
     /**
+     * Thống kê tổng quan cho Host Dashboard
+     */
+    public DashboardStatsResponse getHostDashboardStats(Long hostId) {
+        LocalDate today = LocalDate.now();
+
+        // Đếm số lượng homestay của host
+        int totalHotels = homestayRepository.findByOwnerIdAndIsActiveTrue(hostId).size();
+
+        // Tính doanh thu và hóa đơn hôm nay
+        List<Object[]> todayData = invoiceRepository.getHostRevenueByDateRange(hostId, today, today);
+        BigDecimal todayRevenue = todayData.stream()
+                .map(row -> (BigDecimal) row[1])
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        int todayInvoices = todayData.stream()
+                .mapToInt(row -> ((Number) row[2]).intValue())
+                .sum();
+
+        // Tổng doanh thu của host
+        List<Object[]> totalData = invoiceRepository.getHostRevenueByDateRange(hostId, LocalDate.of(2000, 1, 1), today.plusDays(1));
+        BigDecimal totalRevenue = totalData.stream()
+                .map(row -> (BigDecimal) row[1])
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return DashboardStatsResponse.builder()
+                .totalHotels(totalHotels)
+                .todayInvoices(todayInvoices)
+                .todayRevenue(todayRevenue)
+                .totalRevenue(totalRevenue)
+                .build();
+    }
+
+    /**
      * Doanh thu hệ thống theo ngày/tháng/năm
      */
     public RevenueResponse getSystemRevenue(String type, int year, int month) {

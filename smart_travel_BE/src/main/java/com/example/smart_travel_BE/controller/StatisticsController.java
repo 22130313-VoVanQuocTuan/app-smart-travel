@@ -45,6 +45,29 @@ public class StatisticsController {
     }
 
     /**
+     * Thống kê tổng quan cho Host Dashboard
+     */
+    @GetMapping("/host-dashboard")
+    public ResponseEntity<APIResponse<DashboardStatsResponse>> getHostDashboardStats(@RequestParam Long hostId) {
+        try {
+            DashboardStatsResponse stats = statisticsService.getHostDashboardStats(hostId);
+            return ResponseEntity.ok(
+                    APIResponse.<DashboardStatsResponse>builder()
+                            .msg("Lấy thống kê host dashboard thành công")
+                            .data(stats)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Error getting host dashboard stats", e);
+            return ResponseEntity.internalServerError().body(
+                    APIResponse.<DashboardStatsResponse>builder()
+                            .msg("Lỗi khi lấy thống kê host: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    /**
      * Doanh thu hệ thống theo ngày/tháng/năm
      */
     @GetMapping("/revenue")

@@ -13,6 +13,16 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
   StatisticsRepositoryImpl({required this.remoteDataSource});
 
   @override
+  Future<Either<Failure, DashboardStats>> getHostDashboardStats(int hostId) async {
+    try {
+      final stats = await remoteDataSource.getHostDashboardStats(hostId);
+      return Right(stats);
+    } catch (e) {
+      return Left(ServerFailure(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  @override
   Future<Either<Failure, DashboardStats>> getDashboardStats() async {
     try {
       final stats = await remoteDataSource.getDashboardStats();
