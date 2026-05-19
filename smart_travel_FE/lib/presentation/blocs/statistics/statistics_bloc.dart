@@ -8,6 +8,7 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
 
   StatisticsBloc({required this.repository}) : super(StatisticsInitial()) {
     on<LoadDashboardStats>(_onLoadDashboardStats);
+    on<LoadHostDashboardStats>(_onLoadHostDashboardStats);
     on<LoadSystemRevenue>(_onLoadSystemRevenue);
     on<LoadHostRevenue>(_onLoadHostRevenue);
     on<LoadHostRevenueByRange>(_onLoadHostRevenueByRange);
@@ -20,6 +21,18 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
   ) async {
     emit(StatisticsLoading());
     final result = await repository.getDashboardStats();
+    result.fold(
+      (failure) => emit(StatisticsError(failure.message)),
+      (stats) => emit(StatisticsLoaded(stats)),
+    );
+  }
+
+  Future<void> _onLoadHostDashboardStats(
+    LoadHostDashboardStats event,
+    Emitter<StatisticsState> emit,
+  ) async {
+    emit(StatisticsLoading());
+    final result = await repository.getHostDashboardStats(event.hostId);
     result.fold(
       (failure) => emit(StatisticsError(failure.message)),
       (stats) => emit(StatisticsLoaded(stats)),

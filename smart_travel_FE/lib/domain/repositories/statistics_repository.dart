@@ -6,6 +6,7 @@ import 'package:smart_travel/data/models/statistics/category_revenue_data.dart';
 
 abstract class StatisticsRepository {
   Future<Either<Failure, DashboardStats>> getDashboardStats();
+  Future<Either<Failure, DashboardStats>> getHostDashboardStats(int hostId);
   Future<Either<Failure, RevenueData>> getSystemRevenue(String type, int year, int month);
   Future<Either<Failure, RevenueData>> getHostRevenue(int hostId, String type, int year, int month);
   Future<Either<Failure, RevenueData>> getHostRevenueByRange(int hostId, String startDate, String endDate);

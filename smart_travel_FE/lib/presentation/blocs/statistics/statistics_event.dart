@@ -11,6 +11,13 @@ class LoadDashboardStats extends StatisticsEvent {
   const LoadDashboardStats();
 }
 
+class LoadHostDashboardStats extends StatisticsEvent {
+  final int hostId;
+  const LoadHostDashboardStats(this.hostId);
+  @override
+  List<Object> get props => [hostId];
+}
+
 class LoadSystemRevenue extends StatisticsEvent {
   final String type;
   final int year;
