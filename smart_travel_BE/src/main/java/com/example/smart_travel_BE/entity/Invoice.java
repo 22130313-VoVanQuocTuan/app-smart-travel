@@ -43,6 +43,22 @@ public class Invoice {
     @Column(name = "is_reviewed", nullable = false)
     private boolean isReviewed = false;
 
+    @Column(name = "commission_percentage", precision = 5, scale = 2)
+    private BigDecimal commissionPercentage; // Tỷ lệ hoa hồng (vd: 10.00 = 10%)
+
+    @Column(name = "commission_amount", precision = 12, scale = 2)
+    private BigDecimal commissionAmount; // Số tiền hoa hồng
+
+    @Column(name = "homestay_amount", precision = 12, scale = 2)
+    private BigDecimal homestayAmount; // Số tiền Homestay nhận được (total - commission)
+
+    @Column(name = "commission_status")
+    @Enumerated(EnumType.STRING)
+    private CommissionStatus commissionStatus; // Trạng thái thanh toán hoa hồng
+
+    @Column(name = "commission_paid_at")
+    private LocalDateTime commissionPaidAt; // Thời gian thanh toán hoa hồng
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
