@@ -61,6 +61,10 @@
 
     //Admin Statistics
     static const String adminStatistics = '/admin/statistics/dashboard';
+    static const String adminRevenue = '/admin/statistics/revenue';
+    static const String hostRevenue = '/admin/statistics/host-revenue';
+    static const String hostRevenueByRange = '/admin/statistics/host-revenue-by-range';
+    static const String hostRevenueByCategory = '/admin/statistics/host-revenue-by-category';
 
     // Admin Host Approval
     static const String adminHostApprovalPending = '/admin/host-approval/pending';

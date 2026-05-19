@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:smart_travel/data/models/statistics/dashboard_stats.dart';
 import 'package:smart_travel/presentation/screens/admin/statistic/statistics_detail_screen.dart';
 
@@ -10,6 +11,8 @@ class StatisticsOverviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -60,6 +63,28 @@ class StatisticsOverviewWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+            // Revenue highlight row
+            Row(
+              children: [
+                Expanded(
+                  child: _buildMiniStat(
+                    'Doanh Thu Hôm Nay',
+                    currencyFormat.format(stats.todayRevenue),
+                    Icons.trending_up_rounded,
+                    isText: true,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildMiniStat(
+                    'Hóa Đơn Hôm Nay',
+                    stats.todayInvoices.toString(),
+                    Icons.receipt_long_rounded,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -92,20 +117,11 @@ class StatisticsOverviewWidget extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildMiniStat(
-                    'Khách Sạn',
+                    'Homestay',
                     stats.totalHotels,
                     Icons.hotel,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMiniStat('Tour', stats.totalTours, Icons.tour),
-                ),
-                Expanded(child: Container()), // Empty space for alignment
               ],
             ),
             const SizedBox(height: 12),
@@ -123,7 +139,7 @@ class StatisticsOverviewWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMiniStat(String label, int value, IconData icon) {
+  Widget _buildMiniStat(String label, dynamic value, IconData icon, {bool isText = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -144,12 +160,16 @@ class StatisticsOverviewWidget extends StatelessWidget {
                   style: const TextStyle(color: Colors.white70, fontSize: 10),
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text(
-                  value.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

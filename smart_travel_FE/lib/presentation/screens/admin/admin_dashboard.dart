@@ -17,6 +17,12 @@ class AdminDashboardScreen extends StatelessWidget {
   // Danh sách menu
   final List<Map<String, dynamic>> menuItems = const [
     {
+      'route': '/admin/statistics',
+      'icon': Icons.analytics_rounded,
+      'label': 'Thống Kê',
+      'color': Color(0xFF1A73E8),
+    },
+    {
       'id': 'admin/provinces',
       'icon': Icons.edit_location_alt,
       'label': 'Tỉnh Thành',
