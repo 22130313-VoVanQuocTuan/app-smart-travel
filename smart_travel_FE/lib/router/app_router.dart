@@ -14,6 +14,8 @@ import 'package:smart_travel/presentation/screens/explore/explore_screen.dart';
 import 'package:smart_travel/presentation/screens/home/home_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/detail_homestay_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.dart';
+import 'package:smart_travel/presentation/screens/host/booking/host_booking_detail_screen.dart';
+import 'package:smart_travel/presentation/screens/host/booking/host_booking_list_screen.dart';
 import 'package:smart_travel/presentation/screens/host/homestay/hotel_management_screen.dart';
 import 'package:smart_travel/presentation/screens/host/tour/tour_management_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
@@ -25,6 +27,7 @@ import 'package:smart_travel/presentation/screens/profile/account_management_scr
 import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart';
 import 'package:smart_travel/presentation/screens/tour/tour_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
+import 'package:smart_travel/presentation/screens/user/user_booking_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
 import '../presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
@@ -138,7 +141,7 @@ class AppRouter {
       case RouteNames.userLevel:
         return MaterialPageRoute(builder: (_) => const UserLevelScreen());
       case RouteNames.myInvoices:
-        return MaterialPageRoute(builder: (_) => const MyInvoicesScreen(),);
+        return MaterialPageRoute(builder: (_) => const UserBookingScreen());
 
 
         // HOST routes
@@ -160,11 +163,15 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const HostPendingApprovalScreen());
 
       case RouteNames.hostBookings:
+        return MaterialPageRoute(builder: (_) => const HostBookingListScreen());
+      case RouteNames.hostBookingDetail:
+        final bookingId = settings.arguments as int? ?? 0;
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Quản Lý Lịch Đặt - Tính Năng Sắp Có')),
-          ),
+          builder: (_) => HostBookingDetailScreen(bookingId: bookingId),
+          settings: settings,
         );
+
+
       case RouteNames.hostReviews:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

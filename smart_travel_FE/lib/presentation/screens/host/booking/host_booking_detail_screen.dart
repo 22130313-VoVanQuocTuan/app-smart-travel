@@ -8,23 +8,24 @@ import 'package:smart_travel/presentation/blocs/host_booking/host_booking_event.
 import 'package:smart_travel/presentation/blocs/host_booking/host_booking_state.dart';
 
 class HostBookingDetailScreen extends StatefulWidget {
-  const HostBookingDetailScreen({Key? key}) : super(key: key);
+  final int bookingId;
+
+  const HostBookingDetailScreen({
+    Key? key,
+    required this.bookingId,
+  }) : super(key: key);
 
   @override
   State<HostBookingDetailScreen> createState() => _HostBookingDetailScreenState();
 }
 
 class _HostBookingDetailScreenState extends State<HostBookingDetailScreen> {
-  late int bookingId;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final arguments = ModalRoute.of(context)?.settings.arguments;
-    if (arguments != null) {
-      bookingId = arguments as int;
-      context.read<HostBookingBloc>().add(LoadBookingDetailEvent(bookingId));
-    }
+  void initState() {
+    super.initState();
+    // ⭐ Dùng widget.bookingId thay vì arguments
+    context.read<HostBookingBloc>().add(LoadBookingDetailEvent(widget.bookingId));
   }
 
   void _showStatusUpdateDialog(String currentStatus) {
@@ -86,7 +87,7 @@ class _HostBookingDetailScreenState extends State<HostBookingDetailScreen> {
               Navigator.pop(context);
               context.read<HostBookingBloc>().add(
                 UpdateBookingStatusEvent(
-                  bookingId: bookingId,
+                  bookingId: widget.bookingId,
                   status: newStatus,
                 ),
               );
@@ -143,7 +144,8 @@ class _HostBookingDetailScreenState extends State<HostBookingDetailScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message), backgroundColor: Colors.green),
             );
-            context.read<HostBookingBloc>().add(LoadBookingDetailEvent(bookingId));
+            // Refresh lại chi tiết sau khi cập nhật
+            context.read<HostBookingBloc>().add(LoadBookingDetailEvent(widget.bookingId));
           } else if (state is HostBookingError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message), backgroundColor: Colors.red),
@@ -186,15 +188,20 @@ class _HostBookingDetailScreenState extends State<HostBookingDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error, size: 64, color: Colors.red[300]),
+                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                   const SizedBox(height: 16),
-                  Text(state.message),
+                  Text(
+                    state.message,
+                    style: TextStyle(color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {
-                      context.read<HostBookingBloc>().add(LoadBookingDetailEvent(bookingId));
+                      context.read<HostBookingBloc>().add(LoadBookingDetailEvent(widget.bookingId));
                     },
-                    child: const Text('Thử lại'),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Thử lại'),
                   ),
                 ],
               ),
@@ -206,132 +213,7 @@ class _HostBookingDetailScreenState extends State<HostBookingDetailScreen> {
     );
   }
 
-  Widget _buildInfoCard(BookingDetail booking) {
-    final dateFormat = DateFormat('dd/MM/yyyy');
-    final nights = booking.endDate.difference(booking.startDate).inDays;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  booking.hotelName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(booking.status),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _getStatusLabel(booking.status),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(),
-            _buildInfoRow('Loại phòng', booking.roomTypeName ?? 'Không xác định'),
-            _buildInfoRow('Ngày nhận', dateFormat.format(booking.startDate)),
-            _buildInfoRow('Ngày trả', dateFormat.format(booking.endDate)),
-            _buildInfoRow('Số đêm', '$nights đêm'),
-            _buildInfoRow('Số phòng', '${booking.numberOfRooms}'),
-            _buildInfoRow('Số khách', '${booking.numberOfPeople}'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriceCard(BookingDetail booking) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Thông tin thanh toán',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const Divider(),
-            _buildPriceRow('Tổng tiền', booking.totalPrice),
-            if (booking.discountAmount > 0)
-              _buildPriceRow('Giảm giá', -booking.discountAmount, isDiscount: true),
-            const Divider(),
-            _buildPriceRow('Thành tiền', booking.finalPrice, isTotal: true),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomerCard(BookingDetail booking) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Thông tin khách hàng',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const Divider(),
-            _buildInfoRow('Họ tên', booking.customerName),
-            _buildInfoRow('Số điện thoại', booking.customerPhone),
-            _buildInfoRow('Email', booking.customerEmail),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(width: 100, child: Text(label, style: const TextStyle(color: Colors.grey))),
-          Expanded(child: Text(value)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPriceRow(String label, double amount, {bool isDiscount = false, bool isTotal = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              fontSize: isTotal ? 16 : 14,
-            ),
-          ),
-          Text(
-            '${isDiscount ? '-' : ''}${amount.toStringAsFixed(0)}₫',
-            style: TextStyle(
-              color: isDiscount ? Colors.red : (isTotal ? Colors.teal : Colors.black),
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              fontSize: isTotal ? 16 : 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // Thêm method để lấy màu theo status
   Color _getStatusColor(String status) {
     switch (status) {
       case 'PENDING': return Colors.orange;
@@ -344,4 +226,288 @@ class _HostBookingDetailScreenState extends State<HostBookingDetailScreen> {
     }
   }
 
+  Widget _buildInfoCard(BookingDetail booking) {
+    final dateFormat = DateFormat('dd/MM/yyyy');
+    final nights = booking.endDate.difference(booking.startDate).inDays;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    booking.hotelName,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(booking.status),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _getStatusLabel(booking.status),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            _buildInfoRow('Loại phòng', booking.roomTypeName ?? 'Không xác định'),
+            const SizedBox(height: 8),
+            _buildInfoRow('Ngày nhận', dateFormat.format(booking.startDate)),
+            const SizedBox(height: 8),
+            _buildInfoRow('Ngày trả', dateFormat.format(booking.endDate)),
+            const SizedBox(height: 8),
+            _buildInfoRow('Số đêm', '$nights đêm'),
+            const SizedBox(height: 8),
+            _buildInfoRow('Số phòng', '${booking.numberOfRooms}'),
+            const SizedBox(height: 8),
+            _buildInfoRow('Số khách', '${booking.numberOfPeople}'),
+
+            if (booking.tours.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 8),
+              const Text(
+                'Thông tin Tour',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...booking.tours.map((tour) => _buildTourItem(tour)),
+            ],
+
+            if (booking.status == 'CANCELLED') ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red[200]!),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.warning_amber, size: 16, color: Colors.red[600]),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Lý do hủy',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      booking.cancellationReason ?? 'Không có lý do',
+                      style: TextStyle(fontSize: 12, color: Colors.red[700]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTourItem(TourBookingInfo tour) {
+    final dateFormat = DateFormat('dd/MM/yyyy');
+    final formatter = NumberFormat('#,###');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.teal[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.teal[100]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.tour, size: 16, color: Colors.teal[600]),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  tour.tourName,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal[800],
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getTourStatusColor(tour.status),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _getTourStatusLabel(tour.status),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildInfoRow('Ngày tour', dateFormat.format(tour.tourDate)),
+          _buildInfoRow('Số khách', '${tour.numberOfPeople}'),
+          _buildInfoRow('Đơn giá', '${formatter.format(tour.unitPrice)}₫'),
+          _buildInfoRow('Thành tiền', '${formatter.format(tour.totalPrice)}₫'),
+        ],
+      ),
+    );
+  }
+  Color _getTourStatusColor(String status) {
+    switch (status) {
+      case 'PENDING': return Colors.orange;
+      case 'CONFIRMED': return Colors.blue;
+      case 'COMPLETED': return Colors.green;
+      case 'CANCELLED': return Colors.red;
+      default: return Colors.grey;
+    }
+  }
+  String _getTourStatusLabel(String status) {
+    switch (status) {
+      case 'PENDING': return 'Chờ';
+      case 'CONFIRMED': return 'Đã xác nhận';
+      case 'COMPLETED': return 'Hoàn thành';
+      case 'CANCELLED': return 'Đã hủy';
+      default: return status;
+    }
+  }
+
+  Widget _buildPriceCard(BookingDetail booking) {
+    final formatter = NumberFormat('#,###');
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Thông tin thanh toán',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const Divider(height: 20),
+            if (booking.hotelPrice > 0)
+              _buildPriceRow('Tiền phòng', booking.hotelPrice),
+            if (booking.totalTourPrice > 0)
+              _buildPriceRow('Tiền tour', booking.totalTourPrice),
+            if (booking.discountAmount > 0) ...[
+              const SizedBox(height: 8),
+              _buildPriceRow('Giảm giá', -booking.discountAmount, isDiscount: true),
+            ],
+            const Divider(height: 24),
+            _buildPriceRow('Thành tiền', booking.finalPrice, isTotal: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomerCard(BookingDetail booking) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Thông tin khách hàng',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const Divider(height: 20),
+            _buildInfoRow('Họ tên', booking.customerName),
+            const SizedBox(height: 8),
+            _buildInfoRow('Số điện thoại', booking.customerPhone),
+            const SizedBox(height: 8),
+            _buildInfoRow('Email', booking.customerEmail),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(String label, double amount, {bool isDiscount = false, bool isTotal = false}) {
+    final formatter = NumberFormat('#,###');
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            fontSize: isTotal ? 16 : 14,
+            color: isTotal ? Colors.teal[800] : null,
+          ),
+        ),
+        Text(
+          '${isDiscount ? '-' : ''}${formatter.format(amount.abs())}₫',
+          style: TextStyle(
+            color: isDiscount ? Colors.red : (isTotal ? Colors.teal[700] : Colors.black87),
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            fontSize: isTotal ? 16 : 14,
+          ),
+        ),
+      ],
+    );
+  }
 }

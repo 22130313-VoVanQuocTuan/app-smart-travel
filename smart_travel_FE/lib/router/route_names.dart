@@ -59,6 +59,8 @@ class RouteNames {
   static const String hostHomestayManagement = '/host-homestay-management';
   static const String hostTourManagement = '/host-tour-management';
   static const String hostBookings = '/host-bookings';
+  static const String hostBookingDetail = '/host-booking-detail';
+
   static const String hostReviews = '/host-reviews';
 
 }

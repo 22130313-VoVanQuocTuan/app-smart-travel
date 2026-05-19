@@ -1,5 +1,6 @@
+// lib/presentation/blocs/host_booking/host_booking_state.dart
 import 'package:equatable/equatable.dart';
-import 'package:smart_travel/data/models/booking/host_booking_list_model.dart';
+import 'package:smart_travel/data/models/booking/booking_model.dart';
 
 abstract class HostBookingState extends Equatable {
   const HostBookingState();
@@ -13,64 +14,27 @@ class HostBookingInitial extends HostBookingState {}
 class HostBookingLoading extends HostBookingState {}
 
 class HostBookingLoaded extends HostBookingState {
-  final List<HostBookingListModel> bookings;
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final String? statusFilter;
+  final List<HostBooking> bookings;
+  final List<HostBooking> filteredBookings;
+  final String? activeFilter;
 
   const HostBookingLoaded({
     required this.bookings,
-    this.startDate,
-    this.endDate,
-    this.statusFilter,
+    required this.filteredBookings,
+    this.activeFilter,
   });
 
-  HostBookingLoaded copyWith({
-    List<HostBookingListModel>? bookings,
-    DateTime? startDate,
-    DateTime? endDate,
-    String? statusFilter,
-  }) {
-    return HostBookingLoaded(
-      bookings: bookings ?? this.bookings,
-      startDate: startDate ?? this.startDate,
-      endDate: endDate ?? this.endDate,
-      statusFilter: statusFilter ?? this.statusFilter,
-    );
-  }
-
   @override
-  List<Object?> get props => [bookings, startDate, endDate, statusFilter];
+  List<Object?> get props => [bookings, filteredBookings, activeFilter];
 }
-
-class HostBookingDetailLoading extends HostBookingState {}
 
 class HostBookingDetailLoaded extends HostBookingState {
-  final HostBookingListModel booking;
+  final BookingDetail bookingDetail;
 
-  const HostBookingDetailLoaded(this.booking);
-
-  @override
-  List<Object?> get props => [booking];
-}
-
-class HostBookingStatusUpdating extends HostBookingState {
-  final int bookingId;
-
-  const HostBookingStatusUpdating(this.bookingId);
+  const HostBookingDetailLoaded(this.bookingDetail);
 
   @override
-  List<Object?> get props => [bookingId];
-}
-
-class HostBookingStatusUpdated extends HostBookingState {
-  final int bookingId;
-  final String newStatus;
-
-  const HostBookingStatusUpdated(this.bookingId, this.newStatus);
-
-  @override
-  List<Object?> get props => [bookingId, newStatus];
+  List<Object?> get props => [bookingDetail];
 }
 
 class HostBookingError extends HostBookingState {
@@ -82,3 +46,13 @@ class HostBookingError extends HostBookingState {
   List<Object?> get props => [message];
 }
 
+class HostBookingStatusUpdating extends HostBookingState {}
+
+class HostBookingStatusUpdated extends HostBookingState {
+  final String message;
+
+  const HostBookingStatusUpdated(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

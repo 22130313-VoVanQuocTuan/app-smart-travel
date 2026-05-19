@@ -1,124 +1,145 @@
+// lib/presentation/blocs/host_booking/host_booking_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/core/usecases/usecase.dart';
-import 'package:smart_travel/domain/usecases/host_booking/get_host_bookings_usecase.dart';
-import 'package:smart_travel/domain/usecases/host_booking/get_host_bookings_by_date_range_usecase.dart';
-import 'package:smart_travel/domain/usecases/host_booking/update_booking_status_usecase.dart';
+import 'package:smart_travel/data/models/booking/booking_model.dart';
 import 'package:smart_travel/presentation/blocs/host_booking/host_booking_event.dart';
 import 'package:smart_travel/presentation/blocs/host_booking/host_booking_state.dart';
+import 'package:smart_travel/service/booking_service.dart';
 
 class HostBookingBloc extends Bloc<HostBookingEvent, HostBookingState> {
-  final GetHostBookingsUseCase getHostBookingsUseCase;
-  final GetHostBookingsByDateRangeUseCase getHostBookingsByDateRangeUseCase;
-  final UpdateBookingStatusUseCase updateBookingStatusUseCase;
+  final BookingService bookingService;
 
-  String? currentStatusFilter;
-
-  HostBookingBloc({
-    required this.getHostBookingsUseCase,
-    required this.getHostBookingsByDateRangeUseCase,
-    required this.updateBookingStatusUseCase,
-  }) : super(HostBookingInitial()) {
+  HostBookingBloc({required this.bookingService}) : super(HostBookingInitial()) {
     on<LoadHostBookingsEvent>(_onLoadHostBookings);
-    on<LoadHostBookingsByDateRangeEvent>(_onLoadHostBookingsByDateRange);
-    on<UpdateBookingStatusEvent>(_onUpdateBookingStatus);
-    on<FilterBookingsByStatusEvent>(_onFilterBookingsByStatus);
     on<RefreshHostBookingsEvent>(_onRefreshHostBookings);
+    on<FilterBookingsByStatusEvent>(_onFilterByStatus);
+    on<FilterBookingsByDateRangeEvent>(_onFilterByDateRange);
+    on<UpdateBookingStatusEvent>(_onUpdateBookingStatus);
+    on<LoadBookingDetailEvent>(_onLoadBookingDetail);
   }
+
+  List<HostBooking> allBookings = [];
 
   Future<void> _onLoadHostBookings(
-    LoadHostBookingsEvent event,
-    Emitter<HostBookingState> emit,
-  ) async {
+      LoadHostBookingsEvent event,
+      Emitter<HostBookingState> emit,
+      ) async {
     emit(HostBookingLoading());
-    
-    final result = await getHostBookingsUseCase(NoParams());
-    
-    result.fold(
-      (failure) => emit(HostBookingError(failure.toString())),
-      (bookings) {
-        final filtered = currentStatusFilter != null
-            ? bookings.where((b) => b.status == currentStatusFilter).toList()
-            : bookings;
-        emit(HostBookingLoaded(bookings: filtered));
-      },
-    );
-  }
-
-  Future<void> _onLoadHostBookingsByDateRange(
-    LoadHostBookingsByDateRangeEvent event,
-    Emitter<HostBookingState> emit,
-  ) async {
-    emit(HostBookingLoading());
-    
-    final result = await getHostBookingsByDateRangeUseCase(
-      GetHostBookingsByDateRangeParams(
-        startDate: event.startDate,
-        endDate: event.endDate,
-        status: event.status,
-      ),
-    );
-    
-    result.fold(
-      (failure) => emit(HostBookingError(failure.toString())),
-      (bookings) {
-        emit(HostBookingLoaded(
-          bookings: bookings,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          statusFilter: event.status,
-        ));
-      },
-    );
-  }
-
-  Future<void> _onUpdateBookingStatus(
-    UpdateBookingStatusEvent event,
-    Emitter<HostBookingState> emit,
-  ) async {
-    emit(HostBookingStatusUpdating(event.bookingId));
-    
-    final result = await updateBookingStatusUseCase(
-      UpdateBookingStatusParams(
-        bookingId: event.bookingId,
-        newStatus: event.newStatus,
-        cancellationReason: event.cancellationReason,
-      ),
-    );
-    
-    result.fold(
-      (failure) => emit(HostBookingError(failure.toString())),
-      (_) {
-        emit(HostBookingStatusUpdated(event.bookingId, event.newStatus));
-        // Refresh list sau khi update
-        add(const RefreshHostBookingsEvent());
-      },
-    );
-  }
-
-  Future<void> _onFilterBookingsByStatus(
-    FilterBookingsByStatusEvent event,
-    Emitter<HostBookingState> emit,
-  ) async {
-    currentStatusFilter = event.status;
-    
-    if (state is HostBookingLoaded) {
-      final currentState = state as HostBookingLoaded;
-      final filtered = currentState.bookings
-          .where((b) => b.status == event.status)
-          .toList();
-      
-      emit(currentState.copyWith(
-        bookings: filtered,
-        statusFilter: event.status,
+    try {
+      final bookings = await bookingService.getHostBookings();
+      allBookings = bookings;
+      emit(HostBookingLoaded(
+        bookings: bookings,
+        filteredBookings: bookings,
+        activeFilter: null,
       ));
+    } catch (e) {
+      emit(HostBookingError(e.toString()));
     }
   }
 
   Future<void> _onRefreshHostBookings(
-    RefreshHostBookingsEvent event,
-    Emitter<HostBookingState> emit,
-  ) async {
-    add(const LoadHostBookingsEvent());
+      RefreshHostBookingsEvent event,
+      Emitter<HostBookingState> emit,
+      ) async {
+    try {
+      final bookings = await bookingService.getHostBookings();
+      allBookings = bookings;
+
+      if (state is HostBookingLoaded) {
+        final currentState = state as HostBookingLoaded;
+        emit(HostBookingLoaded(
+          bookings: bookings,
+          filteredBookings: currentState.activeFilter != null
+              ? bookings.where((b) => b.status == currentState.activeFilter).toList()
+              : bookings,
+          activeFilter: currentState.activeFilter,
+        ));
+      } else {
+        emit(HostBookingLoaded(
+          bookings: bookings,
+          filteredBookings: bookings,
+          activeFilter: null,
+        ));
+      }
+    } catch (e) {
+      emit(HostBookingError(e.toString()));
+    }
+  }
+
+  void _onFilterByStatus(
+      FilterBookingsByStatusEvent event,
+      Emitter<HostBookingState> emit,
+      ) {
+    if (state is HostBookingLoaded) {
+      final currentState = state as HostBookingLoaded;
+      final filtered = event.status == 'ALL'
+          ? currentState.bookings
+          : currentState.bookings.where((b) => b.status == event.status).toList();
+
+      emit(HostBookingLoaded(
+        bookings: currentState.bookings,
+        filteredBookings: filtered,
+        activeFilter: event.status == 'ALL' ? null : event.status,
+      ));
+    }
+  }
+
+  void _onFilterByDateRange(
+      FilterBookingsByDateRangeEvent event,
+      Emitter<HostBookingState> emit,
+      ) {
+    if (state is HostBookingLoaded) {
+      final currentState = state as HostBookingLoaded;
+      final filtered = currentState.bookings.where((b) {
+        return (b.startDate.isAfter(event.startDate) || b.startDate.isAtSameMomentAs(event.startDate)) &&
+            (b.endDate.isBefore(event.endDate) || b.endDate.isAtSameMomentAs(event.endDate));
+      }).toList();
+
+      emit(HostBookingLoaded(
+        bookings: currentState.bookings,
+        filteredBookings: filtered,
+        activeFilter: currentState.activeFilter,
+      ));
+    }
+  }
+
+  Future<void> _onUpdateBookingStatus(
+      UpdateBookingStatusEvent event,
+      Emitter<HostBookingState> emit,
+      ) async {
+    emit(HostBookingStatusUpdating());
+    try {
+      await bookingService.updateBookingStatus(
+        bookingId: event.bookingId,
+        status: event.status,
+        cancellationReason: event.cancellationReason,
+      );
+
+      // Refresh lại danh sách
+      add(const RefreshHostBookingsEvent());
+      emit(HostBookingStatusUpdated('Cập nhật trạng thái thành công'));
+
+      // Reset state after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        if (!isClosed) {
+          add(const LoadHostBookingsEvent());
+        }
+      });
+    } catch (e) {
+      emit(HostBookingError(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadBookingDetail(
+      LoadBookingDetailEvent event,
+      Emitter<HostBookingState> emit,
+      ) async {
+    emit(HostBookingLoading());
+    try {
+      final detail = await bookingService.getBookingDetail(event.bookingId);
+      emit(HostBookingDetailLoaded(detail));
+    } catch (e) {
+      emit(HostBookingError(e.toString()));
+    }
   }
 }
-
