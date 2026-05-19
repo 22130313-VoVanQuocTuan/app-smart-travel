@@ -64,6 +64,8 @@ public class SecurityConfig {
             "/api/v1/payment/vnpay-return",
             "/api/v1/payment/momo-return",
             "/api/v1/payment/momo-ipn",
+            "/api/v1/payment/create-online-payment",
+            "/api/v1/payment/confirm-cash-payment",
 
             // --- TOURS ---
             "/api/v1/tours",

@@ -124,7 +124,6 @@ public class MoMoService {
         }
 
         payment.setStatus("COMPLETED");
-        payment.setPayment_status("DONE");
         payment.setPaidAt(LocalDateTime.now());
         payment.setTransactionId(params.get("transId"));
         paymentRepository.save(payment);
