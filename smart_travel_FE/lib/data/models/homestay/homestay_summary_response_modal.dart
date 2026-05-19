@@ -33,15 +33,15 @@ class HotelSummaryResponse {
     );
   }
 
-  Hotel toEntity() {
-    return Hotel (
+  Homestay toEntity() {
+    return Homestay (
       id: id,
       name: name,
       address: address,
       pricePerNight: pricePerNight,
-      starRating: starRating,
-      averageRating: averageRating,
-      images: images, // ảnh đại diện
+      stars: starRating,
+      rating: averageRating,
+      thumbnail: images,
     );
   }
 }

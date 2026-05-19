@@ -6,25 +6,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal; // <--- QUAN TRỌNG: Thêm import này
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface TourRepository extends JpaRepository<Tour, Long>, JpaSpecificationExecutor<Tour> {
-    List<Tour> findByDestinationId(Long destinationId);
+    // Tìm tất cả tour đang hoạt động
+    List<Tour> findByIsActiveTrue();
 
-    Page<Tour> findByIsActive(boolean isActive, Pageable pageable);
-
-    List<Tour> findByNameContainingIgnoreCase(String name);
-
-    List<Tour> findByDestination(Destination destination);
-
-    List<Tour> findByNameContainingIgnoreCaseOrDestination_NameContainingIgnoreCase(String tourName, String destName);
-
-    List<Tour> findTop5ByOrderByPricePerPersonAsc();
-
-    List<Tour> findByPricePerPersonLessThanEqual(BigDecimal maxPrice);
+    // Tìm tour active theo destination
+    @Query("""
+    SELECT t FROM Tour t
+    WHERE t.isActive = true
+    AND t.homestay.id = :homestayId
+""")
+    List<Tour> findActiveToursByHomestay(
+            @Param("homestayId") Long homestayId);
 
     @Override
     @EntityGraph(attributePaths = {"images", "destination"})
@@ -32,4 +32,6 @@ public interface TourRepository extends JpaRepository<Tour, Long>, JpaSpecificat
 
     @EntityGraph(attributePaths = {"destination"})
     Optional<Tour> findWithDetailById(Long id);
+    List<Tour> findByHomestayIdAndIsActiveTrue(Long homestayId);
+
 }

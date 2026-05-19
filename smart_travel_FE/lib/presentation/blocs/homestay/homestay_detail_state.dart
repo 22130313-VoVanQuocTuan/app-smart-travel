@@ -1,34 +1,32 @@
+// lib/presentation/blocs/homestay/homestay_detail_state.dart
+
 import 'package:equatable/equatable.dart';
 import 'package:smart_travel/domain/entities/homestay.dart';
 
-abstract class HotelDetailState extends Equatable {
-  const HotelDetailState();
+abstract class HomestayDetailState extends Equatable {
+  const HomestayDetailState();
 
   @override
   List<Object?> get props => [];
 }
 
-/// Khởi tạo
-class HotelDetailInitial extends HotelDetailState {}
+class HomestayDetailInitial extends HomestayDetailState {}
 
-/// Loading
-class HotelDetailLoading extends HotelDetailState {}
+class HomestayDetailLoading extends HomestayDetailState {}
 
-/// Load thành công
-class HotelDetailLoaded extends HotelDetailState {
-  final Hotel hotel;
+class HomestayDetailLoaded extends HomestayDetailState {
+  final Homestay homestay;
 
-  const HotelDetailLoaded(this.hotel);
+  const HomestayDetailLoaded(this.homestay);
 
   @override
-  List<Object?> get props => [hotel];
+  List<Object?> get props => [homestay];
 }
 
-/// Lỗi
-class HotelDetailError extends HotelDetailState {
+class HomestayDetailError extends HomestayDetailState {
   final String message;
 
-  const HotelDetailError(this.message);
+  const HomestayDetailError(this.message);
 
   @override
   List<Object?> get props => [message];

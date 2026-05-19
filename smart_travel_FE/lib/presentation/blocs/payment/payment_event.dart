@@ -1,4 +1,6 @@
+// payment_event.dart
 import 'package:equatable/equatable.dart';
+import 'package:smart_travel/domain/entities/booking_info.dart';
 
 abstract class PaymentEvent extends Equatable {
   const PaymentEvent();
@@ -8,30 +10,24 @@ abstract class PaymentEvent extends Equatable {
 
 // Event cho các cổng online (VNPay, MoMo)
 class ProcessPaymentSubmitted extends PaymentEvent {
-  final String bookingId;
-  final double amount;
-  final String paymentMethod; // 'VNPAY', 'MOMO'
+  final BookingInfo bookingInfo;
+  final String paymentMethod;
 
   const ProcessPaymentSubmitted({
-    required this.bookingId,
-    required this.amount,
+    required this.bookingInfo,
     required this.paymentMethod,
   });
 
   @override
-  List<Object?> get props => [bookingId, amount, paymentMethod];
+  List<Object?> get props => [bookingInfo, paymentMethod];
 }
 
-// THÊM MỚI: Event cho thanh toán tiền mặt/trực tiếp
+// Event cho thanh toán tiền mặt
 class ConfirmCashPayment extends PaymentEvent {
-  final String bookingId;
-  final double amount;
+  final BookingInfo bookingInfo;
 
-  const ConfirmCashPayment({
-    required this.bookingId,
-    required this.amount,
-  });
+  const ConfirmCashPayment({required this.bookingInfo});
 
   @override
-  List<Object?> get props => [bookingId, amount];
+  List<Object?> get props => [bookingInfo];
 }

@@ -50,6 +50,22 @@ public class UserProfile {
     @Column(length = 50)
     private String country;
 
+    // Fields for host verification
+    @Column(name = "id_card_number", length = 100)
+    private String idCardNumber;
+
+    @Column(name = "id_card_image_url", length = 500)
+    private String idCardImageUrl;
+
+    @Column(name = "ownership_document_url", length = 500)
+    private String ownershipDocumentUrl;
+
+    @Column(name = "portrait_url", length = 500)
+    private String portraitUrl;
+
+    @Column(name = "host_verified")
+    private Boolean hostVerified = false;
+
     @Column(columnDefinition = "TEXT")
     private String notificationSettings;
 
@@ -70,18 +86,6 @@ public class UserProfile {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @ElementCollection
-    @CollectionTable(name = "user_listened_destinations", joinColumns = @JoinColumn(name = "user_profile_id"))
-    @Column(name = "destination_id")
-    private Set<Long> listenedDestinationIds = new HashSet<>();
-
-    @Builder.Default
-    @ElementCollection
-    @CollectionTable(name = "user_destination_cooldowns",
-            joinColumns = @JoinColumn(name = "user_profile_id"))
-    @MapKeyColumn(name = "destination_id")
-    @Column(name = "last_earned_at")
-    private Map<Long, LocalDateTime> lastEarnedAt = new HashMap<>();
 
     @PrePersist
     @PreUpdate

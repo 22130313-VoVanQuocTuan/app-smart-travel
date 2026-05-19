@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/presentation/blocs/adminTour/tour_bloc.dart';
-import 'package:smart_travel/presentation/blocs/adminTour/tour_detail_bloc.dart';
-import 'package:smart_travel/presentation/blocs/adminTour/tour_event.dart';
-import 'package:smart_travel/presentation/blocs/admin_audio/audio_bloc.dart';
-import 'package:smart_travel/presentation/blocs/admin_audio/audio_event.dart';
-import 'package:smart_travel/presentation/blocs/admin_user/admin_user_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/screens/auth/forgot_password_screen.dart';
@@ -16,7 +10,8 @@ import 'package:smart_travel/presentation/screens/explore/explore_screen.dart';
 import 'package:smart_travel/presentation/screens/home/home_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/detail_homestay_screen.dart';
 import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.dart';
-import 'package:smart_travel/presentation/screens/homestay/homestay_detail_screen.dart';
+import 'package:smart_travel/presentation/screens/host/homestay/hotel_management_screen.dart';
+import 'package:smart_travel/presentation/screens/host/tour/tour_management_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/profile_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/edit_profile_screen.dart';
@@ -24,17 +19,22 @@ import 'package:smart_travel/presentation/screens/profile/change_password_screen
 import 'package:smart_travel/presentation/screens/profile/settings_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/account_management_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart';
-import 'package:smart_travel/presentation/screens/tour/tour_list_screen.dart';
+import 'package:smart_travel/presentation/screens/tour/tour_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
 import '../presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
+import '../presentation/blocs/admin_host_approval/host_approval_bloc.dart';
+import '../presentation/blocs/admin_host_approval/host_approval_event.dart';
 import '../presentation/blocs/admin_voucher/voucher_bloc.dart';
 import '../presentation/blocs/admin_voucher/voucher_event.dart';
 import '../presentation/screens/admin/admin_dashboard.dart';
 import '../presentation/screens/admin/invoice/admin_invoice_screen.dart';
 import '../presentation/screens/admin/voucher/voucher_management_screen.dart';
+import '../presentation/screens/admin/admin_host_approval_screen.dart';
 import '../presentation/screens/invoice/my_invoices_screen.dart';
+import '../presentation/screens/host/host_dashboard_screen.dart';
+import '../presentation/screens/host/host_pending_approval_screen.dart';
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -81,8 +81,12 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ExploreScreen());
 
       // Tour
-      case RouteNames.tourList:
-        return MaterialPageRoute(builder: (_) => const TourListScreen());
+      case RouteNames.tourDetail:
+        final tourId = settings.arguments as int? ?? 0;
+        return MaterialPageRoute(
+          builder: (_) => TourDetailScreen(tourId: tourId),
+          settings: settings,
+        );
         
       // AI Chat
       case RouteNames.aiChat:
@@ -93,7 +97,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder:
               (context) => BlocProvider(
-            create: (_) => di.sl<HotelBloc>(),
+            create: (_) => di.sl<HomestayBloc>(),
             child: const HomestayListScreen(),
           ),
           settings: settings,
@@ -102,7 +106,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder:
               (context) => BlocProvider(
-            create: (_) => di.sl<HotelDetailBloc>(),
+            create: (_) => di.sl<HomestayDetailBloc>(),
             child: const DetailHomestayScreen(),
           ),
           settings: settings,
@@ -123,6 +127,46 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const UserLevelScreen());
       case RouteNames.myInvoices:
         return MaterialPageRoute(builder: (_) => const MyInvoicesScreen(),);
+
+
+        // HOST routes
+      case RouteNames.hostDashboard:
+        return MaterialPageRoute(builder: (_) => const HostDashboardScreen());
+      case RouteNames.hostHomestayManagement:
+        return MaterialPageRoute(builder: (_) => const HomestayManagementScreen());
+      case RouteNames.hostTourManagement:
+      // Lấy arguments từ settings
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => TourManagementScreen(
+            homestayId: args?['homestayId'] ?? 0,
+            homestayName: args?['homestayName'] ?? '',
+          ),
+          settings: settings,
+        );
+      case RouteNames.hostPendingApproval:
+        return MaterialPageRoute(builder: (_) => const HostPendingApprovalScreen());
+
+      case RouteNames.hostBookings:
+        return MaterialPageRoute(
+          builder: (_) => const Scaffold(
+            body: Center(child: Text('Quản Lý Lịch Đặt - Tính Năng Sắp Có')),
+          ),
+        );
+      case RouteNames.hostReviews:
+        return MaterialPageRoute(
+          builder: (_) => const Scaffold(
+            body: Center(child: Text('Đánh Giá - Tính Năng Sắp Có')),
+          ),
+        );
+      // Admin host approval
+      case RouteNames.adminHostApproval:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => di.sl<HostApprovalBloc>()..add(const LoadPendingHosts()),
+            child: const AdminHostApprovalScreen(),
+          ),
+        );
       default:
         return MaterialPageRoute(
           builder:

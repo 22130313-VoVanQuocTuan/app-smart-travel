@@ -1,38 +1,39 @@
 class BookingRequestModel {
-  final String bookingType; // "TOUR" | "HOTEL"
-  final int? tourId;        // Có thể null
-  final int? hotelId;       // Có thể null
+  final String bookingType; //  | "HOTEL"
+  final int? homestayId;       // Có thể null
   final String startDate;   // String dạng yyyy-MM-dd
   final String? endDate;    // String dạng yyyy-MM-dd
   final int numberOfPeople;
   final int numberOfRooms;
   final String? couponCode;
   final int? roomTypeId;
+  final List<Map<String, dynamic>>? tours;
 
   BookingRequestModel({
     required this.bookingType,
-    this.tourId,
-    this.hotelId,
+    this.homestayId,
     required this.startDate,
     this.endDate,
     required this.numberOfPeople,
     required this.numberOfRooms,
     this.couponCode,
     this.roomTypeId,
+    this.tours,
   });
 
   // Hàm này dùng để chuyển object thành JSON gửi lên Server
   Map<String, dynamic> toJson() {
     return {
       "bookingType": bookingType,
-      "tourId": tourId,
-      "hotelId": hotelId,
+      "homestayId": homestayId,
       "startDate": startDate,
       "endDate": endDate,
       "numberOfPeople": numberOfPeople,
       "numberOfRooms": numberOfRooms,
       "couponCode": couponCode,
       'roomTypeId': roomTypeId,
+      if (tours != null && tours!.isNotEmpty) 'tours': tours,
+
     };
   }
 }

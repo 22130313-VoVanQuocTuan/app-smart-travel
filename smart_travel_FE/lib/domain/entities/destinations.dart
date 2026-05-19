@@ -27,7 +27,7 @@ class DestinationEntity {
   final int? experienceReward;
 
   final List<DestinationImage>? destinationImage;
-  final List<Hotel>? hotels;
+  final List<Homestay>? hotels;
   final List<Tour>? tours;
   final List<Review>? reviews;
 

@@ -70,15 +70,15 @@ public class InvoiceDetailMapper {
     private ServiceInfo resolveServiceInfo(Booking booking) {
 
         if ("HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-            Hotel hotel = booking.getHotelId() != null
+            Homestay homestay = booking.getHotelId() != null
                     ? invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null)
                     : null;
 
             RoomType roomType = booking.getRoomType();
 
             return new ServiceInfo(
-                    hotel != null ? hotel.getName() : "Khách sạn đã xóa",
-                    hotel != null ? hotel.getThumbnail() : null,
+                    homestay != null ? homestay.getName() : "Khách sạn đã xóa",
+                    homestay != null ? homestay.getThumbnail() : null,
                     roomType != null ? roomType.getName() : null,
                     roomType != null ? parseAmenities(roomType.getAmenities()) : null,
                     null

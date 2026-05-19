@@ -84,7 +84,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           await Future.delayed(const Duration(seconds: 3));
           if (state is AdminAuthenticated) {
               Navigator.pushReplacementNamed(context, '/dashboard');
-            }else if(state is UserAuthenticated) {
+            }else if(state is HostAuthenticated) {
+            Navigator.pushReplacementNamed(context, '/host-dashboard');
+            }
+            else if(state is UserAuthenticated) {
               Navigator.pushReplacementNamed(context, '/home');
             }
            else if (state is Unauthenticated) {

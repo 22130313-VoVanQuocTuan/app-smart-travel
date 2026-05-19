@@ -193,26 +193,7 @@ public class DestinationsController {
 
     }
 
-    @PostMapping("/{id}/voice-complete")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<APIResponse<LevelResponse>> completeVoice(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(
-                APIResponse.<LevelResponse>builder()
-                        .data(destinationService.completeVoiceGuide(id))
-                        .msg("Chúc mừng bạn đã hoàn thành bài thuyết minh!")
-                        .build()
-        );
-    }
 
 
-    @DeleteMapping("/{id}/audio-script")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<APIResponse<DestinationResponse>> deleteAudioScript(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(
-                APIResponse.<DestinationResponse>builder()
-                        .data(destinationService.deleteAudioScript(id))
-                        .msg("Đã xóa nội dung thuyết minh thành công!")
-                        .build()
-        );
-    }
+
 }

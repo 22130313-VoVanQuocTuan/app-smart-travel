@@ -4,13 +4,13 @@ import 'package:smart_travel/core/usecases/usecase.dart';
 import 'package:smart_travel/domain/entities/homestay.dart';
 import 'package:smart_travel/domain/repositories/homestay_repository.dart';
 
-class HotelDetailUseCase extends UseCase<Hotel, HotelDetailParams> {
+class HotelDetailUseCase extends UseCase<Homestay, HotelDetailParams> {
   final HotelRepository hotelRepository;
 
   HotelDetailUseCase(this.hotelRepository);
 
   @override
-  Future<Either<Failure, Hotel>> call(HotelDetailParams params) {
+  Future<Either<Failure, Homestay>> call(HotelDetailParams params) {
     return hotelRepository.getHotelDetail(
       hotelId: params.hotelId,
       checkIn: params.checkIn,

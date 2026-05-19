@@ -321,8 +321,8 @@ public class InvoiceService {
         String itemName = "Dịch vụ không xác định";
 
         if ("HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-            Hotel hotel = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
-            String hotelName = hotel != null ? hotel.getName() : "Khách sạn đã xóa";
+            Homestay homestay = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
+            String hotelName = homestay != null ? homestay.getName() : "Khách sạn đã xóa";
             String roomName = booking.getRoomType() != null ? " - " + booking.getRoomType().getName() : "";
             itemName = hotelName + roomName;
         } else if ("TOUR".equalsIgnoreCase(booking.getBookingType())) {
@@ -356,8 +356,8 @@ public class InvoiceService {
         // KIỂM TRA QUYỀN XEM CHI TIẾT
         if (!role.equals("ADMIN")) {
             if (role.equals("ADMINHOTEL") && "HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-                Hotel hotel = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
-                if (hotel == null || !currentUser.getId().equals(hotel.getOwner().getId())) {
+                Homestay homestay = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
+                if (homestay == null || !currentUser.getId().equals(homestay.getOwner().getId())) {
                     throw new AppException(ErrorCode.UNAUTHORIZED);
                 }
             } else if (role.equals("ADMINTOUR") && "TOUR".equalsIgnoreCase(booking.getBookingType())) {
@@ -375,8 +375,8 @@ public class InvoiceService {
         String roomTypeName = null;
 
         if ("HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-            Hotel hotel = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
-            serviceName = hotel != null ? hotel.getName() : "Khách sạn đã xóa";
+            Homestay homestay = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
+            serviceName = homestay != null ? homestay.getName() : "Khách sạn đã xóa";
             if (booking.getRoomType() != null) {
                 roomTypeName = booking.getRoomType().getName();
             }
@@ -437,8 +437,8 @@ public class InvoiceService {
         boolean isOwner = false;
 
         if ("HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-            Hotel hotel = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
-            if (hotel != null && currentUser.getId().equals(hotel.getOwner().getId())) {
+            Homestay homestay = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
+            if (homestay != null && currentUser.getId().equals(homestay.getOwner().getId())) {
                 isOwner = true;
             }
         } else if ("TOUR".equalsIgnoreCase(booking.getBookingType())) {
@@ -486,8 +486,8 @@ public class InvoiceService {
         boolean isOwner = false;
 
         if ("HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-            Hotel hotel = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
-            if (hotel != null && currentUser.getId().equals(hotel.getOwner().getId())) {
+            Homestay homestay = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
+            if (homestay != null && currentUser.getId().equals(homestay.getOwner().getId())) {
                 isOwner = true;
             }
         } else if ("TOUR".equalsIgnoreCase(booking.getBookingType())) {
@@ -580,8 +580,8 @@ public class InvoiceService {
         } else if ("ADMINHOTEL".equals(role) || "ADMINTOUR".equals(role)) {
             // Kiểm tra có phải chủ của homestay/tour không
             if ("HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-                Hotel hotel = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
-                if (hotel != null && currentUser.getId().equals(hotel.getOwner().getId())) {
+                Homestay homestay = invoiceRepository.findHotelWithImagesById(booking.getHotelId()).orElse(null);
+                if (homestay != null && currentUser.getId().equals(homestay.getOwner().getId())) {
                     canCancel = true;
                 }
             } else if ("TOUR".equalsIgnoreCase(booking.getBookingType())) {

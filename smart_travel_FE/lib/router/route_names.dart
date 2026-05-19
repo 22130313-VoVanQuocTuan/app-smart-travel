@@ -11,6 +11,9 @@ class RouteNames {
   static const String adminVoucher = '/admin/voucher';
   static const String adminInvoices = '/admin/invoice';
   static const String adminAudio = '/admin/audio';
+  static const String adminHostApproval = '/admin/host-approval';
+
+
 
   /// USER
   static const String splashScreen = '/';
@@ -49,5 +52,13 @@ class RouteNames {
   static const String myInvoices = '/my-invoice';
 
   static const String myFriend = '/my-friend';
+
+  // HOST routes
+  static const String hostDashboard = '/host-dashboard';
+  static const String hostPendingApproval = '/host-pending-approval';
+  static const String hostHomestayManagement = '/host-homestay-management';
+  static const String hostTourManagement = '/host-tour-management';
+  static const String hostBookings = '/host-bookings';
+  static const String hostReviews = '/host-reviews';
 
 }

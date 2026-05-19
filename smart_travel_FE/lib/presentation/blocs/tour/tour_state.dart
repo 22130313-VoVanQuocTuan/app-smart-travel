@@ -1,39 +1,22 @@
-import 'package:equatable/equatable.dart';
-import 'package:smart_travel/domain/entities/tour.dart';
+// lib/presentation/blocs/tour/tour_state.dart
+class TourState {}
 
-class TourState extends Equatable {
-  final bool loading;
-  final List<Tour> tours;
-  final String? error;
+class TourInitial extends TourState {}
 
-  // --- THÊM 2 BIẾN NÀY ĐỂ PHÂN TRANG ---
-  final int currentPage;
-  final int totalPages;
+class TourLoading extends TourState {}
 
-  const TourState({
-    this.loading = false,
-    this.tours = const [],
-    this.error,
-    this.currentPage = 0,    // Mặc định trang đầu tiên
-    this.totalPages = 1,     // Mặc định có ít nhất 1 trang
-  });
+class TourLoaded extends TourState {
+  final List<dynamic> tours;
+  TourLoaded(this.tours);
+}
 
-  TourState copyWith({
-    bool? loading,
-    List<Tour>? tours,
-    String? error,
-    int? currentPage,
-    int? totalPages,
-  }) {
-    return TourState(
-      loading: loading ?? this.loading,
-      tours: tours ?? this.tours,
-      error: error,
-      currentPage: currentPage ?? this.currentPage,
-      totalPages: totalPages ?? this.totalPages,
-    );
-  }
+class TourSuccess extends TourState {
+  final String message;
+  TourSuccess(this.message);
+}
 
-  @override
-  List<Object?> get props => [loading, tours, error, currentPage, totalPages];
+class TourError extends TourState {
+  final String message;
+  final List<dynamic> tours;
+  TourError(this.message, {this.tours = const []});
 }

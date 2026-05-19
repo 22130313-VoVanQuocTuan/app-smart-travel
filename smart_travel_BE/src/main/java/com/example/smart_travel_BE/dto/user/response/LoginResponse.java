@@ -14,4 +14,5 @@ public class LoginResponse {
     private String refreshToken;
     private String role;
     private String fullName;
+    private Boolean hostVerified; // null for non-HOST, true/false for HOST users
 }

@@ -5,6 +5,11 @@ class RegisterRequestModel{
   final String? phone;
   final String password;
   final String confirmPassword;
+  final String? role;
+  final String? idCardNumber;
+  final String? idCardImageUrl;
+  final String? ownershipDocumentUrl;
+  final String? portraitUrl;
 
 
   RegisterRequestModel({
@@ -12,7 +17,13 @@ class RegisterRequestModel{
     required this.email,
     required this.phone,
     required this.password,
-    required this.confirmPassword});
+    required this.confirmPassword,
+    this.role,
+    this.idCardNumber,
+    this.idCardImageUrl,
+    this.ownershipDocumentUrl,
+    this.portraitUrl,
+  });
 
   Map<String, dynamic> toJson() {
     return {
@@ -21,6 +32,11 @@ class RegisterRequestModel{
       'phone': phone,
       'password': password,
       'confirmPassword': confirmPassword,
+      'role': role,
+      'idCardNumber': idCardNumber,
+      'idCardImageUrl': idCardImageUrl,
+      'ownershipDocumentUrl': ownershipDocumentUrl,
+      'portraitUrl': portraitUrl,
     };
   }
 
@@ -32,7 +48,12 @@ class RegisterRequestModel{
       phone: json['phone'],
       password: json['password'],
       confirmPassword: json['confirmPassword'],
-
+      // Backward compatibility: optional fields
+      role: json['role'],
+      idCardNumber: json['idCardNumber'],
+      idCardImageUrl: json['idCardImageUrl'],
+      ownershipDocumentUrl: json['ownershipDocumentUrl'],
+      portraitUrl: json['portraitUrl'],
     );
   }
 }

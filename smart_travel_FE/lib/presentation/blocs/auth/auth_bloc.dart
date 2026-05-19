@@ -40,7 +40,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final role = await authLocalDataSource.getRole();
       if (role == 'ADMIN') {
         emit(AdminAuthenticated(role!));
-      } else {
+      } else if (role == 'HOST') {
+        emit(HostAuthenticated(role!));
+      }
+      else {
         emit(UserAuthenticated(role!));
       }
     } else {

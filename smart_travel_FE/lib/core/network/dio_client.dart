@@ -21,14 +21,14 @@ class DioClient {
 
   )) {
 
-    // // Chỉ thêm 2 interceptor cơ bản trước
-    // dio.interceptors.add(LogInterceptor(
-    //   requestBody: true,
-    //   responseBody: true,
-    //   error: true,
-    //   requestHeader: true,
-    //   logPrint: (log) => print('DIO: $log'),
-    // ));
+    // Chỉ thêm 2 interceptor cơ bản
+    dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      error: true,
+      requestHeader: true,
+      logPrint: (log) => print('DIO: $log'),
+    ));
 
     dio.interceptors.add(AuthInterceptor(storage));
     dio.interceptors.add(ErrorInterceptor());
@@ -53,8 +53,11 @@ class DioClient {
   }
 
   // Helper methods (có thể gọi từ mọi nơi)
-  Future<Response<T>> get<T>(String path, {Options? options}) =>
-      dio.get<T>(path, options: options);
+  Future<Response<T>> get<T>(
+      String path, {
+        Map<String, dynamic>? queryParameters, // Thêm dòng này
+        Options? options,
+      }) => dio.get<T>(path, queryParameters: queryParameters, options: options);
 
   Future<Response<T>> post<T>(String path, {dynamic data, Options? options}) =>
       dio.post<T>(path, data: data, options: options);

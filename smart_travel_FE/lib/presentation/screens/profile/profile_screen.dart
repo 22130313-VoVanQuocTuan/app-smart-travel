@@ -10,7 +10,6 @@ import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
 import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/favorite_places_screen.dart';
-import 'package:smart_travel/presentation/screens/tour/tour_list_screen.dart';
 import 'package:smart_travel/presentation/widgets/profile/profile_menu_item_widget.dart';
 import 'package:smart_travel/presentation/widgets/common/bottom_navigation.dart';
 import 'package:smart_travel/router/route_names.dart';

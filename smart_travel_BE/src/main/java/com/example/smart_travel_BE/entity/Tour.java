@@ -16,7 +16,6 @@ import java.util.List;
 @Entity
 @Table(name = "tours",
         indexes = {
-                @Index(name = "idx_destination_id", columnList = "destination_id"),
                 @Index(name = "idx_price", columnList = "price_per_person")
         })
 public class Tour {
@@ -27,10 +26,6 @@ public class Tour {
 
     @Column(name = "name", nullable = false, length = 200)
     private String name;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_id", nullable = false)
-    private Destination destination;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
@@ -87,5 +82,9 @@ public class Tour {
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
     private List<TourImage> images = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "homestay_id")
+    private Homestay homestay;
 
 }

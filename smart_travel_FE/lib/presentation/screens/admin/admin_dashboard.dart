@@ -29,10 +29,10 @@ class AdminDashboardScreen extends StatelessWidget {
       'color': Colors.orange,
     },
     {
-      'id': 'admin/hotels',
-      'icon': Icons.hotel,
-      'label': 'Khách Sạn',
-      'color': Colors.purple,
+      'id': 'admin/host-approval',
+      'icon': Icons.person_add_alt_1,
+      'label': 'Duyệt Chủ Homestay',
+      'color': Colors.indigo,
     },
     {
       'id': 'admin/tours',

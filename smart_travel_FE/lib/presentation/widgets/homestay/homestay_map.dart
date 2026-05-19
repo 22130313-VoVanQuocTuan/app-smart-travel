@@ -3,10 +3,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_travel/domain/entities/homestay.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class HotelMapSection extends StatelessWidget {
-  final Hotel hotel;
+class HomestayMapSection extends StatelessWidget {
+  final Homestay homestay;
 
-  const HotelMapSection({super.key, required this.hotel});
+  const HomestayMapSection({super.key, required this.homestay});
 
   // --- KHAI BÁO MÀU SẮC (CẤU HÌNH UI) ---
   static const Color primaryColor = Color(0xFF2DBBAA);
@@ -15,7 +15,7 @@ class HotelMapSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (hotel.latitude == null || hotel.longitude == null) {
+    if (homestay.latitude == null || homestay.longitude == null) {
       return const SizedBox.shrink();
     }
 
@@ -41,7 +41,7 @@ class HotelMapSection extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  hotel.address ?? 'Không có địa chỉ',
+                  homestay.address ?? 'Không có địa chỉ',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -89,15 +89,15 @@ class HotelMapSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: GoogleMap(
                 initialCameraPosition: CameraPosition(
-                  target: LatLng(hotel.latitude!, hotel.longitude!),
+                  target: LatLng(homestay.latitude!, homestay.longitude!),
                   zoom: 15.5,
                 ),
                 markers: {
                   Marker(
                     markerId: const MarkerId("hotel_location"),
-                    position: LatLng(hotel.latitude!, hotel.longitude!),
+                    position: LatLng(homestay.latitude!, homestay.longitude!),
                     infoWindow: InfoWindow(
-                      title: hotel.name,
+                      title: homestay.name,
                       snippet: "Nhấn để xem trên Google Maps",
                     ),
                   ),
@@ -117,8 +117,8 @@ class HotelMapSection extends StatelessWidget {
 
   // mở google map
   void _openGoogleMap(BuildContext context) async {
-    final lat = hotel.latitude!;
-    final lng = hotel.longitude!;
+    final lat = homestay.latitude!;
+    final lng = homestay.longitude!;
 
     final url = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=$lat,$lng',

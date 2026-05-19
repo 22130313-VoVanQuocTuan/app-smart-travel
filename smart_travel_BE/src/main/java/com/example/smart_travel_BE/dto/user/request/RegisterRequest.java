@@ -22,7 +22,6 @@ public class RegisterRequest {
     @Email(message = "EMAIL_INVALID")
     private String email;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "PHONE_ERROR")
     private String phone;
 
     @NotBlank(message = "PASS_NOT_NULL")
@@ -31,5 +30,14 @@ public class RegisterRequest {
 
     @NotBlank(message = "PASS_CONFIRM_NOT_NULL")
     private String confirmPassword;
+
+    // Optional role: 'USER' or 'HOST'
+    private String role;
+
+    // Host verification fields
+    private String idCardNumber; // CCCD / CMND
+    private String idCardImageUrl; // URL of uploaded CCCD image
+    private String ownershipDocumentUrl; // sổ hộ khẩu or proof of ownership
+    private String portraitUrl; // portrait image URL
 
 }

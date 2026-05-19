@@ -1,53 +1,53 @@
+// lib/presentation/blocs/tour/tour_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/data/models/tour/tour_summary_response_modal.dart';
-import 'package:smart_travel/domain/entities/tour.dart';
-import 'package:smart_travel/domain/usecases/tour/filter_tour_usecase.dart';
-import 'tour_event.dart';
-import 'tour_state.dart';
-import 'package:smart_travel/domain/params/TourFilterParams.dart';
+import 'package:smart_travel/presentation/blocs/tour/tour_event.dart';
+import 'package:smart_travel/presentation/blocs/tour/tour_state.dart';
+import 'package:smart_travel/service/tour_service.dart';
 
 class TourBloc extends Bloc<TourEvent, TourState> {
-  final FilterToursUseCase filterTourUseCase;
+  final TourService tourService;
 
-  TourBloc(this.filterTourUseCase) : super(const TourState()) {
+  TourBloc({required this.tourService}) : super(TourInitial()) {
     on<LoadToursEvent>(_onLoadTours);
-    on<SearchTourEvent>(_onSearchTours);
+    on<CreateTourEvent>(_onCreateTour);
+    on<UpdateTourEvent>(_onUpdateTour);
+    on<DeleteTourEvent>(_onDeleteTour);
   }
 
   Future<void> _onLoadTours(LoadToursEvent event, Emitter<TourState> emit) async {
-    emit(state.copyWith(loading: true));
+    emit(TourLoading());
     try {
-      final result = await filterTourUseCase(event.params);
-
-      // result bây giờ là Map từ Server trả về
-      final List<dynamic> content = result['content'] ?? [];
-
-      emit(state.copyWith(
-        loading: false,
-        // Map từng item trong content sang Entity Tour thông qua Model
-        tours: content.map((e) => TourSummaryResponse.fromJson(e).toEntity()).toList(),
-        currentPage: result['number'] ?? 0,
-        totalPages: result['totalPages'] ?? 1, // GIỜ NÓ SẼ CÓ GIÁ TRỊ THẬT (> 1)
-      ));
+      final tours = await tourService.getToursByHomestay(event.homestayId);
+      emit(TourLoaded(tours));
     } catch (e) {
-      emit(state.copyWith(loading: false, error: e.toString()));
+      emit(TourError(e.toString()));
     }
   }
 
-  Future<void> _onSearchTours(SearchTourEvent event, Emitter<TourState> emit) async {
-    emit(state.copyWith(loading: true));
-    final params = TourFilterParams(keyword: event.keyword, page: 0); // Reset về trang 0 khi search
-
+  Future<void> _onCreateTour(CreateTourEvent event, Emitter<TourState> emit) async {
     try {
-      final result = await filterTourUseCase(params);
-      emit(state.copyWith(
-        loading: false,
-        tours: result.content,
-        currentPage: result.number,
-        totalPages: result.totalPages,
-      ));
+      await tourService.createTour(event.formData);
+      emit(TourSuccess('Tạo tour thành công'));
     } catch (e) {
-      emit(state.copyWith(loading: false, error: e.toString()));
+      emit(TourError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateTour(UpdateTourEvent event, Emitter<TourState> emit) async {
+    try {
+      await tourService.updateTour(event.id, event.formData);
+      emit(TourSuccess('Cập nhật tour thành công'));
+    } catch (e) {
+      emit(TourError(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteTour(DeleteTourEvent event, Emitter<TourState> emit) async {
+    try {
+      await tourService.deleteTour(event.id);
+      emit(TourSuccess('Xóa tour thành công'));
+    } catch (e) {
+      emit(TourError(e.toString()));
     }
   }
 }

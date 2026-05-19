@@ -65,7 +65,7 @@ class HotelRepositoryImpl implements HotelRepository {
 
   // 2. GET HOTEL DETAIL
   @override
-  Future<Either<Failure, Hotel>> getHotelDetail({
+  Future<Either<Failure, Homestay>> getHotelDetail({
     required int hotelId,
     required DateTime checkIn,
     required DateTime checkOut,
@@ -94,7 +94,7 @@ class HotelRepositoryImpl implements HotelRepository {
 
   // 3. CREATE HOTEL (Mới)
   @override
-  Future<Either<Failure, Hotel>> createHotel(HotelCreateRequest request) async {
+  Future<Either<Failure, Homestay>> createHotel(HotelCreateRequest request) async {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure('Không có kết nối internet.'));
     }
@@ -119,7 +119,7 @@ class HotelRepositoryImpl implements HotelRepository {
 
   // 4. UPDATE HOTEL (Mới)
   @override
-  Future<Either<Failure, Hotel>> updateHotel(
+  Future<Either<Failure, Homestay>> updateHotel(
     int id,
     HotelCreateRequest request,
   ) async {

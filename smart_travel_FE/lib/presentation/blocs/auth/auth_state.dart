@@ -59,6 +59,14 @@ class UserAuthenticated extends AuthState {
   List<Object?> get props => [role];
 }
 
+class HostAuthenticated extends AuthState {
+  final String role;
+  const HostAuthenticated(this.role);
+
+  @override
+  List<Object?> get props => [role];
+}
+
 class Unauthenticated extends AuthState {}
 
 class AuthError extends AuthState {

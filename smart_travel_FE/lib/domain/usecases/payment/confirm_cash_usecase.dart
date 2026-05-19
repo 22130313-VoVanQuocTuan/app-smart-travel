@@ -1,6 +1,7 @@
+// lib/domain/usecases/payment/confirm_cash_usecase.dart
 import 'package:dartz/dartz.dart';
 import 'package:smart_travel/core/error/failures.dart';
-import 'package:smart_travel/data/repositories/payment_repository_impl.dart';
+import 'package:smart_travel/domain/entities/booking_info.dart';
 import 'package:smart_travel/domain/repositories/payment_repository.dart';
 
 class ConfirmCashBookingUseCase {
@@ -8,7 +9,9 @@ class ConfirmCashBookingUseCase {
 
   ConfirmCashBookingUseCase(this.repository);
 
-  Future<Either<Failure, void>> call(CashApiRequest request) {
-    return repository.confirmCashPayment(request);
+  Future<Either<Failure, void>> call({
+    required BookingInfo bookingInfo,
+  }) {
+    return repository.confirmCashPayment(bookingInfo: bookingInfo);
   }
 }

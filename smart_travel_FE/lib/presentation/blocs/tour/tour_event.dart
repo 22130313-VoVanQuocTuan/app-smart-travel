@@ -1,24 +1,25 @@
-import 'package:equatable/equatable.dart';
-import 'package:smart_travel/domain/params/TourFilterParams.dart';
+// lib/presentation/blocs/tour/tour_event.dart
+import 'package:dio/dio.dart';
 
-abstract class TourEvent extends Equatable {
-  const TourEvent();
-  @override
-  List<Object?> get props => [];
-}
+abstract class TourEvent {}
 
 class LoadToursEvent extends TourEvent {
-  final TourFilterParams params;
-  LoadToursEvent(this.params);
-
-  @override
-  List<Object> get props => [params];
+  final int homestayId;
+  LoadToursEvent(this.homestayId);
 }
 
-class SearchTourEvent extends TourEvent {
-  final String keyword;
-  SearchTourEvent(this.keyword);
+class CreateTourEvent extends TourEvent {
+  final FormData formData;
+  CreateTourEvent(this.formData);
+}
 
-  @override
-  List<Object?> get props => [keyword];
+class UpdateTourEvent extends TourEvent {
+  final int id;
+  final FormData formData;
+  UpdateTourEvent(this.id, this.formData);
+}
+
+class DeleteTourEvent extends TourEvent {
+  final int id;
+  DeleteTourEvent(this.id);
 }

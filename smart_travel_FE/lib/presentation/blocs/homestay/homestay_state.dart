@@ -1,60 +1,40 @@
+// lib/presentation/blocs/homestay/homestay_state.dart
 import 'package:equatable/equatable.dart';
 import 'package:smart_travel/domain/entities/homestay.dart';
 
-abstract class HotelState extends Equatable {
-  const HotelState();
+abstract class HomestayState extends Equatable {
+  const HomestayState();
 
   @override
   List<Object?> get props => [];
 }
 
-class HotelInitial extends HotelState {}
+class HomestayInitial extends HomestayState {}
 
-class HotelLoading extends HotelState {}
+class HomestayLoading extends HomestayState {}
 
-class HotelLoaded extends HotelState {
-  final List<Hotel> hotels;
+class HomestayLoaded extends HomestayState {
+  final List<Homestay> homestays;
   final int currentPage;
   final int totalPages;
-  final int timestamp;
+  final int totalElements;
 
-  HotelLoaded({
-    required this.hotels,
+  const HomestayLoaded({
+    required this.homestays,
     required this.currentPage,
     required this.totalPages,
-  }) : timestamp = DateTime.now().millisecondsSinceEpoch;
+    required this.totalElements,
+  });
 
   @override
-  List<Object?> get props => [hotels, currentPage, totalPages, timestamp];
+  List<Object?> get props => [homestays, currentPage, totalPages, totalElements];
 }
 
-// Trạng thái lỗi
-class HotelError extends HotelState {
+class HomestayError extends HomestayState {
   final String message;
 
-  const HotelError(this.message);
+  const HomestayError(this.message);
 
   @override
   List<Object?> get props => [message];
-}
-
-// Xoá khách sạn
-class DeleteHotelLoading extends HotelState {}
-
-class DeleteHotelError extends HotelState {
-  final String message;
-  DeleteHotelError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-
-class HotelOperationSuccess extends HotelState {
-  final String message;
-  final int timestamp;
-
-  HotelOperationSuccess(this.message)
-    : timestamp = DateTime.now().millisecondsSinceEpoch;
-  @override
-  List<Object?> get props => [message, timestamp];
 }

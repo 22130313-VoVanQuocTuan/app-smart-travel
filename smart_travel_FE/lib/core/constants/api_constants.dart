@@ -62,6 +62,11 @@
     //Admin Statistics
     static const String adminStatistics = '/admin/statistics/dashboard';
 
+    // Admin Host Approval
+    static const String adminHostApprovalPending = '/admin/host-approval/pending';
+    static const String adminHostApprovalApprove = '/admin/host-approval/approve';
+    static const String adminHostApprovalReject = '/admin/host-approval/reject';
+
     // Admin Tour
     static const String adminTours = '/admin/tours';
     static const String adminTourDetail = '/admin/tours/';

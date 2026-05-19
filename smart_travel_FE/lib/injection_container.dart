@@ -9,6 +9,7 @@ import 'package:smart_travel/core/services/image_upload_service.dart';
 import 'package:smart_travel/data/data_sources/local/auth_local_data_source.dart';
 import 'package:smart_travel/data/data_sources/remote/audio_data_source.dart';
 import 'package:smart_travel/data/data_sources/remote/banner_data_source.dart';
+import 'package:smart_travel/data/data_sources/remote/host_approval_data_source.dart';
 import 'package:smart_travel/data/data_sources/remote/destination_data_source.dart';
 import 'package:smart_travel/data/data_sources/remote/homestay_data_source.dart';
 import 'package:smart_travel/data/data_sources/remote/province_data_source.dart';
@@ -16,6 +17,7 @@ import 'package:smart_travel/data/data_sources/remote/user_remote_datasource.dar
 import 'package:smart_travel/data/repositories/audio_repository_impl.dart';
 import 'package:smart_travel/data/repositories/auth_repository_impl.dart';
 import 'package:smart_travel/data/repositories/banner_repository_impl.dart';
+import 'package:smart_travel/data/repositories/host_approval_repository_impl.dart';
 import 'package:smart_travel/data/repositories/destination_repository_impl.dart';
 import 'package:smart_travel/data/repositories/homestay_repository_impl.dart';
 import 'package:smart_travel/data/repositories/province_repository_impl.dart';
@@ -23,6 +25,7 @@ import 'package:smart_travel/data/repositories/user_repository_impl.dart';
 import 'package:smart_travel/domain/repositories/audio_repository.dart';
 import 'package:smart_travel/domain/repositories/auth_repository.dart';
 import 'package:smart_travel/domain/repositories/banner_repository.dart';
+import 'package:smart_travel/domain/repositories/host_approval_repository.dart';
 import 'package:smart_travel/domain/repositories/destination_repository.dart';
 import 'package:smart_travel/domain/repositories/homestay_repository.dart';
 import 'package:smart_travel/domain/repositories/province_repository.dart';
@@ -39,6 +42,9 @@ import 'package:smart_travel/domain/usecases/banner/create_banner_uc.dart';
 import 'package:smart_travel/domain/usecases/banner/delete_banner_uc.dart';
 import 'package:smart_travel/domain/usecases/banner/get_all_banner_use_case.dart';
 import 'package:smart_travel/domain/usecases/banner/update_banner_uc.dart';
+import 'package:smart_travel/domain/usecases/host_approval/approve_host_usecase.dart';
+import 'package:smart_travel/domain/usecases/host_approval/get_pending_hosts_usecase.dart';
+import 'package:smart_travel/domain/usecases/host_approval/reject_host_usecase.dart';
 import 'package:smart_travel/domain/usecases/destination/CompleteVoiceUseCase.dart';
 import 'package:smart_travel/domain/usecases/destination/add_destination_use_case.dart';
 import 'package:smart_travel/domain/usecases/destination/delete_destination_use_case.dart';
@@ -79,6 +85,7 @@ import 'package:smart_travel/domain/usecases/user/unlock_user_usecase.dart';
 import 'package:smart_travel/presentation/blocs/admin_audio/audio_bloc.dart';
 import 'package:smart_travel/presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
 import 'package:smart_travel/presentation/blocs/admin_invoice/admin_invoice_detail_bloc.dart';
+import 'package:smart_travel/presentation/blocs/admin_host_approval/host_approval_bloc.dart';
 import 'package:smart_travel/presentation/blocs/admin_user/admin_user_bloc.dart';
 import 'package:smart_travel/presentation/blocs/admin_voucher/voucher_bloc.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
@@ -89,6 +96,7 @@ import 'package:smart_travel/presentation/blocs/destiantion/destination_detail_b
 import 'package:smart_travel/presentation/blocs/favorite/favorite_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_management_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/cancel_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/invoice_bloc.dart';
@@ -107,10 +115,12 @@ import 'package:smart_travel/domain/repositories/payment_repository.dart';
 import 'package:smart_travel/domain/usecases/payment/confirm_cash_usecase.dart';
 import 'package:smart_travel/domain/usecases/payment/process_payment_usecase.dart';
 import 'package:smart_travel/presentation/blocs/payment/payment_bloc.dart';
-import 'package:smart_travel/presentation/blocs/booking/booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/review/reviewhtd_bloc.dart';
 import 'package:smart_travel/presentation/blocs/review/submit_review_bloc.dart';
 import 'package:smart_travel/presentation/blocs/weather/weather_bloc.dart';
+import 'package:smart_travel/service/destination_service.dart';
+import 'package:smart_travel/service/homestay_service.dart';
+import 'package:smart_travel/service/tour_service.dart';
 import 'core/network/network_info.dart';
 import 'data/data_sources/remote/auth_remote_datasource.dart';
 import 'package:smart_travel/data/data_sources/remote/booking_data_source.dart';
@@ -233,9 +243,18 @@ Future<void> init() async {
     () => BannerDataSourceImpl(dioClient: sl()),
   );
 
+  sl.registerLazySingleton<HostApprovalDataSource>(
+    () => HostApprovalDataSourceImpl(dioClient: sl()),
+  );
+
   sl.registerLazySingleton<StatisticsRemoteDataSource>(
     () => StatisticsRemoteDataSourceImpl(dioClient: sl()),
   );
+
+//SERVICE
+  sl.registerLazySingleton<HomestayService>(() => HomestayService(sl()));
+  sl.registerLazySingleton<DestinationService>(() => DestinationService(sl()));
+  sl.registerLazySingleton<TourService>(() => TourService(sl()));
 
   sl.registerLazySingleton(() => FavoriteBloc());
 
@@ -269,6 +288,8 @@ Future<void> init() async {
     hotelRepository: sl(),
   ));
 
+  sl.registerFactory<HomestayManagementBloc>(() => HomestayManagementBloc(homestayService: sl()));
+
   sl.registerLazySingleton<ProvinceRepository>(
     () => ProvinceRepositoryImpl(provinceDataSource: sl(), networkInfo: sl()),
   );
@@ -300,6 +321,7 @@ Future<void> init() async {
   sl.registerLazySingleton<PaymentRepository>(
     () => PaymentRepositoryImpl(dioClient: sl(), networkInfo: sl()),
   );
+
 
   // Thêm TokenRefreshInterceptor SAU khi AuthRepository ready
   sl<DioClient>().addRefreshTokenInterceptor(
@@ -382,8 +404,16 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UpdateVoucherUc(sl()));
   sl.registerLazySingleton(() => DeleteVoucherUc(sl()));
 
+  sl.registerLazySingleton(() => GetPendingHostsUseCase(sl()));
+  sl.registerLazySingleton(() => ApproveHostUseCase(sl()));
+  sl.registerLazySingleton(() => RejectHostUseCase(sl()));
+
   sl.registerLazySingleton<VoucherRepository>(
     () => VoucherRepositoryImpl(voucherDataSource: sl(), networkInfo: sl()),
+  );
+
+  sl.registerLazySingleton<HostApprovalRepository>(
+    () => HostApprovalRepositoryImpl(dataSource: sl(), networkInfo: sl()),
   );
 
   sl.registerLazySingleton<VoucherDataSource>(
@@ -407,6 +437,14 @@ Future<void> init() async {
   // Chat
   sl.registerLazySingleton(() => ChatRepository(sl()));
   sl.registerFactory(() => ChatBloc(sl()));
+
+  sl.registerFactory(
+    () => HostApprovalBloc(
+      getPendingHostsUseCase: sl(),
+      approveHostUseCase: sl(),
+      rejectHostUseCase: sl(),
+    ),
+  );
 
   sl.registerFactory(
     () => DestinationBloc(
@@ -441,17 +479,13 @@ Future<void> init() async {
 
   // HotelBloc phải tiêm đủ 4 tham số
   sl.registerFactory(
-    () => HotelBloc(
-      getHotelsUseCase: sl(),
-      createHotelUseCase: sl(),
-      updateHotelUseCase: sl(),
-      deleteHotelUseCase: sl(),
-      uploadHotelImagesUseCase: sl(),
+    () => HomestayBloc(
+      homestayService: sl(),
     ),
   );
 
   // ---  BLOC HOTEL ---
-  sl.registerFactory(() => HotelDetailBloc(hotelDetailUseCase: sl()));
+  sl.registerFactory(() => HomestayDetailBloc(homestayService: sl()));
 
   // ---  BLOC BANNER ---
   sl.registerFactory(
@@ -507,7 +541,7 @@ Future<void> init() async {
   );
 
   //Bloc tour
-  sl.registerFactory(() => TourBloc(sl()));
+  sl.registerFactory<TourBloc>(() => TourBloc(tourService: sl<TourService>()));
   sl.registerFactory(() => TourDetailBloc(sl()));
 
   // --- Usecases
@@ -551,7 +585,6 @@ Future<void> init() async {
     ),
   );
 
-  sl.registerFactory(() => BookingBloc(createBookingUseCase: sl()));
 
   sl.registerFactory(
     () => PaymentBloc(

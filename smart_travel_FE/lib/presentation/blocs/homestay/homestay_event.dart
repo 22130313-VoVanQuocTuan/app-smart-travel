@@ -1,18 +1,18 @@
-import 'dart:io';
-import 'package:equatable/equatable.dart';
-import 'package:smart_travel/data/models/homestay/homestay_create_request.dart';
+// lib/presentation/blocs/homestay/homestay_event.dart
 
-abstract class HotelEvent extends Equatable {
-  const HotelEvent();
+import 'package:equatable/equatable.dart';
+
+abstract class HomestayEvent extends Equatable {
+  const HomestayEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-// Event gọi API lấy danh sách khách sạn
-class LoadHotelsEvent extends HotelEvent {
-  final int? destinationId;
+// Load danh sách homestay (có filter)
+class LoadHomestaysEvent extends HomestayEvent {
   final String? keyword;
+  final int? destinationId;
   final int? minStars;
   final int? maxStars;
   final double? minPrice;
@@ -20,12 +20,12 @@ class LoadHotelsEvent extends HotelEvent {
   final String? city;
   final int page;
   final int size;
-  final String? sortBy;
-  final String? sortDir;
+  final String sortBy;
+  final String sortDir;
 
-  const LoadHotelsEvent({
-    this.destinationId,
+  const LoadHomestaysEvent({
     this.keyword,
+    this.destinationId,
     this.minStars,
     this.maxStars,
     this.minPrice,
@@ -39,71 +39,7 @@ class LoadHotelsEvent extends HotelEvent {
 
   @override
   List<Object?> get props => [
-    destinationId,
-    keyword,
-    minStars,
-    maxStars,
-    minPrice,
-    maxPrice,
-    city,
-    page,
-    size,
-    sortBy,
-    sortDir,
+    keyword, destinationId, minStars, maxStars,
+    minPrice, maxPrice, city, page, size, sortBy, sortDir
   ];
-}
-
-// --- Các Event cho CRUD ---
-
-// 1. Tạo mới khách sạn
-class CreateHotelEvent extends HotelEvent {
-  final HotelCreateRequest request;
-  final File? imageFile; // Thêm file ảnh vào đây
-
-  const CreateHotelEvent({required this.request, this.imageFile});
-
-  @override
-  List<Object?> get props => [request, imageFile];
-}
-
-// 2. Cập nhật khách sạn
-class UpdateHotelEvent extends HotelEvent {
-  final int hotelId;
-  final HotelCreateRequest request;
-
-  const UpdateHotelEvent({required this.hotelId, required this.request});
-
-  @override
-  List<Object?> get props => [hotelId, request];
-}
-
-// 3. Xóa khách sạn
-class DeleteHotelEvent extends HotelEvent {
-  final int hotelId;
-  const DeleteHotelEvent({required this.hotelId});
-
-  @override
-  List<Object?> get props => [hotelId];
-}
-
-// 5. Event Upload
-class UploadHotelImagesEvent extends HotelEvent {
-  final int hotelId;
-  final List<File> images;
-
-  const UploadHotelImagesEvent({required this.hotelId, required this.images});
-
-  @override
-  List<Object?> get props => [hotelId, images];
-}
-
-// 6. Event Delete Image
-class DeleteHotelImageEvent extends HotelEvent {
-  final int hotelId; // Cần hotelId để reload lại detail sau khi xóa
-  final int imageId;
-
-  const DeleteHotelImageEvent({required this.hotelId, required this.imageId});
-
-  @override
-  List<Object?> get props => [hotelId, imageId];
 }
