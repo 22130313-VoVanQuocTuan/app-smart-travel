@@ -43,6 +43,7 @@ public class BookingResponse {
     private String status;
     private String message;
     private LocalDateTime createdAt;
+    private  String cancellationReason;
 
     @Data
     @Builder
@@ -74,7 +75,7 @@ public class BookingResponse {
                            BigDecimal hotelPrice, BigDecimal totalTourPrice,
                            BigDecimal totalPrice, BigDecimal discountAmount,
                            String couponCode, BigDecimal finalPrice, String status,
-                           String message) {
+                           String message, String cancellationReason) {
         this.id = id;
         this.bookingType = bookingType;
         this.hotelId = hotelId;
@@ -96,5 +97,6 @@ public class BookingResponse {
         this.status = status;
         this.message = message;
         this.createdAt = LocalDateTime.now();
+        this.cancellationReason = cancellationReason;
     }
 }
