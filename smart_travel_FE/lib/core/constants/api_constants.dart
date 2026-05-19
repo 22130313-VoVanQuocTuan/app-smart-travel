@@ -20,6 +20,12 @@
     static const String vnpayReturn = '/payment/vnpay-return';
     static const String momoReturn = '/payment/momo-return';
     static const String createBooking = '/bookings';
+    
+    // Host Bookings
+    static const String getHostBookings = '/bookings/host/list';
+    static const String getHostBookingDetail = '/bookings/'; // Append ID
+    static const String updateBookingStatus = '/bookings/';  // Append ID + /status
+    static const String getBookingsByDateRange = '/bookings/host/calendar';
 
     //Destination
     static const String destinationFeatured = '/destination/destination-featured';

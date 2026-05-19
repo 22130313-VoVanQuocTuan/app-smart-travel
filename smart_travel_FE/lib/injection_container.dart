@@ -97,6 +97,7 @@ import 'package:smart_travel/presentation/blocs/favorite/favorite_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_management_bloc.dart';
+import 'package:smart_travel/presentation/blocs/host_booking/host_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/cancel_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/invoice_bloc.dart';
@@ -117,10 +118,13 @@ import 'package:smart_travel/domain/usecases/payment/process_payment_usecase.dar
 import 'package:smart_travel/presentation/blocs/payment/payment_bloc.dart';
 import 'package:smart_travel/presentation/blocs/review/reviewhtd_bloc.dart';
 import 'package:smart_travel/presentation/blocs/review/submit_review_bloc.dart';
+import 'package:smart_travel/presentation/blocs/user_booking/user_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/weather/weather_bloc.dart';
+import 'package:smart_travel/service/booking_service.dart';
 import 'package:smart_travel/service/destination_service.dart';
 import 'package:smart_travel/service/homestay_service.dart';
 import 'package:smart_travel/service/tour_service.dart';
+import 'package:smart_travel/service/user_booking_service.dart';
 import 'core/network/network_info.dart';
 import 'data/data_sources/remote/auth_remote_datasource.dart';
 import 'package:smart_travel/data/data_sources/remote/booking_data_source.dart';
@@ -255,6 +259,11 @@ Future<void> init() async {
   sl.registerLazySingleton<HomestayService>(() => HomestayService(sl()));
   sl.registerLazySingleton<DestinationService>(() => DestinationService(sl()));
   sl.registerLazySingleton<TourService>(() => TourService(sl()));
+  sl.registerLazySingleton<BookingService>(() => BookingService(sl()));
+  sl.registerLazySingleton<UserBookingService>(() => UserBookingService(sl()));
+
+
+
 
   sl.registerLazySingleton(() => FavoriteBloc());
 
@@ -486,6 +495,8 @@ Future<void> init() async {
 
   // ---  BLOC HOTEL ---
   sl.registerFactory(() => HomestayDetailBloc(homestayService: sl()));
+  sl.registerFactory(() => HostBookingBloc(bookingService: sl()));
+  sl.registerFactory(() => UserBookingBloc(bookingService: sl()));
 
   // ---  BLOC BANNER ---
   sl.registerFactory(
