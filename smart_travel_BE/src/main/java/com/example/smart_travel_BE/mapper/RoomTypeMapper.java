@@ -1,6 +1,6 @@
 package com.example.smart_travel_BE.mapper;
 
-import com.example.smart_travel_BE.dto.hotel.response.RoomTypeResponse;
+import com.example.smart_travel_BE.dto.homestay.response.RoomTypeResponse;
 import com.example.smart_travel_BE.entity.RoomType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +34,7 @@ public interface RoomTypeMapper {
                 .name(rt.getName())
                 .capacity(rt.getCapacity())
                 .price(rt.getPrice())
+                .totalRooms(rt.getTotalRooms())
                 .availableRooms(available)
                 .amenities(amenitiesList)
                 .build();

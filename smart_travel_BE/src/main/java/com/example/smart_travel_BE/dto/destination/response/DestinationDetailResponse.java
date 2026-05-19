@@ -1,6 +1,6 @@
 package com.example.smart_travel_BE.dto.destination.response;
 
-import com.example.smart_travel_BE.dto.hotel.response.HotelSummaryResponse;
+import com.example.smart_travel_BE.dto.homestay.response.HotelSummaryResponse;
 import com.example.smart_travel_BE.dto.province.response.ProvinceResponse;
 import com.example.smart_travel_BE.dto.review.response.ReviewResponse;
 import com.example.smart_travel_BE.dto.tour.response.TourSummaryResponse;

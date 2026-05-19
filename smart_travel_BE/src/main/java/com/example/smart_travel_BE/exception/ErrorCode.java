@@ -33,7 +33,6 @@ public enum ErrorCode {
     UNAUTHORIZED(1007, "Không có quyền truy cập hoặc phiên đăng nhập đã hết hạn", HttpStatus.UNAUTHORIZED),
     INVOICE_NOT_FOUND(1040, "Không tìm thấy hóa đơn", HttpStatus.NOT_FOUND),
     REFUND_NOT_ALLOWED(1041, "Không thể yêu cầu hoàn tiền với trạng thái hiện tại", HttpStatus.BAD_REQUEST),
-    REFUND_ALREADY_REQUESTED(1042, "Yêu cầu hoàn tiền đã được gửi trước đó", HttpStatus.BAD_REQUEST),
 
 
     // CHECKING URL PAYMENT
@@ -127,8 +126,52 @@ public enum ErrorCode {
     REVIEW_SPAM_DETECTED(1019,"spam it thoi", HttpStatus.BAD_REQUEST),
     DESTINATION_NOT_FOUND(1019,  "khong thay destination" ,HttpStatus.NOT_FOUND ),
     REFUND_NOT_PENDING(1050,"status not in pending" , HttpStatus.BAD_REQUEST ),
-    INVALID_BOOKING_TYPE(1051, "Chỉ áp dụng check-in cho đơn đặt phòng khách sạn",HttpStatus.BAD_REQUEST),
-    INVALID_STATUS(1052, "Đơn hàng phải ở trạng thái ACTIVE để check-in",HttpStatus.BAD_REQUEST),;
+    INVALID_STATUS(1052, "Đơn hàng phải ở trạng thái ACTIVE để check-in",HttpStatus.BAD_REQUEST),
+
+    // Booking errors
+    BOOKING_DATE_INVALID(1041, "Ngày đặt không hợp lệ", HttpStatus.BAD_REQUEST),
+    REFUND_ALREADY_REQUESTED(1042, "Yêu cầu hoàn tiền đã được gửi trước đó", HttpStatus.BAD_REQUEST),
+    BOOKING_CANNOT_CANCEL(1043, "Không thể hủy booking ở trạng thái hiện tại", HttpStatus.BAD_REQUEST),
+
+    // Homestay errors
+    HOMESTAY_NOT_FOUND(1050, "Không tìm thấy homestay", HttpStatus.NOT_FOUND),
+    HOMESTAY_NOT_ACTIVE(1051, "Homestay hiện không khả dụng", HttpStatus.BAD_REQUEST),
+    ROOM_TYPE_NOT_FOUND(1052, "Không tìm thấy loại phòng", HttpStatus.NOT_FOUND),
+    ROOM_TYPE_NOT_BELONG_TO_HOMESTAY(1053, "Loại phòng không thuộc homestay này", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_AVAILABLE(1054, "Phòng không còn trống trong khoảng thời gian này", HttpStatus.BAD_REQUEST),
+    INVALID_NUMBER_OF_ROOMS(1055, "Số lượng phòng không hợp lệ", HttpStatus.BAD_REQUEST),
+
+    // Tour errors
+    TOUR_NOT_FOUND(1060, "Không tìm thấy tour", HttpStatus.NOT_FOUND),
+    TOUR_NOT_ACTIVE(1061, "Tour hiện không khả dụng", HttpStatus.BAD_REQUEST),
+    TOUR_DATE_INVALID(1062, "Ngày tham gia tour không hợp lệ", HttpStatus.BAD_REQUEST),
+    TOUR_DATE_OUT_OF_STAY(1063, "Ngày tham gia tour phải nằm trong khoảng thời gian lưu trú", HttpStatus.BAD_REQUEST),
+    TOUR_NO_SCHEDULE(1064, "Tour không có lịch trình vào ngày này", HttpStatus.BAD_REQUEST),
+    TOUR_MAX_PEOPLE_EXCEEDED(1065, "Số lượng người tham gia tour vượt quá giới hạn", HttpStatus.BAD_REQUEST),
+    TOUR_MIN_PEOPLE_NOT_MET(1066, "Số lượng người tham gia tour chưa đạt yêu cầu tối thiểu", HttpStatus.BAD_REQUEST),
+    TOUR_PEOPLE_EXCEED_BOOKING(1067, "Số người tham gia tour không được vượt quá số người trong booking", HttpStatus.BAD_REQUEST),
+
+    // Voucher errors
+    VOUCHER_NOT_FOUND(1070, "Mã giảm giá không hợp lệ", HttpStatus.NOT_FOUND),
+    VOUCHER_INACTIVE(1071, "Mã giảm giá đã bị vô hiệu hóa", HttpStatus.BAD_REQUEST),
+    VOUCHER_EXPIRED(1072, "Mã giảm giá đã hết hạn", HttpStatus.BAD_REQUEST),
+    VOUCHER_USAGE_LIMIT_EXCEEDED(1073, "Mã giảm giá đã hết lượt sử dụng", HttpStatus.BAD_REQUEST),
+    VOUCHER_MIN_ORDER_NOT_MET(1074, "Đơn hàng chưa đạt giá trị tối thiểu để sử dụng mã này", HttpStatus.BAD_REQUEST),
+    VOUCHER_ALREADY_USED(1075, "Mã giảm giá này đã được sử dụng", HttpStatus.BAD_REQUEST),
+    VOUCHER_NOT_OWNED(1076, "Mã giảm giá không thuộc sở hữu của bạn", HttpStatus.BAD_REQUEST),
+
+    // Common errors
+    INVALID_BOOKING_TYPE(1080, "Loại đặt không hợp lệ", HttpStatus.BAD_REQUEST),
+    REQUIRED_FIELD_MISSING(1081, "Thiếu thông tin bắt buộc", HttpStatus.BAD_REQUEST),
+    USER_NOT_FOUND(1001, "Không tìm thấy người dùng", HttpStatus.NOT_FOUND),
+    ROOM_TYPE_REQUIRED(1003, "Khách sạn phải có ít nhất một loại phòng", HttpStatus.BAD_REQUEST),
+    NOT_OWNER(1005, "Bạn không có quyền thực hiện thao tác này", HttpStatus.FORBIDDEN),
+    HOMESTAY_ALREADY_DELETED(1006, "Khách sạn này đã bị xóa", HttpStatus.BAD_REQUEST),
+    ;
+
+
+
+
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

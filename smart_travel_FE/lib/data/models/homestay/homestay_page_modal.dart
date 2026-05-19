@@ -132,16 +132,16 @@ class HotelListItemResponseModel {
     );
   }
 
-  Hotel toEntity() {
-    return Hotel(
+  Homestay toEntity() {
+    return Homestay(
       id: id,
       name: name,
       address: address,
       thumbnail: thumbnail,
-      minPrice: minPrice,
-      starRating: stars,
-      averageRating: averageRating,
-      reviewCount: reviewCount,
+      pricePerNight: minPrice,
+      stars: stars,
+      rating: averageRating,
+      numOfReviews: reviewCount,
       destinationId: destinationId,
       destinationName: destinationName,
       phone: phone,

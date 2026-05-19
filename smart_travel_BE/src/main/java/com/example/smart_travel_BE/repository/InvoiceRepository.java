@@ -3,7 +3,7 @@
 package com.example.smart_travel_BE.repository;
 
 import com.example.smart_travel_BE.entity.Booking;
-import com.example.smart_travel_BE.entity.Hotel;
+import com.example.smart_travel_BE.entity.Homestay;
 import com.example.smart_travel_BE.entity.Invoice;
 import com.example.smart_travel_BE.entity.Tour;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,8 +31,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Optional<Booking> findFullBookingById(@Param("bookingId") Long bookingId);
 
     // 2. Lấy Hotel + thumbnail (dùng method getThumbnail())
-    @Query("SELECT h FROM Hotel h LEFT JOIN FETCH h.images WHERE h.id = :hotelId")
-    Optional<Hotel> findHotelWithImagesById(@Param("hotelId") Long hotelId);
+    @Query("SELECT h FROM Homestay h LEFT JOIN FETCH h.images WHERE h.id = :hotelId")
+    Optional<Homestay> findHotelWithImagesById(@Param("hotelId") Long hotelId);
 
     // 3. Lấy Tour + thumbnail
     @Query("SELECT t FROM Tour t LEFT JOIN FETCH t.images WHERE t.id = :tourId")
@@ -77,7 +77,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             SELECT b FROM Booking b
             LEFT JOIN FETCH b.invoice
             LEFT JOIN Tour t ON b.tourId = t.id AND b.bookingType = 'TOUR'
-            LEFT JOIN Hotel h ON b.hotelId = h.id AND b.bookingType = 'HOTEL'
+            LEFT JOIN Homestay h ON b.hotelId = h.id AND b.bookingType = 'HOTEL'
             WHERE b.user.id = :userId
               AND b.status IN ('ACTIVE','CHECKED')
               AND (:keyword IS NULL OR :keyword = '' OR :keyword = 'null'
@@ -94,7 +94,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             SELECT b FROM Booking b
             LEFT JOIN FETCH b.invoice
             LEFT JOIN Tour t ON b.tourId = t.id AND b.bookingType = 'TOUR'
-            LEFT JOIN Hotel h ON b.hotelId = h.id AND b.bookingType = 'HOTEL'
+            LEFT JOIN Homestay h ON b.hotelId = h.id AND b.bookingType = 'HOTEL'
             WHERE b.user.id = :userId
               AND b.status = 'REFUNDED'
               AND (:keyword IS NULL OR :keyword = '' OR :keyword = 'null'
@@ -127,7 +127,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 SELECT b FROM Booking b
 LEFT JOIN FETCH b.invoice i
 LEFT JOIN FETCH b.roomType rt
-LEFT JOIN Hotel h ON b.hotelId = h.id
+LEFT JOIN Homestay h ON b.hotelId = h.id
 LEFT JOIN Tour t ON b.tourId = t.id
 WHERE 1 = 1
   AND (:invoiceNumber IS NULL OR :invoiceNumber = '' 

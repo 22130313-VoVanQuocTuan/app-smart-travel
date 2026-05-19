@@ -650,7 +650,7 @@ class _DetailDestinationScreenState extends State<DetailDestinationScreen>
     );
   }
 
-  Widget _buildHotelsTab(List<Hotel> hotels) {
+  Widget _buildHotelsTab(List<Homestay> hotels) {
     if (hotels.isEmpty) {
       return const Center(child: Text('Chưa có khách sạn'));
     }
@@ -683,7 +683,7 @@ class _DetailDestinationScreenState extends State<DetailDestinationScreen>
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.network(
-                        h.images ?? "Đang cập nhật",
+                        h.thumbnail ?? "Đang cập nhật",
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
@@ -704,9 +704,9 @@ class _DetailDestinationScreenState extends State<DetailDestinationScreen>
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              ...List.generate(h.starRating!, (_) => const Icon(Icons.star, color: Color(0xFFFDBF0E), size: 14)),
+                              ...List.generate(h.stars!, (_) => const Icon(Icons.star, color: Color(0xFFFDBF0E), size: 14)),
                               const SizedBox(width: 6),
-                              Text('${h.starRating} sao', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                              Text('${h.stars} sao', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -725,7 +725,7 @@ class _DetailDestinationScreenState extends State<DetailDestinationScreen>
                           const Icon(Icons.star, color: Color(0xFFFDBF0E), size: 14),
                           const SizedBox(width: 4),
                           Text(
-                            h.averageRating!.toStringAsFixed(1),
+                            h.rating!.toStringAsFixed(1),
                             style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2DBBAA), fontSize: 13),
                           ),
                         ],

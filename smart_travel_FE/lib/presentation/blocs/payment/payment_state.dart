@@ -1,3 +1,4 @@
+// payment_state.dart
 import 'package:equatable/equatable.dart';
 
 abstract class PaymentState extends Equatable {
@@ -18,7 +19,7 @@ class PaymentSuccess extends PaymentState {
   List<Object?> get props => [paymentUrl];
 }
 
-// THÊM MỚI: State cho thanh toán tiền mặt thành công
+// State cho thanh toán tiền mặt thành công
 class PaymentCashSuccess extends PaymentState {}
 
 class PaymentFailure extends PaymentState {

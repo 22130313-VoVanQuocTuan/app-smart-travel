@@ -90,6 +90,9 @@ public class SecurityConfig {
             "/api/v1/users/user/**",
             //Compare
             "/api/v1/compare/**",
+
+            "/api/v1/upload/avatar",
+            "/api/v1/room-types",
     };
     CustomAuthEntryPoint customAuthEntryPoint;
     UserHeaderAuthenticationFilter userHeaderAuthenticationFilter;

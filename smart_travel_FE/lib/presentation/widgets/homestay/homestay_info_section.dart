@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:smart_travel/domain/entities/homestay.dart';
 
-class HotelInfoSection extends StatelessWidget {
-  final Hotel hotel;
+class HomestayInfoSection extends StatelessWidget {
+  final Homestay homestay;
   final double displayPrice;
   final Animation<double> fadeAnimation;
 
-  const HotelInfoSection({
+  const HomestayInfoSection({
     super.key,
-    required this.hotel,
+    required this.homestay,
     required this.displayPrice,
     required this.fadeAnimation,
   });
@@ -36,7 +36,7 @@ class HotelInfoSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              hotel.name ?? '',
+              homestay.name ?? '',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -49,16 +49,16 @@ class HotelInfoSection extends StatelessWidget {
             Row(
               children: [
                 ...List.generate(
-                  hotel.starRating ?? 0,
+                  homestay.stars ?? 0,
                   (_) => const Icon(
                     Icons.star_rounded,
                     color: Color(0xFFFBBF24),
                     size: 18,
                   ),
                 ),
-                if ((hotel.starRating ?? 0) > 0) const SizedBox(width: 6),
+                if ((homestay.stars ?? 0) > 0) const SizedBox(width: 6),
                 Text(
-                  '${hotel.averageRating?.toStringAsFixed(1) ?? '0.0'} (${hotel.reviewCount ?? 0} đánh giá)',
+                  '${homestay.rating?.toStringAsFixed(1) ?? '0.0'} (${homestay.numOfReviews ?? 0} đánh giá)',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
@@ -67,7 +67,7 @@ class HotelInfoSection extends StatelessWidget {
             const SizedBox(height: 18),
 
             Text(
-              hotel.description ?? 'Không có mô tả',
+              homestay.description ?? 'Không có mô tả',
               style: TextStyle(
                 fontSize: 15,
                 height: 1.4,
@@ -95,7 +95,7 @@ class HotelInfoSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    '${_formatPrice(hotel.pricePerNight ?? 0)}đ / đêm',
+                    '${_formatPrice(homestay.pricePerNight ?? 0)}đ / đêm',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,

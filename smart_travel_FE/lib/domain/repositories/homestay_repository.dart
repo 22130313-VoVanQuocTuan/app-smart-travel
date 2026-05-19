@@ -23,17 +23,17 @@ abstract class HotelRepository {
   });
 
   /// Lấy chi tiết khách sạn + danh sách phòng trống
-  Future<Either<Failure, Hotel>> getHotelDetail({
+  Future<Either<Failure, Homestay>> getHotelDetail({
     required int hotelId,
     required DateTime checkIn,
     required DateTime checkOut,
   });
 
   //Tạo mới khách sạn
-  Future<Either<Failure, Hotel>> createHotel(HotelCreateRequest request);
+  Future<Either<Failure, Homestay>> createHotel(HotelCreateRequest request);
 
   // Cập nhật thông tin khách sạn
-  Future<Either<Failure, Hotel>> updateHotel(
+  Future<Either<Failure, Homestay>> updateHotel(
     int id,
     HotelCreateRequest request,
   );

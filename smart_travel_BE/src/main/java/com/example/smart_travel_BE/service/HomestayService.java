@@ -1,16 +1,18 @@
 package com.example.smart_travel_BE.service;
 
-import com.example.smart_travel_BE.dto.hotel.request.HomestayFilterRequest;
-//import com.example.smart_travel_BE.dto.homestay.request.HotelCreateRequest;
-//import com.example.smart_travel_BE.dto.homestay.request.RoomTypeCreateRequest;
-//import com.example.smart_travel_BE.dto.homestay.response.HotelDetailResponse;
-import com.example.smart_travel_BE.dto.hotel.request.HomestayCreateRequest;
-import com.example.smart_travel_BE.dto.hotel.request.RoomTypeCreateRequest;
-import com.example.smart_travel_BE.dto.hotel.response.HomestayResponse;
-import com.example.smart_travel_BE.dto.hotel.response.HomestayDetailResponse;
-import com.example.smart_travel_BE.dto.hotel.response.RoomTypeResponse;
+
+import com.example.smart_travel_BE.dto.homestay.request.HomestayCreateRequest;
+import com.example.smart_travel_BE.dto.homestay.request.HomestayFilterRequest;
+import com.example.smart_travel_BE.dto.homestay.request.RoomTypeCreateRequest;
+import com.example.smart_travel_BE.dto.homestay.response.HomestayDetailResponse;
+import com.example.smart_travel_BE.dto.homestay.response.HomestayResponse;
+import com.example.smart_travel_BE.dto.homestay.response.RoomTypeResponse;
+import com.example.smart_travel_BE.dto.homestay.response.TourBriefResponse;
 import com.example.smart_travel_BE.entity.*;
+import com.example.smart_travel_BE.exception.AppException;
+import com.example.smart_travel_BE.exception.ErrorCode;
 import com.example.smart_travel_BE.mapper.HomestayMapper;
+import com.example.smart_travel_BE.mapper.RoomTypeMapper;
 import com.example.smart_travel_BE.repository.*;
 import com.example.smart_travel_BE.specification.HomestaySpecification;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,12 +25,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +40,8 @@ public class HomestayService {
     private HomestayRepository hotelRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TourRepository tourRepository; // THÊM MỚI
 
     ObjectMapper mapper = new ObjectMapper();
     @Autowired
@@ -45,8 +49,11 @@ public class HomestayService {
     @Autowired
     private DestinationRepository destinationRepository;
 
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
     //Lấy danh sách khách sạn có phân trang + filter
-    public Page<HomestayResponse> getHotels(HomestayFilterRequest filter) {
+    public Page<HomestayResponse> getHomestay(HomestayFilterRequest filter) {
         int page = (filter.getPage() != null && filter.getPage() >= 0) ? filter.getPage() : 0;
         int size = (filter.getSize() != null && filter.getSize() > 0) ? filter.getSize() : 10;
 
@@ -55,282 +62,421 @@ public class HomestayService {
         Sort sort = Sort.by(direction, filter.getSortBy());
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // 1. LẤY USER_ID TỪ SECURITY CONTEXT
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long currentUserId = null;
-        boolean isHotelAdmin = false;
 
-        if (auth != null && auth.isAuthenticated()) {
-            if (auth.getPrincipal() instanceof com.example.smart_travel_BE.entity.User user) {
-                currentUserId = user.getId();
-            }
-            System.out.println("Authorities thực tế: " + auth.getAuthorities());
-            isHotelAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMINHOTEL"));
-        }
 
-        // 2. Khởi tạo Spec
-        Specification<Hotel> spec = HomestaySpecification.filter(filter);
+        Specification<Homestay> spec = HomestaySpecification.filter(filter);
 
-        // 3. ĐIỀU KIỆN CHUNG: isActive = true
-        Specification<Hotel> activeSpec = (root, query, cb) -> cb.equal(root.get("isActive"), true);
+        Specification<Homestay> activeSpec = (root, query, cb) -> cb.equal(root.get("isActive"), true);
         spec = (spec == null) ? activeSpec : spec.and(activeSpec);
 
-        // 4. NẾU LÀ ADMIN_HOTEL: Ép lọc theo ownerId (Số Long)
-        Specification<Hotel> ownerSpec = null;
-        if (isHotelAdmin && currentUserId != null) {
-            final Long finalUserId = currentUserId;
+        Page<Homestay> hotelPage = hotelRepository.findAll(spec, pageable);
 
-            ownerSpec = (root, query, cb) -> cb.equal(root.get("owner").get("id"), finalUserId);
-
-            spec = spec.and(ownerSpec);
-        }
-        Page<Hotel> hotelPage = hotelRepository.findAll(spec, pageable);
-        System.out.println("Final currentUserId: " + currentUserId);
-        System.out.println("Is Hotel Admin: " + isHotelAdmin);
-
-        // 5. Map sang DTO (Giữ nguyên logic của bạn)
-        return hotelPage.map(hotel -> HomestayResponse.builder().id(hotel.getId()).name(hotel.getName()).address(hotel.getAddress()).minPrice(hotel.getMinPrice()).stars(hotel.getStarRating()).rating(hotel.getAverageRating() != null ? hotel.getAverageRating().doubleValue() : null).numOfReviews(hotel.getReviewCount()).thumbnail(hotel.getThumbnail()).destinationId(hotel.getDestination() != null ? hotel.getDestination().getId() : null).destinationName(hotel.getDestination() != null ? hotel.getDestination().getName() : null).phone(hotel.getPhone()).email(hotel.getEmail()).description(hotel.getDescription()).amenities(convertAmenitiesToList(hotel.getAmenities())).totalRooms(hotel.getTotalRooms()).availableRooms(hotel.getAvailableRooms()).latitude(hotel.getLatitude()).longitude(hotel.getLongitude()).build());
+        return hotelPage.map(hotel -> HomestayResponse.builder()
+                .id(hotel.getId())
+                .name(hotel.getName())
+                .address(hotel.getAddress())
+                .pricePerNight(hotel.getMinPrice())
+                .stars(hotel.getStarRating())
+                .rating(hotel.getAverageRating() != null ? hotel.getAverageRating().doubleValue() : null)
+                .numOfReviews(hotel.getReviewCount())
+                .thumbnail(hotel.getThumbnail())
+                .destinationId(hotel.getDestination() != null ? hotel.getDestination().getId() : null)
+                .destinationName(hotel.getDestination() != null ? hotel.getDestination().getName() : null)
+                .phone(hotel.getPhone())
+                .email(hotel.getEmail())
+                .description(hotel.getDescription())
+                .amenities(convertAmenitiesToList(hotel.getAmenities()))
+                .totalRooms(hotel.getTotalRooms())
+                .availableRooms(hotel.getAvailableRooms())
+                .latitude(hotel.getLatitude())
+                .longitude(hotel.getLongitude())
+                .build());
     }
 
-    // Lấy chi tiết khách sạn kèm danh sách phòng khả dụng
+    // Lấy chi tiết khách sạn kèm danh sách phòng khả dụng VÀ TOUR
     @Transactional(readOnly = true)
-    public HomestayDetailResponse getHotelDetail(Long hotelId, LocalDate checkIn, LocalDate checkOut) {
-        Hotel hotel = hotelRepository.findById(hotelId).orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn có id = " + hotelId));
+    public HomestayDetailResponse getHomestayDetail(Long hotelId, LocalDate checkIn, LocalDate checkOut) {
+        return getHomestayDetail(hotelId, checkIn, checkOut, false);
+    }
 
-        // Kiểm tra nếu khách sạn đã bị xóa mềm
-        if (Boolean.FALSE.equals(hotel.getIsActive())) {
-            throw new RuntimeException("Khách sạn này đã bị xóa và không còn tồn tại.");
+    @Transactional(readOnly = true)
+    public HomestayDetailResponse getHomestayDetail(Long hotelId, LocalDate checkIn, LocalDate checkOut, boolean forEdit) {
+        Homestay homestay = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new AppException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        if (Boolean.FALSE.equals(homestay.getIsActive())) {
+            throw new AppException(ErrorCode.HOMESTAY_NOT_ACTIVE);
         }
-        // Lấy danh sách phòng và số lượng trống
-        List<Object[]> results = roomTypeRepository.findAvailableRoomsWithCount(hotelId, checkIn, checkOut);
 
-        List<RoomTypeResponse> roomResponses = results.stream().map(obj -> {
-            RoomType rt = (RoomType) obj[0];
-            int available = ((Number) obj[1]).intValue();
-            return RoomTypeResponse.builder().id(rt.getId()).name(rt.getName()).capacity(rt.getCapacity()).price(rt.getPrice()).availableRooms(available).amenities(convertAmenitiesToList(rt.getAmenities())).build();
-        }).collect(Collectors.toList());
+        List<RoomTypeResponse> roomResponses;
+        if (forEdit) {
+            // Form chỉnh sửa cần toàn bộ loại phòng đã cấu hình
+            roomResponses = homestay.getRoomTypes().stream()
+                    .map(RoomTypeMapper::toResponse)
+                    .collect(Collectors.toList());
+        } else {
+            // Luồng booking chỉ lấy loại phòng còn trống theo khoảng ngày
+            List<Object[]> results = roomTypeRepository.findAvailableRoomsWithCount(hotelId, checkIn, checkOut);
 
-        return HomestayDetailResponse.builder().id(hotel.getId()).name(hotel.getName()).address(hotel.getAddress()).description(hotel.getDescription()).stars(hotel.getStarRating()).rating(hotel.getAverageRating() != null ? hotel.getAverageRating().doubleValue() : null).numOfReviews(hotel.getReviewCount()).thumbnail(hotel.getThumbnail()).images(hotel.getImages() != null ? hotel.getImages().stream().map(img -> img.getImageUrl()).collect(Collectors.toList()) : null).destinationName(hotel.getDestination() != null ? hotel.getDestination().getName() : null).provinceName(hotel.getDestination() != null && hotel.getDestination().getProvince() != null ? hotel.getDestination().getProvince().getName() : null).latitude(hotel.getLatitude()).longitude(hotel.getLongitude()).pricePerNight(hotel.getPricePerNight()).rooms(roomResponses).phone(hotel.getPhone()).email(hotel.getEmail()).amenities(convertAmenitiesToList(hotel.getAmenities())).destinationId(hotel.getDestination() != null ? hotel.getDestination().getId() : null).build();
+            roomResponses = results.stream().map(obj -> {
+                RoomType rt = (RoomType) obj[0];
+                int available = ((Number) obj[1]).intValue();
+                return RoomTypeResponse.builder()
+                        .id(rt.getId())
+                        .name(rt.getName())
+                        .capacity(rt.getCapacity())
+                        .price(rt.getPrice())
+                        .totalRooms(rt.getTotalRooms())
+                        .availableRooms(available)
+                        .amenities(convertAmenitiesToList(rt.getAmenities()))
+                        .build();
+            }).collect(Collectors.toList());
+        }
 
+        // THÊM MỚI: Lấy danh sách tour có thể đặt kèm
+        List<TourBriefResponse> availableTours = getAvailableToursForHomestay(homestay, checkIn, checkOut);
+
+        return HomestayDetailResponse.builder()
+                .id(homestay.getId())
+                .name(homestay.getName())
+                .address(homestay.getAddress())
+                .description(homestay.getDescription())
+                .stars(homestay.getStarRating())
+                .rating(homestay.getAverageRating() != null ? homestay.getAverageRating().doubleValue() : null)
+                .numOfReviews(homestay.getReviewCount())
+                .thumbnail(homestay.getThumbnail())
+                .images(homestay.getImages() != null ?
+                        homestay.getImages().stream().map(HomestayImage::getImageUrl).collect(Collectors.toList()) : null)
+                .destinationName(homestay.getDestination() != null ? homestay.getDestination().getName() : null)
+                .provinceName(homestay.getDestination() != null && homestay.getDestination().getProvince() != null ?
+                        homestay.getDestination().getProvince().getName() : null)
+                .latitude(homestay.getLatitude())
+                .longitude(homestay.getLongitude())
+                .pricePerNight(homestay.getPricePerNight())
+                .rooms(roomResponses)
+                .phone(homestay.getPhone())
+                .email(homestay.getEmail())
+                .amenities(convertAmenitiesToList(homestay.getAmenities()))
+                .destinationId(homestay.getDestination() != null ? homestay.getDestination().getId() : null)
+                .availableTours(availableTours) // THÊM MỚI
+                .build();
+    }
+
+    // Lấy danh sách tour có thể đặt kèm homestay
+    private List<TourBriefResponse> getAvailableToursForHomestay(
+            Homestay homestay,
+            LocalDate checkIn,
+            LocalDate checkOut) {
+
+        List<Tour> tours;
+
+        if (homestay != null) {
+            tours = tourRepository.findActiveToursByHomestay(homestay.getId());
+        } else {
+            tours = tourRepository.findByIsActiveTrue();
+        }
+
+        return tours.stream()
+                .filter(tour -> isTourAvailable(tour, checkIn, checkOut))
+                .map(this::convertToTourBriefResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Kiểm tra tour có khả dụng không
+    private boolean isTourAvailable(Tour tour, LocalDate checkIn, LocalDate checkOut) {
+        if (!tour.getIsActive()) {
+            return false;
+        }
+
+        // Kiểm tra tour có schedule không
+        if (tour.getSchedules() == null || tour.getSchedules().isEmpty()) {
+            return false;
+        }
+
+        // Kiểm tra tour có đủ số ngày schedule không (từ dayNumber 1 đến durationDays)
+        long totalDays = tour.getDurationDays();
+        long scheduleDays = tour.getSchedules().stream()
+                .map(TourSchedule::getDayNumber)
+                .filter(day -> day != null && day >= 1 && day <= totalDays)
+                .count();
+
+        // Nếu có ít nhất 1 schedule thì tour khả dụng
+        return scheduleDays > 0;
+    }
+
+    // Convert Tour -> TourBriefResponse
+    private TourBriefResponse convertToTourBriefResponse(Tour tour) {
+        // Lấy thumbnail từ images
+        String thumbnail = null;
+        List<String> imageUrls = new ArrayList<>();
+
+        if (tour.getImages() != null && !tour.getImages().isEmpty()) {
+            thumbnail = tour.getImages().stream()
+                    .filter(TourImage::getIsPrimary)
+                    .findFirst()
+                    .map(TourImage::getImageUrl)
+                    .orElse(tour.getImages().get(0).getImageUrl());
+
+            imageUrls = tour.getImages().stream()
+                    .map(TourImage::getImageUrl)
+                    .collect(Collectors.toList());
+        }
+
+        // Convert JSON included/excluded
+        List<String> includedList = convertAmenitiesToList(tour.getIncluded());
+        List<String> excludedList = convertAmenitiesToList(tour.getExcluded());
+
+        return TourBriefResponse.builder()
+                .id(tour.getId())
+                .name(tour.getName())
+                .description(tour.getDescription())
+                .durationDays(tour.getDurationDays())
+                .durationNights(tour.getDurationNights())
+                .pricePerPerson(tour.getPricePerPerson())
+                .maxPeople(tour.getMaxPeople())
+                .minPeople(tour.getMinPeople())
+                .averageRating(tour.getAverageRating() != null ? tour.getAverageRating().doubleValue() : null)
+                .reviewCount(tour.getReviewCount())
+                .thumbnail(thumbnail)
+                .images(imageUrls)
+                .included(includedList)
+                .excluded(excludedList)
+                .build();
     }
 
     @Transactional
-    public HomestayDetailResponse createHotel(HomestayCreateRequest req) throws JsonProcessingException {
-        // 1. Lấy email của User đang đăng nhập từ SecurityContext
+    public HomestayDetailResponse createHomestay(HomestayCreateRequest req) throws JsonProcessingException, IOException {
         String currentUserEmail = getCurrentUserEmail();
-        // 2. Tìm User trong DB
-        User owner = userRepository.findByEmail(currentUserEmail).orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin người quản lý!"));
+        User owner = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         if (req.getRoomTypes() == null || req.getRoomTypes().isEmpty()) {
-            throw new RuntimeException("Khách sạn phải có ít nhất một loại phòng!");
+            throw new AppException(ErrorCode.ROOM_TYPE_REQUIRED);
         }
-        Destination destination = destinationRepository.findById(req.getDestinationId()).orElseThrow(() -> new RuntimeException("Destination not found"));
 
-        Hotel hotel = new Hotel();
-        hotel.setOwner(owner);
-        hotel.setName(req.getName());
-        hotel.setAddress(req.getAddress());
-        hotel.setDescription(req.getDescription());
-        hotel.setLatitude(req.getLatitude());
-        hotel.setLongitude(req.getLongitude());
-        hotel.setStarRating(req.getStars());
-        hotel.setDestination(destination);
+        Destination destination = destinationRepository.findById(req.getDestinationId())
+                .orElseThrow(() -> new AppException(ErrorCode.DESTINATION_NOT_FOUND));
 
-        hotel.setPhone(req.getPhone());
-        hotel.setEmail(req.getEmail());
-        hotel.setAmenities(mapper.writeValueAsString(req.getAmenities()));
-        hotel.setIsActive(true);
+        Homestay homestay = new Homestay();
+        homestay.setOwner(owner);
+        homestay.setName(req.getName());
+        homestay.setAddress(req.getAddress());
+        homestay.setDescription(req.getDescription());
+        homestay.setLatitude(req.getLatitude());
+        homestay.setLongitude(req.getLongitude());
+        homestay.setStarRating(req.getStars());
+        homestay.setDestination(destination);
+        homestay.setPhone(req.getPhone());
+        homestay.setEmail(req.getEmail());
+        homestay.setAmenities(mapper.writeValueAsString(
+                req.getAmenities() != null ? req.getAmenities() : Collections.emptyList()
+        ));
+        homestay.setIsActive(true);
+        homestay.setImages(new ArrayList<>());
+        homestay.setRoomTypes(new ArrayList<>());
 
-        hotel.setImages(new ArrayList<>());
-        hotel.setRoomTypes(new ArrayList<>());
-
-        // ==== Images ====
         int order = 0;
-        if (req.getThumbnail() != null && !req.getThumbnail().isBlank()) {
-            HotelImage thumb = new HotelImage();
-            thumb.setHotel(hotel);
-            thumb.setImageUrl(req.getThumbnail());
+
+        // Upload thumbnail
+        if (req.getThumbnail() != null && !req.getThumbnail().isEmpty()) {
+            String thumbnailUrl = cloudinaryService.uploadFile(req.getThumbnail(), "homestays/thumbnails");
+            HomestayImage thumb = new HomestayImage();
+            thumb.setHomestay(homestay);
+            thumb.setImageUrl(thumbnailUrl);
             thumb.setIsPrimary(true);
             thumb.setDisplayOrder(order++);
-            hotel.getImages().add(thumb);
+            homestay.getImages().add(thumb);
         }
 
-        if (req.getImages() != null) {
-            for (String url : req.getImages()) {
-                if (url == null || url.isBlank()) continue;
-
-                HotelImage img = new HotelImage();
-                img.setHotel(hotel);
-                img.setImageUrl(url);
+        // Upload gallery images
+        if (req.getImages() != null && !req.getImages().isEmpty()) {
+            for (MultipartFile file : req.getImages()) {
+                if (file == null || file.isEmpty()) continue;
+                String imageUrl = cloudinaryService.uploadFile(file, "homestays/galleries");
+                HomestayImage img = new HomestayImage();
+                img.setHomestay(homestay);
+                img.setImageUrl(imageUrl);
                 img.setIsPrimary(false);
                 img.setDisplayOrder(order++);
-                hotel.getImages().add(img);
+                homestay.getImages().add(img);
             }
         }
-        // ==== TỰ ĐỘNG TÍNH TOÁN GIÁ VÀ PHÒNG ====
+
+        // Tính toán từ RoomTypes
         BigDecimal minPrice = null;
-        int totalRoomsCounter = 0; // Biến đếm tổng số phòng
+        int totalRoomsCounter = 0;
 
         for (RoomTypeCreateRequest rtReq : req.getRoomTypes()) {
             RoomType rt = new RoomType();
-            rt.setHotel(hotel);
+            rt.setHomestay(homestay);
             rt.setName(rtReq.getName());
             rt.setCapacity(rtReq.getCapacity());
             rt.setPrice(rtReq.getPrice());
-            rt.setTotalRooms(rtReq.getTotalRooms()); // Số lượng phòng của loại này
-            rt.setAmenities(mapper.writeValueAsString(rtReq.getAmenities()));
+            rt.setTotalRooms(rtReq.getTotalRooms());
+            rt.setAvailableRooms(rtReq.getTotalRooms());
+            rt.setAmenities(mapper.writeValueAsString(
+                    rtReq.getAmenities() != null ? rtReq.getAmenities() : Collections.emptyList()
+            ));
 
-            hotel.getRoomTypes().add(rt);
-
-            // Cộng dồn tổng số phòng của khách sạn
+            homestay.getRoomTypes().add(rt);
             totalRoomsCounter += rtReq.getTotalRooms();
 
-            // Tìm giá thấp nhất để làm "Giá từ..." (Price per night)
             if (minPrice == null || rtReq.getPrice().compareTo(minPrice) < 0) {
                 minPrice = rtReq.getPrice();
             }
         }
 
-        // Gán các giá trị đã tính toán vào Hotel
-        hotel.setTotalRooms(totalRoomsCounter);
-        hotel.setAvailableRooms(totalRoomsCounter); // Lúc mới tạo, tất cả phòng đều trống
-        hotel.setPricePerNight(minPrice);
+        homestay.setTotalRooms(totalRoomsCounter);
+        homestay.setAvailableRooms(totalRoomsCounter);
+        homestay.setPricePerNight(minPrice);
 
-        hotelRepository.save(hotel);
-        return HomestayMapper.toDetailResponse(hotel);
+        hotelRepository.save(homestay);
+        return HomestayMapper.toDetailResponse(homestay);
     }
 
     @Transactional
-    public HomestayDetailResponse updateHotel(Long hotelId, HomestayCreateRequest req) throws JsonProcessingException {
-        Hotel hotel = hotelRepository.findById(hotelId).orElseThrow(() -> new RuntimeException("Hotel not found"));
-        validateOwnership(hotel);
-        // 1. Cập nhật thông tin cơ bản
-        Destination destination = destinationRepository.findById(req.getDestinationId()).orElseThrow(() -> new RuntimeException("Destination not found"));
-        hotel.setName(req.getName());
-        hotel.setAddress(req.getAddress());
-        hotel.setDescription(req.getDescription());
-        hotel.setLatitude(req.getLatitude());
-        hotel.setLongitude(req.getLongitude());
-        hotel.setStarRating(req.getStars());
-        hotel.setDestination(destination);
-        hotel.setPhone(req.getPhone());
-        hotel.setEmail(req.getEmail());
-        hotel.setAmenities(mapper.writeValueAsString(req.getAmenities()));
+    public HomestayDetailResponse updateHomestay(Long hotelId, HomestayCreateRequest req) throws JsonProcessingException, IOException {
+        Homestay homestay = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new AppException(ErrorCode.HOMESTAY_NOT_FOUND));
+        validateOwnership(homestay);
 
-        // 2. Xử lý hình ảnh
-        String newThumbnailUri = req.getThumbnail();
-        List<String> newGalleryUrls = req.getImages() != null ? req.getImages() : new ArrayList<>();
+        Destination destination = destinationRepository.findById(req.getDestinationId())
+                .orElseThrow(() -> new AppException(ErrorCode.DESTINATION_NOT_FOUND));
 
-        // Bước A: Hạ cấp tất cả ảnh hiện tại về isPrimary = false (Reset trạng thái)
-        hotel.getImages().forEach(img -> img.setIsPrimary(false));
+        homestay.setName(req.getName());
+        homestay.setAddress(req.getAddress());
+        homestay.setDescription(req.getDescription());
+        homestay.setLatitude(req.getLatitude());
+        homestay.setLongitude(req.getLongitude());
+        homestay.setStarRating(req.getStars());
+        homestay.setDestination(destination);
+        homestay.setPhone(req.getPhone());
+        homestay.setEmail(req.getEmail());
+        homestay.setAmenities(mapper.writeValueAsString(
+                req.getAmenities() != null ? req.getAmenities() : Collections.emptyList()
+        ));
 
-        // Bước B: Đồng bộ ảnh Thumbnail (Ảnh bìa)
-        if (newThumbnailUri != null && !newThumbnailUri.isBlank()) {
-            // Tìm xem URL này đã tồn tại trong danh sách ảnh của Hotel chưa
-            HotelImage existingThumb = hotel.getImages().stream()
-                    .filter(img -> img.getImageUrl().equals(newThumbnailUri))
+        // Nếu có thumbnail mới, xóa ảnh cũ trên Cloudinary và upload ảnh mới
+        if (req.getThumbnail() != null && !req.getThumbnail().isEmpty()) {
+            // Xóa ảnh thumbnail cũ trên Cloudinary
+            homestay.getImages().stream()
+                    .filter(HomestayImage::getIsPrimary)
                     .findFirst()
-                    .orElse(null);
+                    .ifPresent(oldThumb -> {
+                        cloudinaryService.deleteFile(oldThumb.getImageUrl());
+                        homestay.getImages().remove(oldThumb);
+                    });
 
-            if (existingThumb != null) {
-                // Nếu có rồi, chỉ việc nâng nó lên làm Primary
-                existingThumb.setIsPrimary(true);
-            } else {
-                // Nếu chưa có (ảnh mới hoàn toàn), tạo mới và add vào list
-                HotelImage thumb = new HotelImage();
-                thumb.setHotel(hotel);
-                thumb.setImageUrl(newThumbnailUri);
-                thumb.setIsPrimary(true);
-                thumb.setDisplayOrder(0);
-                hotel.getImages().add(thumb);
+            // Upload ảnh mới
+            String thumbnailUrl = cloudinaryService.uploadFile(req.getThumbnail(), "homestays/thumbnails");
+            HomestayImage thumb = new HomestayImage();
+            thumb.setHomestay(homestay);
+            thumb.setImageUrl(thumbnailUrl);
+            thumb.setIsPrimary(true);
+            thumb.setDisplayOrder(0);
+            homestay.getImages().add(thumb);
+        }
+
+        // Đồng bộ gallery ảnh cũ theo danh sách FE giữ lại
+        if (Boolean.TRUE.equals(req.getSyncGalleryImages())) {
+            Set<String> keepUrls = req.getKeepImageUrls() != null
+                    ? new HashSet<>(req.getKeepImageUrls())
+                    : Collections.emptySet();
+
+            Iterator<HomestayImage> iterator = homestay.getImages().iterator();
+            while (iterator.hasNext()) {
+                HomestayImage image = iterator.next();
+                if (Boolean.TRUE.equals(image.getIsPrimary())) {
+                    continue;
+                }
+                if (!keepUrls.contains(image.getImageUrl())) {
+                    cloudinaryService.deleteFile(image.getImageUrl());
+                    iterator.remove();
+                }
             }
         }
 
-        // Bước C: Đồng bộ ảnh Gallery (Đảm bảo các ảnh trong req.getImages() đều có trong DB)
-        for (String url : newGalleryUrls) {
-            if (url == null || url.isBlank() || url.equals(newThumbnailUri)) continue;
-
-            boolean exists = hotel.getImages().stream().anyMatch(img -> img.getImageUrl().equals(url));
-            if (!exists) {
-                HotelImage img = new HotelImage();
-                img.setHotel(hotel);
-                img.setImageUrl(url);
+        // Upload gallery images mới
+        if (req.getImages() != null && !req.getImages().isEmpty()) {
+            int currentOrder = homestay.getImages().size();
+            for (MultipartFile file : req.getImages()) {
+                if (file == null || file.isEmpty()) continue;
+                String imageUrl = cloudinaryService.uploadFile(file, "homestays/galleries");
+                HomestayImage img = new HomestayImage();
+                img.setHomestay(homestay);
+                img.setImageUrl(imageUrl);
                 img.setIsPrimary(false);
-                img.setDisplayOrder(hotel.getImages().size());
-                hotel.getImages().add(img);
+                img.setDisplayOrder(currentOrder++);
+                homestay.getImages().add(img);
             }
         }
 
-        // === 3. Xử lý Room Types và TÍNH TOÁN LẠI DỮ LIỆU ===
-        hotel.getRoomTypes().clear();
+        // Xử lý room types
+        homestay.getRoomTypes().clear();
         BigDecimal minPrice = null;
-        int totalRoomsCounter = 0; // Dùng để tính lại tổng số phòng mới
+        int totalRoomsCounter = 0;
 
         if (req.getRoomTypes() != null) {
             for (RoomTypeCreateRequest rtReq : req.getRoomTypes()) {
                 RoomType rt = new RoomType();
-                rt.setHotel(hotel);
+                rt.setHomestay(homestay);
                 rt.setName(rtReq.getName());
                 rt.setCapacity(rtReq.getCapacity());
                 rt.setPrice(rtReq.getPrice());
                 rt.setTotalRooms(rtReq.getTotalRooms());
-                rt.setAmenities(mapper.writeValueAsString(rtReq.getAmenities()));
-                hotel.getRoomTypes().add(rt);
-                // Cộng dồn tổng số phòng mới
+                rt.setAvailableRooms(rtReq.getTotalRooms());
+                rt.setAmenities(mapper.writeValueAsString(
+                        rtReq.getAmenities() != null ? rtReq.getAmenities() : Collections.emptyList()
+                ));
+                homestay.getRoomTypes().add(rt);
+
                 totalRoomsCounter += rtReq.getTotalRooms();
 
-                // Cập nhật giá thấp nhất (giá "chỉ từ")
                 if (minPrice == null || rtReq.getPrice().compareTo(minPrice) < 0) {
                     minPrice = rtReq.getPrice();
                 }
             }
         }
 
-        // === 4. Gán các giá trị đã tính toán chuẩn xác ===
-        hotel.setPricePerNight(minPrice);
-        hotel.setTotalRooms(totalRoomsCounter);
-        hotel.setAvailableRooms(totalRoomsCounter);
-        hotelRepository.save(hotel);
-        return HomestayMapper.toDetailResponse(hotel);
+        homestay.setPricePerNight(minPrice);
+        homestay.setTotalRooms(totalRoomsCounter);
+        homestay.setAvailableRooms(totalRoomsCounter);
+
+        hotelRepository.save(homestay);
+        return HomestayMapper.toDetailResponse(homestay);
     }
+
 
     @Transactional
-    public void deleteHotel(Long hotelId) {
-        // 1. Dùng findById
-        Hotel hotel = hotelRepository.findById(hotelId).orElseThrow(() -> new RuntimeException("Không tìm thấy khách sạn với id : " + hotelId + "này"));
-        validateOwnership(hotel);
-        // 2. Kiểm tra logic: Nếu đã bị xóa (isActive == false) thì báo lỗi
-        if (Boolean.FALSE.equals(hotel.getIsActive())) {
-            throw new RuntimeException("Khách sạn này đã bị xóa");
+    public void deleteHomestay(Long hotelId) {
+        Homestay homestay = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new AppException(ErrorCode.HOMESTAY_NOT_FOUND));
+        validateOwnership(homestay);
+
+        if (Boolean.FALSE.equals(homestay.getIsActive())) {
+            throw new AppException(ErrorCode.HOMESTAY_ALREADY_DELETED);
         }
 
-        // 3. Set trạng thái active = false (Xóa ẩn)
-        hotel.setIsActive(false);
-
-        // 4. Lưu thay đổi
-        hotelRepository.save(hotel);
+        homestay.setIsActive(false);
+        hotelRepository.save(homestay);
     }
 
-    // Hàm hỗ trợ convert
+    // Hàm hỗ trợ convert JSON
     private List<String> convertAmenitiesToList(String jsonAmenities) {
         if (jsonAmenities == null || jsonAmenities.isBlank()) {
             return new ArrayList<>();
         }
         try {
-            // Parse chuỗi "['a','b']" thành List ["a","b"]
-            return mapper.readValue(jsonAmenities, new TypeReference<List<String>>() {
-            });
+            return mapper.readValue(jsonAmenities, new TypeReference<List<String>>() {});
         } catch (JsonProcessingException e) {
-            // Nếu lỗi (hoặc dữ liệu cũ không phải JSON), trả về list chứa chuỗi gốc
             return Collections.singletonList(jsonAmenities);
         }
     }
 
-    // Hàm bổ trợ lấy Email người dùng đang đăng nhập
     private String getCurrentUserEmail() {
-        Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Người dùng chưa xác thực!");
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         Object principal = authentication.getPrincipal();
         if (principal instanceof User) {
@@ -339,12 +485,115 @@ public class HomestayService {
         return authentication.getName();
     }
 
-    private void validateOwnership(Hotel hotel) {
+    private void validateOwnership(Homestay homestay) {
         String currentPrincipal = getCurrentUserEmail();
-        boolean isOwner = hotel.getOwner().getEmail().equalsIgnoreCase(currentPrincipal) || hotel.getOwner().getId().toString().equals(currentPrincipal);
+        boolean isOwner = homestay.getOwner().getEmail().equalsIgnoreCase(currentPrincipal);
 
         if (!isOwner) {
-            throw new RuntimeException("Bạn không có quyền thực hiện thao tác này trên khách sạn của owner khác!");
+            throw new AppException(ErrorCode.NOT_OWNER);
         }
     }
+
+
+    public List<HomestayResponse> getHomestaysByCurrentOwner() {
+        String currentUserEmail = getCurrentUserEmail();
+        User owner = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        List<Homestay> homestays = hotelRepository.findByOwnerIdAndIsActiveTrue(owner.getId());
+        return homestays.stream()
+                .map(this::convertToHomestayResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<HomestayResponse> getFeaturedHomestays(Integer limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        Page<Homestay> homestays = hotelRepository.findTopByOrderByAverageRatingDesc(pageable);
+        return homestays.stream()
+                .map(this::convertToHomestayResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<HomestayResponse> getHomestaysByDestination(Long destinationId) {
+        List<Homestay> homestays = hotelRepository.findByDestinationIdAndIsActiveTrue(destinationId);
+        return homestays.stream()
+                .map(this::convertToHomestayResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<HomestayResponse> getHomestaysByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
+        List<Homestay> homestays = hotelRepository.findByPricePerNightBetweenAndIsActiveTrue(minPrice, maxPrice);
+        return homestays.stream()
+                .map(this::convertToHomestayResponse)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> getAvailableRooms(Long homestayId, LocalDate checkIn, LocalDate checkOut) {
+        Homestay homestay = hotelRepository.findById(homestayId)
+                .orElseThrow(() -> new AppException(ErrorCode.HOMESTAY_NOT_FOUND));
+
+        List<Object[]> results = roomTypeRepository.findAvailableRoomsWithCount(homestayId, checkIn, checkOut);
+
+        List<Map<String, Object>> rooms = results.stream().map(obj -> {
+            RoomType rt = (RoomType) obj[0];
+            int available = ((Number) obj[1]).intValue();
+
+            Map<String, Object> roomMap = new HashMap<>();
+            roomMap.put("id", rt.getId());
+            roomMap.put("name", rt.getName());
+            roomMap.put("capacity", rt.getCapacity());
+            roomMap.put("price", rt.getPrice());
+            roomMap.put("availableRooms", available);
+            roomMap.put("amenities", convertAmenitiesToList(rt.getAmenities()));
+            return roomMap;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("homestayId", homestayId);
+        response.put("homestayName", homestay.getName());
+        response.put("checkIn", checkIn);
+        response.put("checkOut", checkOut);
+        response.put("rooms", rooms);
+
+        return response;
+    }
+
+    public List<?> getAvailableToursForHomestay(Long homestayId, LocalDate checkIn, LocalDate checkOut) {
+        Homestay homestay = hotelRepository.findById(homestayId)
+                .orElseThrow(() -> new AppException(ErrorCode.HOMESTAY_NOT_FOUND));
+        return getAvailableToursForHomestay(homestay, checkIn, checkOut);
+    }
+
+    public boolean checkAvailability(Long homestayId, Long roomTypeId, LocalDate checkIn, LocalDate checkOut, Integer numberOfRooms) {
+        List<Object[]> results = roomTypeRepository.findAvailableRoomsWithCount(homestayId, checkIn, checkOut);
+
+        return results.stream()
+                .filter(obj -> ((RoomType) obj[0]).getId().equals(roomTypeId))
+                .anyMatch(obj -> ((Number) obj[1]).intValue() >= numberOfRooms);
+    }
+
+    private HomestayResponse convertToHomestayResponse(Homestay homestay) {
+        return HomestayResponse.builder()
+                .id(homestay.getId())
+                .name(homestay.getName())
+                .address(homestay.getAddress())
+                .pricePerNight(homestay.getMinPrice())
+                .stars(homestay.getStarRating())
+                .rating(homestay.getAverageRating() != null ? homestay.getAverageRating().doubleValue() : null)
+                .numOfReviews(homestay.getReviewCount())
+                .thumbnail(homestay.getThumbnail())
+                .destinationId(homestay.getDestination() != null ? homestay.getDestination().getId() : null)
+                .destinationName(homestay.getDestination() != null ? homestay.getDestination().getName() : null)
+                .phone(homestay.getPhone())
+                .email(homestay.getEmail())
+                .description(homestay.getDescription())
+                .amenities(convertAmenitiesToList(homestay.getAmenities()))
+                .totalRooms(homestay.getTotalRooms())
+                .availableRooms(homestay.getAvailableRooms())
+                .latitude(homestay.getLatitude())
+                .longitude(homestay.getLongitude())
+                .build();
+    }
+
+
 }

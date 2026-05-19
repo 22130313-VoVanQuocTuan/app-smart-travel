@@ -11,6 +11,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -18,7 +20,10 @@ import java.time.LocalDateTime;
         indexes = {
                 @Index(name = "idx_user_id", columnList = "user_id"),
                 @Index(name = "idx_status", columnList = "status"),
-                @Index(name = "idx_created_at", columnList = "created_at DESC")
+                @Index(name = "idx_created_at", columnList = "created_at DESC"),
+                @Index(name = "idx_start_date", columnList = "start_date"),
+                @Index(name = "idx_end_date", columnList = "end_date"),
+                @Index(name = "idx_room_type_id", columnList = "room_type_id")
         })
 @Builder
 @NoArgsConstructor
@@ -31,7 +36,7 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;  // Assuming User entity exists
+    private User user;
 
     @Column(name = "booking_type", nullable = false, length = 20)
     private String bookingType;
@@ -92,4 +97,11 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_type_id")
     private RoomType roomType;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookingTour> bookingTours = new ArrayList<>();
+
+    public boolean isActive() {
+        return !"CANCELLED".equalsIgnoreCase(status);
+    }
 }

@@ -7,7 +7,7 @@ import com.example.smart_travel_BE.dto.destination.response.DestinationDetailRes
 import com.example.smart_travel_BE.dto.destination.response.DestinationFeaturedResponse;
 import com.example.smart_travel_BE.dto.destination.response.DestinationImageResponse;
 import com.example.smart_travel_BE.dto.destination.response.DestinationResponse;
-import com.example.smart_travel_BE.dto.hotel.response.HotelSummaryResponse;
+import com.example.smart_travel_BE.dto.homestay.response.HotelSummaryResponse;
 import com.example.smart_travel_BE.dto.review.response.ReviewResponse;
 import com.example.smart_travel_BE.dto.tour.response.TourSummaryResponse;
 import com.example.smart_travel_BE.entity.*;
@@ -46,7 +46,7 @@ public interface DestinationMapper {
 
     // Chuyển Hotel -> HotelSummaryResponse (ảnh đầu tiên)
     @Mapping(target = "images", ignore = true)
-    HotelSummaryResponse map(Hotel hotel);
+    HotelSummaryResponse map(Homestay homestay);
 
     // Chuyển Review -> ReviewResponse (danh sách ảnh)
     @Mapping(target = "images", source = "images")
@@ -87,13 +87,13 @@ public interface DestinationMapper {
 
     // ====== Sau khi map xong, gán ảnh đầu tiên cho Hotel ======
     @AfterMapping
-    default void mapHotelImage(Hotel hotel, @MappingTarget HotelSummaryResponse response) {
-        if (hotel.getImages() != null && !hotel.getImages().isEmpty()) {
+    default void mapHotelImage(Homestay homestay, @MappingTarget HotelSummaryResponse response) {
+        if (homestay.getImages() != null && !homestay.getImages().isEmpty()) {
             // Lấy ảnh chính (isPrimary = true)
-            Optional<HotelImage> primaryImage = hotel.getImages().stream()
-                    .filter(HotelImage::getIsPrimary)
+            Optional<HomestayImage> primaryImage = homestay.getImages().stream()
+                    .filter(HomestayImage::getIsPrimary)
                     .findFirst();
-            response.setImages(primaryImage.map(HotelImage::getImageUrl)
+            response.setImages(primaryImage.map(HomestayImage::getImageUrl)
                     .orElse(null));
         } else {
             response.setImages(null); // nếu không có ảnh

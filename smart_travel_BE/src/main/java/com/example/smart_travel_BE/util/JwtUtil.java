@@ -36,27 +36,29 @@ public class JwtUtil {
 
     @NonFinal
     @Value("${jwt.valid-duration}")
-    private Long ACCESS_TOKEN_VALIDITY;
+    private Long accessTokenValidity;
 
     @NonFinal
     @Value("${jwt.refreshable-duration}")
-    private Long REFRESH_TOKEN_VALIDITY;
+    private Long refreshTokenValidity;
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
+    // Clock skew để xử lý sai lệch thời gian server (60 giây)
+    private static final long CLOCK_SKEW_SECONDS = 60;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(signerKey.getBytes());
     }
 
     public String generateToken(Long userID, Map<String, Object> claims) {
-        return createToken(claims, userID, ACCESS_TOKEN_VALIDITY);
+        return createToken(claims, userID, accessTokenValidity);
     }
 
     public String generateRefreshToken(Long userID) {
-        String refreshToken = createToken(new HashMap<>(), userID, REFRESH_TOKEN_VALIDITY);
-        LocalDateTime expiryDate = LocalDateTime.now().plusSeconds(REFRESH_TOKEN_VALIDITY);
+        String refreshToken = createToken(new HashMap<>(), userID, refreshTokenValidity);
+        LocalDateTime expiryDate = LocalDateTime.now().plusSeconds(refreshTokenValidity);
         // Tìm user theo USERID
         var user = userRepository.findById(userID)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
@@ -91,17 +93,35 @@ public class JwtUtil {
     }
 
     public Claims extractAllClaims(String token) {
-        return Jwts
-                .parser()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token.trim())
-                .getBody();
-
+        try {
+            return Jwts
+                    .parser()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token.trim())
+                    .getBody();
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            log.warn("Token đã hết hạn: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Lỗi khi parse JWT: {}", ex.getMessage());
+            throw ex;
+        }
     }
 
     public Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        try {
+            Date expiration = extractExpiration(token);
+            Date now = new Date();
+            // Cho phép sai lệch CLOCK_SKEW_SECONDS giây
+            long clockSkewMillis = CLOCK_SKEW_SECONDS * 1000;
+            return expiration.before(new Date(now.getTime() - clockSkewMillis));
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            return true; // Token đã hết hạn
+        } catch (Exception ex) {
+            log.error("Lỗi khi kiểm tra hết hạn token: {}", ex.getMessage());
+            return true; // Nếu có lỗi, coi như token hết hạn
+        }
     }
 
     private Date extractExpiration(String token) {

@@ -1,50 +1,68 @@
 package com.example.smart_travel_BE.mapper;
 
-import com.example.smart_travel_BE.dto.hotel.response.HomestayDetailResponse;
-import com.example.smart_travel_BE.entity.Hotel;
-import com.example.smart_travel_BE.entity.HotelImage;
+import com.example.smart_travel_BE.dto.homestay.response.HomestayDetailResponse;
+import com.example.smart_travel_BE.entity.Homestay;
+import com.example.smart_travel_BE.entity.HomestayImage;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Collections;
+import java.util.List;
 
 public interface HomestayMapper {
 
     /**
      * Chuyển đổi từ Entity Hotel sang DTO HotelResponse
      */
-    public static HomestayDetailResponse toDetailResponse(Hotel hotel) {
-        if (hotel == null) return null;
+    public static HomestayDetailResponse toDetailResponse(Homestay homestay) {
+        if (homestay == null) return null;
 
         return HomestayDetailResponse.builder()
-                .id(hotel.getId())
-                .name(hotel.getName())
-                .address(hotel.getAddress())
-                .stars(hotel.getStarRating())
-                .rating(hotel.getAverageRating() != null ? hotel.getAverageRating().doubleValue() : 0.0)
-                .numOfReviews(hotel.getReviewCount())
-                .description(hotel.getDescription())
-                .thumbnail(hotel.getThumbnail())
+                .id(homestay.getId())
+                .name(homestay.getName())
+                .address(homestay.getAddress())
+                .stars(homestay.getStarRating())
+                .rating(homestay.getAverageRating() != null ? homestay.getAverageRating().doubleValue() : 0.0)
+                .numOfReviews(homestay.getReviewCount())
+                .description(homestay.getDescription())
+                .thumbnail(homestay.getThumbnail())
                 .images(
-                        hotel.getImages() != null
-                                ? hotel.getImages().stream().map(HotelImage::getImageUrl).toList()
+                        homestay.getImages() != null
+                                ? homestay.getImages().stream().map(HomestayImage::getImageUrl).toList()
                                 : null
                 )
                 .destinationName(
-                        hotel.getDestination() != null
-                                ? hotel.getDestination().getName()
+                        homestay.getDestination() != null
+                                ? homestay.getDestination().getName()
                                 : null
                 )
                 .provinceName(
-                        hotel.getDestination() != null && hotel.getDestination().getProvince() != null
-                                ? hotel.getDestination().getProvince().getName()
+                        homestay.getDestination() != null && homestay.getDestination().getProvince() != null
+                                ? homestay.getDestination().getProvince().getName()
                                 : null
                 )
                 .rooms(
-                        hotel.getRoomTypes() != null
-                                ? hotel.getRoomTypes().stream()
+                        homestay.getRoomTypes() != null
+                                ? homestay.getRoomTypes().stream()
                                 .map(RoomTypeMapper::toResponse)
                                 .toList()
                                 : null
                 )
-                .latitude(hotel.getLatitude())
-                .longitude(hotel.getLongitude())
+                .latitude(homestay.getLatitude())
+                .longitude(homestay.getLongitude())
+                .amenities(parseAmenities(homestay.getAmenities()))
                 .build();
+    }
+
+    private static List<String> parseAmenities(String amenitiesJson) {
+        if (amenitiesJson == null || amenitiesJson.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return new ObjectMapper().readValue(amenitiesJson, new TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            return Collections.singletonList(amenitiesJson);
+        }
     }
 }

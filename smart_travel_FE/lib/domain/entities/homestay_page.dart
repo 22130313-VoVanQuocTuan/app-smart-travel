@@ -1,7 +1,7 @@
 import 'package:smart_travel/domain/entities/homestay.dart';
 
 class HotelsPage {
-  final List<Hotel> content;
+  final List<Homestay> content;
   final int pageNumber;
   final int pageSize;
   final int totalPages;

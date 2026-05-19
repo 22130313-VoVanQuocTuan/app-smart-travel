@@ -72,7 +72,8 @@ public class AuthService {
         // Tạo user mới
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("USER");
+        // Nếu client gửi role (HOST/USER) thì dùng, mặc định là USER
+        user.setRole(request.getRole() != null && !request.getRole().isEmpty() ? request.getRole() : "USER");
         user.setAuthProvider("EMAIL");
         user.setIsActive(true);
         user.setEmailVerified(false);
@@ -80,6 +81,26 @@ public class AuthService {
         userRepository.save(user);
 
         log.info("User created successfully: {}", user.getEmail());
+
+        // Nếu có thông tin chủ homestay (host) trong request, lưu vào UserProfile để quản lý
+        try {
+            if (request.getRole() != null && request.getRole().equalsIgnoreCase("HOST")) {
+                if (!userProfileRepository.existsByUser(user)) {
+                    UserProfile profile = UserProfile.builder()
+                            .user(user)
+                            .avatarUrl(request.getPortraitUrl())
+                            .idCardNumber(request.getIdCardNumber())
+                            .idCardImageUrl(request.getIdCardImageUrl())
+                            .ownershipDocumentUrl(request.getOwnershipDocumentUrl())
+                            .portraitUrl(request.getPortraitUrl())
+                            .hostVerified(false)
+                            .build();
+                    userProfileRepository.save(profile);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to save host profile data: {}", e.getMessage());
+        }
 
         // Tạo token xác thực email
         String token = generateVerificationToken(user);
@@ -229,11 +250,19 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getId(), claims);
         String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
+        // Check if HOST and get hostVerified status
+        Boolean hostVerified = null;
+        if ("HOST".equalsIgnoreCase(user.getRole())) {
+            UserProfile profile = userProfileRepository.findByUser(user).orElse(null);
+            hostVerified = profile != null && profile.getHostVerified() != null ? profile.getHostVerified() : false;
+        }
+
         return LoginResponse.builder()
                 .token(token)
                 .refreshToken(refreshToken)
                 .role(String.valueOf(user.getRole()))
                 .fullName(user.getFullName())
+                .hostVerified(hostVerified)
                 .build();
 
 
@@ -350,15 +379,22 @@ public class AuthService {
             String token = jwtUtil.generateToken(user.getId(), claims);
             String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
+            // Check if HOST and get hostVerified status
+            Boolean hostVerified = null;
+            if ("HOST".equalsIgnoreCase(user.getRole())) {
+                UserProfile profile = userProfileRepository.findByUser(user).orElse(null);
+                hostVerified = profile != null && profile.getHostVerified() != null ? profile.getHostVerified() : false;
+            }
 
             return LoginResponse.builder()
                     .token(token)
                     .refreshToken(refreshToken)
                     .fullName(user.getFullName())
                     .role(user.getRole())
+                    .hostVerified(hostVerified)
                     .build();
 
-        } catch (Exception e) {
+         } catch (Exception e) {
             log.info(e.toString());
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
@@ -408,12 +444,19 @@ public class AuthService {
             String token = jwtUtil.generateToken(user.getId(), claims);
             String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
+            // Check if HOST and get hostVerified status
+            Boolean hostVerified = null;
+            if ("HOST".equalsIgnoreCase(user.getRole())) {
+                UserProfile profile = userProfileRepository.findByUser(user).orElse(null);
+                hostVerified = profile != null && profile.getHostVerified() != null ? profile.getHostVerified() : false;
+            }
 
             return LoginResponse.builder()
                     .token(token)
                     .refreshToken(refreshToken)
                     .fullName(user.getFullName())
                     .role(user.getRole())
+                    .hostVerified(hostVerified)
                     .build();
 
         } catch (Exception e) {

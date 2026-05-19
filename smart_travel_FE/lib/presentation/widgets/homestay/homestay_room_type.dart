@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:smart_travel/domain/entities/room_type.dart';
+import 'package:smart_travel/domain/entities/homestay.dart';
 
-class HotelRoomTypeWidget extends StatelessWidget {
+class HomestayRoomTypeWidget extends StatelessWidget {
   final List<RoomType> rooms;
   // Callback để báo cho màn hình cha biết phòng nào được chọn
   final Function(RoomType) onBook;
 
-  const HotelRoomTypeWidget({
+  const HomestayRoomTypeWidget({
     super.key,
     required this.rooms,
     required this.onBook,

@@ -4,9 +4,9 @@ import com.example.smart_travel_BE.dto.chat.ChatAskRequest;
 import com.example.smart_travel_BE.dto.chat.ChatAskResponse;
 import com.example.smart_travel_BE.dto.chat.ChatSuggestion;
 import com.example.smart_travel_BE.dto.destination.response.DestinationDetailResponse;
-import com.example.smart_travel_BE.dto.hotel.response.HomestayResponse;
+import com.example.smart_travel_BE.dto.homestay.response.HomestayResponse;
 import com.example.smart_travel_BE.entity.Destination;
-import com.example.smart_travel_BE.entity.Hotel;
+import com.example.smart_travel_BE.entity.Homestay;
 import com.example.smart_travel_BE.repository.DestinationRepository;
 import com.example.smart_travel_BE.repository.HomestayRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -116,12 +116,12 @@ public class ChatAIService {
 		return dto;
 	}
 
-	private HomestayResponse mapHotel(Hotel h) {
+	private HomestayResponse mapHotel(Homestay h) {
 		return HomestayResponse.builder()
 				.id(h.getId())
 				.name(h.getName())
 				.address(h.getAddress())
-				.minPrice(h.getMinPrice())
+				.pricePerNight(h.getMinPrice())
 				.stars(h.getStarRating())
 				.rating(h.getAverageRating() != null ? h.getAverageRating().doubleValue() : null)
 				.numOfReviews(h.getReviewCount())

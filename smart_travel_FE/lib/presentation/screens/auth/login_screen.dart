@@ -103,11 +103,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   BlocConsumer<AuthBloc, AuthState>(
                     listener: (context, state) {
                       if (state is LoginSuccess) {
-                        if (state.response.role == "ADMIN") {
-                          Navigator.pushReplacementNamed(context, '/dashboard');
-                        } else if (state.response.role == "ADMINHOMESTAY") {
+                        final role = state.response.role ?? '';
+                        if (role.toUpperCase() == 'HOST') {
+                          // HOST users: check if hostVerified
+                          final hostVerified = state.response.hostVerified ?? false;
+                          if (hostVerified) {
+                            Navigator.pushReplacementNamed(context, '/host-dashboard');
+                          } else {
+                            Navigator.pushReplacementNamed(context, '/host-pending-approval');
+                          }
+                        } else if (role.toUpperCase() == 'ADMIN' || role.toUpperCase() == 'ADMINHOMESTAY') {
                           Navigator.pushReplacementNamed(context, '/dashboard');
                         } else {
+                          // Default USER route
                           Navigator.pushReplacementNamed(context, '/home');
                         }
                       } else if (state is AuthError) {
@@ -137,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 20,
                               offset: const Offset(0, 4),
                             ),

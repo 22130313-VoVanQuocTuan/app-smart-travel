@@ -1,24 +1,25 @@
+// lib/presentation/blocs/homestay/homestay_detail_event.dart
+
 import 'package:equatable/equatable.dart';
 
-abstract class HotelDetailEvent extends Equatable {
-  const HotelDetailEvent();
+abstract class HomestayDetailEvent extends Equatable {
+  const HomestayDetailEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-/// Event gọi API lấy chi tiết khách sạn
-class GetHotelDetailEvent extends HotelDetailEvent {
-  final int hotelId;
+class GetHomestayDetailEvent extends HomestayDetailEvent {
+  final int homestayId;
   final DateTime checkIn;
   final DateTime checkOut;
 
-  const GetHotelDetailEvent({
-    required this.hotelId,
+  const GetHomestayDetailEvent({
+    required this.homestayId,
     required this.checkIn,
     required this.checkOut,
   });
 
   @override
-  List<Object?> get props => [hotelId, checkIn, checkOut];
+  List<Object?> get props => [homestayId, checkIn, checkOut];
 }

@@ -19,7 +19,7 @@ public interface RoomTypeRepository extends JpaRepository<RoomType, Long> {
     LEFT JOIN Booking b
         ON b.roomType = rt
         AND (b.startDate < :checkOut AND b.endDate > :checkIn)
-    WHERE rt.hotel.id = :hotelId
+    WHERE rt.homestay.id = :hotelId
     GROUP BY rt
     HAVING (rt.totalRooms - COALESCE(SUM(b.numberOfRooms), 0)) > 0
     """)
@@ -28,4 +28,24 @@ public interface RoomTypeRepository extends JpaRepository<RoomType, Long> {
             @Param("checkIn") LocalDate checkIn,
             @Param("checkOut") LocalDate checkOut
     );
+
+    //Đếm số phòng còn trống trong khoảng thời gian
+    @Query("""
+        SELECT COALESCE(SUM(rt.totalRooms - COALESCE(
+            (SELECT SUM(b.numberOfRooms) FROM Booking b 
+             WHERE b.roomType.id = rt.id 
+             AND b.status != 'CANCELLED'
+             AND b.startDate < :checkOut 
+             AND b.endDate > :checkIn), 0)), 0)
+        FROM RoomType rt 
+        WHERE rt.id = :roomTypeId
+    """)
+    int countAvailableRooms(
+            @Param("roomTypeId") Long roomTypeId,
+            @Param("checkIn") LocalDate checkIn,
+            @Param("checkOut") LocalDate checkOut
+    );
+
+
+
 }

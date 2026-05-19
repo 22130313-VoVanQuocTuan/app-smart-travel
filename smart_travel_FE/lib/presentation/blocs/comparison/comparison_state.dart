@@ -14,14 +14,14 @@ class ComparisonLoading extends ComparisonState {}
 class ComparisonSelectionLoaded extends ComparisonState {
   // Dùng dynamic cho tour nếu entity Tour chưa chuẩn, hoặc dùng Tour nếu đã ok
   final List<dynamic> tours;
-  final List<Hotel> hotels;
+  final List<Homestay> hotels;
 
   const ComparisonSelectionLoaded({
     this.tours = const [],
     this.hotels = const [],
   });
 
-  ComparisonSelectionLoaded copyWith({List<dynamic>? tours, List<Hotel>? hotels}) {
+  ComparisonSelectionLoaded copyWith({List<dynamic>? tours, List<Homestay>? hotels}) {
     return ComparisonSelectionLoaded(
       tours: tours ?? this.tours,
       hotels: hotels ?? this.hotels,

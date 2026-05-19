@@ -73,7 +73,12 @@ class AuthRepositoryImpl implements AuthRepository {
           email: params.email,
           phone: params.phone,
           password: params.password,
-          confirmPassword: params.confirmPassword
+          confirmPassword: params.confirmPassword,
+          role: params.role,
+          idCardNumber: params.idCardNumber,
+          idCardImageUrl: params.idCardImageUrl,
+          ownershipDocumentUrl: params.ownershipDocumentUrl,
+          portraitUrl: params.portraitUrl,
       );
       // Gọi remote data source
       final responseModel = await dataSource.register(requestModal);

@@ -1,36 +1,27 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/domain/usecases/homestay/hotel_detail_use_case.dart';
-import 'homestay_detail_event.dart';
-import 'homestay_detail_state.dart';
+// lib/presentation/blocs/homestay/homestay_detail_bloc.dart
+import 'package:bloc/bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_event.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_state.dart';
+import 'package:smart_travel/service/homestay_service.dart';
 
-class HotelDetailBloc extends Bloc<HotelDetailEvent, HotelDetailState> {
-  final HotelDetailUseCase hotelDetailUseCase;
+class HomestayDetailBloc extends Bloc<HomestayDetailEvent, HomestayDetailState> {
+  final HomestayService homestayService;
 
-  HotelDetailBloc({required this.hotelDetailUseCase})
-    : super(HotelDetailInitial()) {
-    on<GetHotelDetailEvent>(_onGetHotelDetailEvent);
+  HomestayDetailBloc({required this.homestayService}) : super(HomestayDetailInitial()) {
+    on<GetHomestayDetailEvent>(_onGetHomestayDetail);
   }
 
-  Future<void> _onGetHotelDetailEvent(
-    GetHotelDetailEvent event,
-    Emitter<HotelDetailState> emit,
-  ) async {
-    emit(HotelDetailLoading());
+  Future<void> _onGetHomestayDetail(GetHomestayDetailEvent event, Emitter<HomestayDetailState> emit) async {
+    emit(HomestayDetailLoading());
     try {
-      final result = await hotelDetailUseCase(
-        HotelDetailParams(
-          hotelId: event.hotelId,
-          checkIn: event.checkIn,
-          checkOut: event.checkOut,
-        ),
+      final homestay = await homestayService.getHomestayDetail(
+        event.homestayId,
+        checkIn: event.checkIn,
+        checkOut: event.checkOut,
       );
-
-      result.fold(
-        (failure) => emit(HotelDetailError(failure.message)),
-        (hotelDetail) => emit(HotelDetailLoaded(hotelDetail)),
-      );
+      emit(HomestayDetailLoaded(homestay));
     } catch (e) {
-      emit(HotelDetailError(e.toString()));
+      emit(HomestayDetailError(e.toString()));
     }
   }
 }

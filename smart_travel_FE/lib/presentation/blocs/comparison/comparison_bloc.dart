@@ -13,7 +13,7 @@ class ComparisonBloc extends Bloc<ComparisonEvent, ComparisonState> {
   final HotelRepository hotelRepository;
 
   List<dynamic> _toursCache = [];
-  List<Hotel> _hotelsCache = [];
+  List<Homestay> _hotelsCache = [];
 
   ComparisonBloc({
     required this.comparisonRepository,

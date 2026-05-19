@@ -1,5 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
@@ -9,6 +12,7 @@ import 'package:smart_travel/presentation/blocs/favorite/favorite_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_detail_bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_management_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
@@ -21,11 +25,13 @@ import 'package:smart_travel/presentation/blocs/tour/tour_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/tour/tour_bloc.dart';
 import 'dart:convert';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/network/dio_client.dart';
 import 'injection_container.dart' as di;
 import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await InAppWebViewController.setWebContentsDebuggingEnabled(true);
   // Initialize dependency injection
   await Firebase.initializeApp();
   await di.init();
@@ -53,8 +59,16 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    return MultiProvider(
       providers: [
+        Provider<DioClient>(
+          create: (_) => DioClient(
+            storage: di.sl<FlutterSecureStorage>(),
+          ),
+        ),
+      ],
+      child: MultiBlocProvider(
+        providers: [
         // Provide AuthBloc globally
         BlocProvider(create: (_) => di.sl<AuthBloc>()),
         BlocProvider(create: (_) => di.sl<DestinationBloc>()),
@@ -63,14 +77,17 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<ProvinceDetailBloc>()),
         BlocProvider(create: (_) => di.sl<TourDetailBloc>()),
         BlocProvider(create: (_) => di.sl<TourBloc>()),
-        BlocProvider(create: (_) => di.sl<HotelBloc>()),
-        BlocProvider(create: (_) => di.sl<HotelDetailBloc>()),
+        BlocProvider(create: (_) => di.sl<HomestayBloc>()),
+        BlocProvider(create: (_) => di.sl<HomestayDetailBloc>()),
         BlocProvider(create: (_) => di.sl<ProfileBloc>()..add(LoadSettings())),
         BlocProvider(create: (_) => di.sl<BannerBloc>()),
         BlocProvider(create: (_) => di.sl<FavoriteBloc>()),
         BlocProvider(create: (_) => di.sl<WeatherBloc>()),
-
+        BlocProvider(create: (_) => di.sl<HomestayManagementBloc>()),
+        BlocProvider(create: (_) => di.sl<TourBloc>()),
       ],
+
+
       child: BlocListener<ProfileBloc, ProfileState>(
         listener: (context, state) {
           // Update dark mode and language setting whenever any state with this info is emitted
@@ -146,6 +163,7 @@ class _MyAppState extends State<MyApp> {
           ],
           supportedLocales: const [Locale('en'), Locale('vi')],
         ),
+      ),
       ),
     );
   }

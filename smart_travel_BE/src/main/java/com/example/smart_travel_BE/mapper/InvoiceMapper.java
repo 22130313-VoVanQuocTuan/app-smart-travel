@@ -39,15 +39,15 @@ public class InvoiceMapper {
      */
     private String resolveItemName(Booking booking) {
         if ("HOTEL".equalsIgnoreCase(booking.getBookingType())) {
-            Hotel hotel = booking.getHotelId() != null
+            Homestay homestay = booking.getHotelId() != null
                     ? hotelRepository.findById(booking.getHotelId()).orElse(null)
                     : null;
 
             RoomType roomType = booking.getRoomType();
             String room = roomType != null ? " - " + roomType.getName() : "";
 
-            return hotel != null
-                    ? hotel.getName() + room
+            return homestay != null
+                    ? homestay.getName() + room
                     : "Khách sạn đã xóa";
         }
 

@@ -36,8 +36,8 @@ spring:
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
-  valid-duration: ${JWT_VALID_DURATION}
-  refreshable-duration: ${JWT_REFRESHABLE_DURATION}
+  valid-duration: ${JWT_VALID_DURATION:28800}        # 8 hours (thay vì 1 hour)
+  refreshable-duration: ${JWT_REFRESHABLE_DURATION:604800} # 7 days
 
 github:
     token: ${GITHUB_API_KEY}

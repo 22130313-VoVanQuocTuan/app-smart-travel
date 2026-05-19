@@ -1,22 +1,22 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-class HotelImageCarouselSliver extends StatefulWidget {
+class HomestayImageCarouselSliver extends StatefulWidget {
   final List<String> images;
   final VoidCallback? onBack;
 
-  const HotelImageCarouselSliver({
+  const HomestayImageCarouselSliver({
     super.key,
     required this.images,
     this.onBack,
   });
 
   @override
-  State<HotelImageCarouselSliver> createState() =>
+  State<HomestayImageCarouselSliver> createState() =>
       _HotelImageCarouselSliverState();
 }
 
-class _HotelImageCarouselSliverState extends State<HotelImageCarouselSliver> {
+class _HotelImageCarouselSliverState extends State<HomestayImageCarouselSliver> {
   late final PageController _pageController;
   int _currentImageIndex = 0;
   Timer? _timer; // Thêm Timer vào đây

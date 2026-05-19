@@ -1,8 +1,13 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:lottie/lottie.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:smart_travel/domain/params/RegisterParams.dart';
+import 'package:smart_travel/core/services/image_upload_service.dart';
+import 'package:smart_travel/injection_container.dart' as di;
 import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_event.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_state.dart';
@@ -24,9 +29,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _idCardController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
+  bool _isHost = false;
+  // Files selected locally (deferred upload until register)
+  File? _portraitFile;
+  File? _idCardFile;
+  File? _ownershipFile;
+
+  // Uploaded URLs (populated when pressing register)
+  String? _portraitUrl;
+  String? _idCardImageUrl;
+  String? _ownershipDocUrl;
+  bool _isUploadingDoc = false;
 
   @override
   void dispose() {
@@ -35,6 +52,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _idCardController.dispose();
     super.dispose();
   }
 
@@ -47,19 +65,98 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
         return;
       }
+      // If host, ensure required files are selected and upload selected files first (deferred upload)
+      Future<void> doRegister() async {
+        try {
+          if (_isHost) {
+            if (_portraitFile == null || _idCardFile == null || _ownershipFile == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Vui lòng chọn ảnh chân dung, ảnh CCCD và giấy tờ sở hữu trước khi đăng ký.')),
+              );
+              return;
+            }
+            setState(() {
+              _isUploadingDoc = true;
+            });
+            final imageUploadService = di.sl<ImageUploadService>();
+            // Upload portrait
+            if (_portraitFile != null) {
+              _portraitUrl = await imageUploadService.uploadAvatar(_portraitFile!);
+            }
+            // Upload id card image
+            if (_idCardFile != null) {
+              _idCardImageUrl = await imageUploadService.uploadAvatar(_idCardFile!);
+            }
+            // Upload ownership document
+            if (_ownershipFile != null) {
+              _ownershipDocUrl = await imageUploadService.uploadAvatar(_ownershipFile!);
+            }
+          }
 
-      // Tạo RegisterRequest entity
-      final request = RegisterParams(
-        fullName: _fullNameController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
-        password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
-      );
+          final request = RegisterParams(
+            fullName: _fullNameController.text.trim(),
+            email: _emailController.text.trim(),
+            phone: _phoneController.text.trim(),
+            password: _passwordController.text,
+            confirmPassword: _confirmPasswordController.text,
+            role: _isHost ? 'HOST' : 'USER',
+            idCardNumber: _isHost ? _idCardController.text.trim() : null,
+            idCardImageUrl: _isHost ? _idCardImageUrl : null,
+            ownershipDocumentUrl: _isHost ? _ownershipDocUrl : null,
+            portraitUrl: _isHost ? _portraitUrl : null,
+          );
 
-      // Dispatch event tới BLoC
-      context.read<AuthBloc>().add(RegisterSubmitted(request));
+          // Dispatch event tới BLoC
+          context.read<AuthBloc>().add(RegisterSubmitted(request));
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Upload hoặc đăng ký thất bại: $e')),
+          );
+        } finally {
+          setState(() {
+            _isUploadingDoc = false;
+          });
+        }
+      }
+
+      doRegister();
     }
+  }
+
+
+  Future<File?> _pickDocumentLocal() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        imageQuality: 90,
+      );
+      if (pickedFile == null) return null;
+      return File(pickedFile.path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể chọn file: $e')),
+        );
+      }
+      return null;
+    }
+  }
+
+  Future<void> _pickPortrait() async {
+    final f = await _pickDocumentLocal();
+    if (f != null) setState(() => _portraitFile = f);
+  }
+
+  Future<void> _pickIdCard() async {
+    final f = await _pickDocumentLocal();
+    if (f != null) setState(() => _idCardFile = f);
+  }
+
+  Future<void> _pickOwnershipDoc() async {
+    final f = await _pickDocumentLocal();
+    if (f != null) setState(() => _ownershipFile = f);
   }
 
   @override
@@ -220,7 +317,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Register Form Card - Lắng nghe BLoC State
+                              // Register Form Card - Lắng nghe BLoC State
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
@@ -228,7 +325,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 4),
                               ),
@@ -276,23 +373,107 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 const SizedBox(height: 16),
 
                                 // Phone
-                                CustomTextField(
-                                  label: "Số điện thoại",
-                                  hintText: "Nhập số điện thoại",
+                                IntlPhoneField(
                                   controller: _phoneController,
-                                  keyboardType: TextInputType.phone,
-                                  prefixIcon: Icons.phone_outlined,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
+                                  decoration: const InputDecoration(
+                                    labelText: 'Số điện thoại',
+                                    hintText: 'Nhập số điện thoại',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  initialCountryCode: 'VN',
+                                  disableLengthCheck: true,
+                                  onChanged: (phone) {
+                                    print(phone.completeNumber);
+                                  },
+                                  validator: (phone) {
+                                    if (phone == null || phone.number.isEmpty) {
                                       return 'Vui lòng nhập số điện thoại';
-                                    }
-                                    if (!RegExp(r'^[0-9]{10}')
-                                        .hasMatch(value)) {
-                                      return 'Số điện thoại không hợp lệ';
                                     }
                                     return null;
                                   },
                                 ),
+                                const SizedBox(height: 12),
+                                // Role selection: User or Host
+                                const Text('Bạn là:', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF374151))),
+                                const SizedBox(height: 8),
+                                ToggleButtons(
+                                  isSelected: [!_isHost, _isHost],
+                                  onPressed: (index) {
+                                    setState(() {
+                                      _isHost = index == 1;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  constraints: const BoxConstraints(minHeight: 44, minWidth: 130),
+                                  children: const [
+                                    Text('Khách'),
+                                    Text('Chủ homestay'),
+                                  ],
+                                ),
+
+                                if (_isHost) ...[
+                                  const SizedBox(height: 8),
+                                  CustomTextField(
+                                    label: 'Số CCCD/CMND',
+                                    hintText: 'Nhập số CCCD/CMND',
+                                    controller: _idCardController,
+                                    prefixIcon: Icons.badge_outlined,
+                                    validator: (value) {
+                                      if (_isHost && (value == null || value.isEmpty)) {
+                                        return 'Vui lòng nhập số CCCD';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Portrait uploader (pick local file, upload on submit)
+                                  Text('Ảnh chân dung', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: _isUploadingDoc ? null : _pickPortrait,
+                                    child: CircleAvatar(
+                                      radius: 48,
+                                      backgroundColor: Colors.grey[200],
+                                      backgroundImage: _portraitFile != null
+                                          ? FileImage(_portraitFile!) as ImageProvider?
+                                          : (_portraitUrl != null ? NetworkImage(_portraitUrl!) : null),
+                                      child: _portraitFile == null && _portraitUrl == null
+                                          ? const Icon(Icons.camera_alt, size: 32, color: Colors.grey)
+                                          : null,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Documents: ID image and ownership document
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: _isUploadingDoc ? null : () async {
+                                            await _pickIdCard();
+                                          },
+                                          icon: const Icon(Icons.upload_file),
+                                          label: const Text('Upload ảnh CCCD'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: _isUploadingDoc ? null : () async {
+                                            await _pickOwnershipDoc();
+                                          },
+                                          icon: const Icon(Icons.upload_file),
+                                          label: const Text('Upload sổ hộ khẩu/giấy tờ'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  if (_idCardFile != null)
+                                    SizedBox(height:80, child: Image.file(_idCardFile!, fit: BoxFit.contain)),
+                                  if (_ownershipFile != null)
+                                    SizedBox(height:80, child: Image.file(_ownershipFile!, fit: BoxFit.contain)),
+                                  const SizedBox(height: 12),
+                                ],
                                 const SizedBox(height: 16),
 
                                 // Password & Confirm Password

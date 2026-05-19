@@ -18,8 +18,8 @@ public class CloudinaryService {
     public String uploadFile(MultipartFile file, String folder) throws IOException {
 
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                    "folder", folder, // Ví dụ: destinations, hotels, tours, reviews
-                    "upload_preset", "travel_app"
+                    "folder", folder,
+                    "resource_type", "auto"
             ));
             // Lấy URL công khai
             return uploadResult.get("secure_url").toString();

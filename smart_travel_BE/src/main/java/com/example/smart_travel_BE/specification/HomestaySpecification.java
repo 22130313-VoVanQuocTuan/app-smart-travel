@@ -1,7 +1,7 @@
 package com.example.smart_travel_BE.specification;
 
-import com.example.smart_travel_BE.dto.hotel.request.HomestayFilterRequest;
-import com.example.smart_travel_BE.entity.Hotel;
+import com.example.smart_travel_BE.dto.homestay.request.HomestayFilterRequest;
+import com.example.smart_travel_BE.entity.Homestay;
 import com.example.smart_travel_BE.entity.Destination;
 import com.example.smart_travel_BE.entity.Province;
 import jakarta.persistence.criteria.Join;
@@ -10,10 +10,10 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 public class HomestaySpecification {
-    public static Specification<Hotel> filter(HomestayFilterRequest req) {
+    public static Specification<Homestay> filter(HomestayFilterRequest req) {
         return (root, query, cb) -> {
             Predicate predicate = cb.conjunction();
-            Join<Hotel, Destination> destJoin = root.join("destination", JoinType.LEFT);
+            Join<Homestay, Destination> destJoin = root.join("destination", JoinType.LEFT);
             Join<Destination, Province> provJoin = destJoin.join("province", JoinType.LEFT);
 
             // 1. Lọc theo destinationId

@@ -6,13 +6,13 @@ import 'package:smart_travel/data/models/homestay/homestay_create_request.dart';
 import 'package:smart_travel/domain/entities/homestay.dart';
 import 'package:smart_travel/domain/repositories/homestay_repository.dart';
 
-class UpdateHotelUseCase extends UseCase<Hotel, UpdateHotelParams> {
+class UpdateHotelUseCase extends UseCase<Homestay, UpdateHotelParams> {
   final HotelRepository repository;
 
   UpdateHotelUseCase(this.repository);
 
   @override
-  Future<Either<Failure, Hotel>> call(UpdateHotelParams params) async {
+  Future<Either<Failure, Homestay>> call(UpdateHotelParams params) async {
     return await repository.updateHotel(params.id, params.request);
   }
 }

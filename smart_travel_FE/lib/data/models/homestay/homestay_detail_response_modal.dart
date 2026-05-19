@@ -20,7 +20,7 @@ class HotelDetailResponseModel {
   final String? provinceName;
   final double? latitude;
   final double? longitude;
-  final List<RoomTypeResponseModel>? rooms;
+  final List<RoomType>? rooms;
   final double? pricePerNight; // giá mặc định / hiển thị
 
 
@@ -89,7 +89,7 @@ class HotelDetailResponseModel {
       latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
       longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
       rooms: json['rooms'] != null
-          ? (json['rooms'] as List).where((e) => e != null).map((e) => RoomTypeResponseModel.fromJson(e)).toList()
+          ? (json['rooms'] as List).where((e) => e != null).map((e) => RoomType.fromJson(e)).toList()
           : null,
       pricePerNight: json['pricePerNight'] != null ? double.tryParse(json['pricePerNight'].toString()) : null,
 
@@ -97,16 +97,16 @@ class HotelDetailResponseModel {
   }
 
   // --- HÀM NÀY ĐẨY DỮ LIỆU VÀO HOTEL ENTITY ---
-  Hotel toEntity() {
-    return Hotel(
+  Homestay toEntity() {
+    return Homestay(
       id: id,
       name: name,
       description: description,
       address: address,
-      starRating: stars,
-      averageRating: rating,
-      reviewCount: numOfReviews,
-      imageUrls: images,
+      stars: stars,
+      rating: rating,
+      numOfReviews: numOfReviews,
+      images: images,
       thumbnail: thumbnail,
       phone: phone,
       email: email,
@@ -117,7 +117,7 @@ class HotelDetailResponseModel {
       provinceName: provinceName,
       latitude: latitude,
       longitude: longitude,
-      rooms: rooms?.map((roomModel) => roomModel.toEntity()).toList(),
+      rooms: rooms,
       pricePerNight:  pricePerNight,
     );
   }

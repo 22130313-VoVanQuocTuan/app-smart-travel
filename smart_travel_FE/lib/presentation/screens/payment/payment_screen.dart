@@ -1,27 +1,43 @@
+// lib/presentation/screens/payment/payment_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_travel/domain/entities/booking_info.dart';
 import 'package:smart_travel/presentation/blocs/payment/payment_bloc.dart';
 import 'package:smart_travel/presentation/blocs/payment/payment_event.dart';
 import 'package:smart_travel/presentation/blocs/payment/payment_state.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_travel/injection_container.dart' as di;
 
 class PaymentScreen extends StatelessWidget {
-  final String bookingId;
-  final double amount;
+  final BookingInfo bookingInfo;
 
   const PaymentScreen({
     Key? key,
-    required this.bookingId,
-    required this.amount,
+    required this.bookingInfo,
   }) : super(key: key);
+
+  double _calculateTotalAmount() {
+    double total = 0;
+    int nights = bookingInfo.endDate.difference(bookingInfo.startDate).inDays;
+    if (nights < 1) nights = 1;
+    total += bookingInfo.pricePerNight * bookingInfo.numberOfRooms * nights;
+    for (var tour in bookingInfo.selectedTours) {
+      total += tour.pricePerPerson * tour.numberOfPeople;
+    }
+    if (bookingInfo.discountAmount > 0) {
+      total -= bookingInfo.discountAmount;
+    }
+    return total > 0 ? total : 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'VND');
-    final String formattedAmount = currencyFormatter.format(amount);
+    final totalAmount = _calculateTotalAmount();
+    final formattedAmount = currencyFormatter.format(totalAmount);
 
     return BlocProvider(
       create: (context) => di.sl<PaymentBloc>(),
@@ -36,7 +52,6 @@ class PaymentScreen extends StatelessWidget {
         body: BlocConsumer<PaymentBloc, PaymentState>(
           listener: (context, state) {
             if (state is PaymentSuccess) {
-              // Khi có link thanh toán, mở WebView ngay
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -53,10 +68,7 @@ class PaymentScreen extends StatelessWidget {
               Navigator.popUntil(context, (route) => route.isFirst);
             } else if (state is PaymentFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
+                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
               );
             }
           },
@@ -68,33 +80,12 @@ class PaymentScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Tổng số tiền cần thanh toán:',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: AppColors.textGray,
-                        ),
-                      ),
+                      Text('Tổng số tiền cần thanh toán:', style: TextStyle(fontSize: 18, color: AppColors.textGray)),
                       const SizedBox(height: 8),
-                      Text(
-                        formattedAmount,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
+                      Text(formattedAmount, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary)),
                       const SizedBox(height: 32),
-                      Text(
-                        'Chọn phương thức thanh toán:',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textGray,
-                        ),
-                      ),
+                      Text('Chọn phương thức thanh toán:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textGray)),
                       const SizedBox(height: 16),
-                      // Hiển thị VNPay
                       _buildPaymentMethodTile(
                         context: context,
                         logoAsset: 'assets/images/vnpay_logo.png',
@@ -102,15 +93,13 @@ class PaymentScreen extends StatelessWidget {
                         onTap: () {
                           context.read<PaymentBloc>().add(
                             ProcessPaymentSubmitted(
-                              bookingId: bookingId,
-                              amount: amount,
+                              bookingInfo: bookingInfo,
                               paymentMethod: 'VNPAY',
                             ),
                           );
                         },
                       ),
                       const SizedBox(height: 12),
-                      // Hiển thị MoMo
                       _buildPaymentMethodTile(
                         context: context,
                         logoAsset: 'assets/images/momo_logo.png',
@@ -118,25 +107,20 @@ class PaymentScreen extends StatelessWidget {
                         onTap: () {
                           context.read<PaymentBloc>().add(
                             ProcessPaymentSubmitted(
-                              bookingId: bookingId,
-                              amount: amount,
+                              bookingInfo: bookingInfo,
                               paymentMethod: 'MOMO',
                             ),
                           );
                         },
                       ),
                       const SizedBox(height: 12),
-                      // Hiển thị Cash
                       _buildPaymentMethodTile(
                         context: context,
                         logoAsset: 'assets/images/cash_logo.png',
                         title: 'Thanh toán trực tiếp',
                         onTap: () {
                           context.read<PaymentBloc>().add(
-                            ConfirmCashPayment(
-                              bookingId: bookingId,
-                              amount: amount,
-                            ),
+                            ConfirmCashPayment(bookingInfo: bookingInfo),
                           );
                         },
                       ),
@@ -146,9 +130,7 @@ class PaymentScreen extends StatelessWidget {
                 if (state is PaymentLoading)
                   Container(
                     color: Colors.black.withOpacity(0.5),
-                    child: Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
-                    ),
+                    child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
                   ),
               ],
             );
@@ -174,12 +156,7 @@ class PaymentScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 3, offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
@@ -193,16 +170,7 @@ class PaymentScreen extends StatelessWidget {
               },
             ),
             const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textGray,
-                ),
-              ),
-            ),
+            Expanded(child: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textGray))),
             Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade500),
           ],
         ),
@@ -211,9 +179,9 @@ class PaymentScreen extends StatelessWidget {
   }
 }
 
+// InAppWebView với xử lý momo:// scheme
 class PaymentWebView extends StatefulWidget {
   final String url;
-
   const PaymentWebView({Key? key, required this.url}) : super(key: key);
 
   @override
@@ -221,79 +189,9 @@ class PaymentWebView extends StatefulWidget {
 }
 
 class _PaymentWebViewState extends State<PaymentWebView> {
-  late final WebViewController _controller;
+  final GlobalKey webViewKey = GlobalKey();
+  late InAppWebViewController webViewController;
   bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-
-      ..setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-
-
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (_) => setState(() => _isLoading = true),
-          onPageFinished: (_) => setState(() => _isLoading = false),
-          onNavigationRequest: (NavigationRequest request) {
-            print(">>> WebView URL: ${request.url}");
-
-            if (request.url.contains("127.0.0.1") ||
-                request.url.contains("localhost") ||
-                request.url.contains("10.0.2.2") ||
-                request.url.contains("/payment/momo-return") ||
-                request.url.contains("/payment/vnpay-return")) {
-
-              print(">>> PHÁT HIỆN URL TRẢ VỀ: ${request.url}");
-              _handlePaymentResult(request.url);
-
-              return NavigationDecision.prevent;
-            }
-
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
-  }
-
-  void _handlePaymentResult(String url) {
-    final uri = Uri.parse(url);
-
-    final momoResultCode = uri.queryParameters['resultCode'];
-
-    final vnpResponseCode = uri.queryParameters['vnp_ResponseCode'];
-
-    bool isSuccess = false;
-
-    if (momoResultCode == '0') {
-      isSuccess = true;
-    } else if (vnpResponseCode == '00') {
-      isSuccess = true;
-    }
-
-    if (isSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Thanh toán thành công!"),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-          )
-      );
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Giao dịch thất bại hoặc bị hủy"),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-          )
-      );
-      Navigator.of(context).pop(); 
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -301,11 +199,106 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       appBar: AppBar(title: const Text('Cổng thanh toán'), elevation: 0),
       body: Stack(
         children: [
-          WebViewWidget(controller: _controller),
+          InAppWebView(
+            key: webViewKey,
+            initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+            initialOptions: InAppWebViewGroupOptions(
+              android: AndroidInAppWebViewOptions(
+                mixedContentMode: AndroidMixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+                domStorageEnabled: true,
+                useHybridComposition: true,
+              ),
+              crossPlatform: InAppWebViewOptions(
+                javaScriptEnabled: true,
+              ),
+            ),
+            onWebViewCreated: (controller) {
+              webViewController = controller;
+            },
+            onLoadStart: (controller, url) {
+              setState(() => _isLoading = true);
+            },
+            onLoadStop: (controller, url) {
+              setState(() => _isLoading = false);
+            },
+            shouldOverrideUrlLoading: (controller, navigationAction) async {
+              final url = navigationAction.request.url.toString();
+              print(">>> WebView URL: $url");
+
+              // XỬ LÝ URL MOMO SCHEME
+              if (url.startsWith("momo://")) {
+                print(">>> Phát hiện momo:// scheme, mở app MoMo...");
+                try {
+                  // Cách 1: Dùng url_launcher
+                  if (await canLaunchUrl(Uri.parse(url))) {
+                    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                  } else {
+                    _showInstallMoMoDialog();
+                  }
+                } catch (e) {
+                  print("Lỗi mở MoMo: $e");
+                  _showInstallMoMoDialog();
+                }
+                return NavigationActionPolicy.CANCEL;
+              }
+
+              // XỬ LÝ URL TRẢ VỀ THÀNH CÔNG
+              if (url.contains("127.0.0.1") ||
+                  url.contains("localhost") ||
+                  url.contains("10.0.2.2") ||
+                  url.contains("/payment/momo-return") ||
+                  url.contains("/payment/vnpay-return")) {
+
+                print(">>> PHÁT HIỆN URL TRẢ VỀ: $url");
+                _handlePaymentResult(url);
+                return NavigationActionPolicy.CANCEL;
+              }
+              return NavigationActionPolicy.ALLOW;
+            },
+          ),
           if (_isLoading)
-            Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            const Center(child: CircularProgressIndicator()),
         ],
       ),
     );
+  }
+
+  void _showInstallMoMoDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Chưa cài đặt MoMo'),
+        content: const Text('Để thanh toán bằng MoMo, vui lòng cài đặt ứng dụng MoMo Test.\n\nHoặc chọn phương thức thanh toán khác như VNPay hoặc Tiền mặt.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handlePaymentResult(String url) {
+    final uri = Uri.parse(url);
+    final momoResultCode = uri.queryParameters['resultCode'];
+    final vnpResponseCode = uri.queryParameters['vnp_ResponseCode'];
+
+    bool isSuccess = false;
+    if (momoResultCode == '0' || vnpResponseCode == '00') {
+      isSuccess = true;
+    }
+
+    if (isSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Thanh toán thành công!"), backgroundColor: Colors.green, duration: Duration(seconds: 3)),
+      );
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Giao dịch thất bại hoặc bị hủy"), backgroundColor: Colors.red, duration: Duration(seconds: 3)),
+      );
+      Navigator.of(context).pop();
+    }
   }
 }

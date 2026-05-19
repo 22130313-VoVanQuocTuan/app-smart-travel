@@ -23,7 +23,6 @@ public class CreateUserRequest {
     @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")
     private String password;
     
-    @Pattern(regexp = "^[0-9]{10,11}$", message = "Số điện thoại phải có 10-11 chữ số")
     private String phone;
     
     @Min(value = 1900, message = "Năm sinh không hợp lệ")
