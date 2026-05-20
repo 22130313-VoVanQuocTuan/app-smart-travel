@@ -42,6 +42,7 @@ public interface HomestayRepository extends JpaRepository<Homestay, Long>, JpaSp
 
 
     List<Homestay> findByOwnerIdAndIsActiveTrue(Long ownerId);
+    long countByOwnerIdAndIsActiveTrue(Long ownerId);
     List<Homestay> findByDestinationIdAndIsActiveTrue(Long destinationId);
     List<Homestay> findByPricePerNightBetweenAndIsActiveTrue(BigDecimal minPrice, BigDecimal maxPrice);
     Page<Homestay> findTopByOrderByAverageRatingDesc(Pageable pageable);
