@@ -21,6 +21,49 @@ class TopDestination {
   }
 }
 
+class TopHomestay {
+  final int id;
+  final String name;
+  final String hostName;
+  final double totalRevenue;
+
+  TopHomestay({
+    required this.id,
+    required this.name,
+    required this.hostName,
+    required this.totalRevenue,
+  });
+
+  factory TopHomestay.fromJson(Map<String, dynamic> json) {
+    return TopHomestay(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      hostName: json['hostName'] ?? '',
+      totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
+    );
+  }
+}
+
+class TopHost {
+  final int id;
+  final String name;
+  final double totalRevenue;
+
+  TopHost({
+    required this.id,
+    required this.name,
+    required this.totalRevenue,
+  });
+
+  factory TopHost.fromJson(Map<String, dynamic> json) {
+    return TopHost(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
+    );
+  }
+}
+
 class DashboardStats {
   final int totalUsers;
   final int totalUsersByRoleUSER;
@@ -35,6 +78,8 @@ class DashboardStats {
   final double todayRevenue;
   final double totalRevenue;
   final List<TopDestination> topDestinations;
+  final List<TopHomestay> topHomestays;
+  final List<TopHost> topHosts;
 
   DashboardStats({
     required this.totalUsers,
@@ -50,6 +95,8 @@ class DashboardStats {
     this.todayRevenue = 0,
     this.totalRevenue = 0,
     required this.topDestinations,
+    this.topHomestays = const [],
+    this.topHosts = const [],
   });
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) {
@@ -60,6 +107,16 @@ class DashboardStats {
               (item) => TopDestination.fromJson(item as Map<String, dynamic>),
             )
             .toList();
+
+    var topHomestayList = json['topHomestays'] as List? ?? [];
+    List<TopHomestay> homestays = topHomestayList
+        .map((item) => TopHomestay.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    var topHostList = json['topHosts'] as List? ?? [];
+    List<TopHost> hosts = topHostList
+        .map((item) => TopHost.fromJson(item as Map<String, dynamic>))
+        .toList();
 
     return DashboardStats(
       totalUsers: json['totalUsers'] ?? 0,
@@ -75,6 +132,8 @@ class DashboardStats {
       todayRevenue: (json['todayRevenue'] ?? 0).toDouble(),
       totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
       topDestinations: destinations,
+      topHomestays: homestays,
+      topHosts: hosts,
     );
   }
 

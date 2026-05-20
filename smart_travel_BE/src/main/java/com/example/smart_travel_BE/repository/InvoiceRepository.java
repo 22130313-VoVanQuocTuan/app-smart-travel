@@ -22,11 +22,23 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     // --- Today stats ---
     long countByIssueDate(LocalDate date);
 
-    @Query("SELECT COALESCE(SUM(i.commissionAmount), 0) FROM Invoice i WHERE i.issueDate = :date AND i.commissionAmount IS NOT NULL")
+    @Query("SELECT COALESCE(SUM(COALESCE(i.commissionAmount, i.totalAmount * 0.1)), 0) FROM Invoice i WHERE i.issueDate = :date")
     BigDecimal sumTotalAmountByDate(@Param("date") LocalDate date);
 
-    @Query("SELECT COALESCE(SUM(i.commissionAmount), 0) FROM Invoice i WHERE i.commissionAmount IS NOT NULL")
+    @Query("SELECT COALESCE(SUM(COALESCE(i.commissionAmount, i.totalAmount * 0.1)), 0) FROM Invoice i")
     BigDecimal sumTotalAmount();
+
+    @Query("SELECT h.id, h.name, h.owner.fullName, COALESCE(SUM(COALESCE(i.commissionAmount, i.totalAmount * 0.1)), 0) " +
+           "FROM Invoice i JOIN i.booking b JOIN b.roomType rt JOIN rt.homestay h " +
+           "GROUP BY h.id, h.name, h.owner.fullName " +
+           "ORDER BY SUM(COALESCE(i.commissionAmount, i.totalAmount * 0.1)) DESC")
+    List<Object[]> getTopHomestaysByRevenue();
+
+    @Query("SELECT h.owner.id, h.owner.fullName, COALESCE(SUM(COALESCE(i.commissionAmount, i.totalAmount * 0.1)), 0) " +
+           "FROM Invoice i JOIN i.booking b JOIN b.roomType rt JOIN rt.homestay h " +
+           "GROUP BY h.owner.id, h.owner.fullName " +
+           "ORDER BY SUM(COALESCE(i.commissionAmount, i.totalAmount * 0.1)) DESC")
+    List<Object[]> getTopHostsByRevenue();
 
     // --- Hệ thống doanh thu theo DAY (trong 1 tháng) ---
     @Query("SELECT DAY(i.issueDate), " +

@@ -27,6 +27,9 @@ public class DashboardStatsResponse {
     private BigDecimal totalRevenue;
     private List<TopDestinationDTO> topDestinations;
 
+    private List<TopHomestayDTO> topHomestays;
+    private List<TopHostDTO> topHosts;
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -36,5 +39,26 @@ public class DashboardStatsResponse {
         private String name;
         private long viewCount;
         private String provinceName;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TopHomestayDTO {
+        private Long id;
+        private String name;
+        private String hostName;
+        private BigDecimal totalRevenue;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TopHostDTO {
+        private Long id;
+        private String name;
+        private BigDecimal totalRevenue;
     }
 }
