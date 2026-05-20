@@ -94,22 +94,14 @@ public class StatisticsService {
         LocalDate today = LocalDate.now();
 
         // Đếm số lượng homestay của host
-        int totalHotels = homestayRepository.findByOwnerIdAndIsActiveTrue(hostId).size();
+        int totalHotels = (int) homestayRepository.countByOwnerIdAndIsActiveTrue(hostId);
 
         // Tính doanh thu và hóa đơn hôm nay
-        List<Object[]> todayData = invoiceRepository.getHostRevenueByDateRange(hostId, today, today);
-        BigDecimal todayRevenue = todayData.stream()
-                .map(row -> (BigDecimal) row[1])
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        int todayInvoices = todayData.stream()
-                .mapToInt(row -> ((Number) row[2]).intValue())
-                .sum();
+        BigDecimal todayRevenue = invoiceRepository.sumHostRevenueByDate(hostId, today);
+        int todayInvoices = (int) invoiceRepository.countHostInvoicesByDate(hostId, today);
 
         // Tổng doanh thu của host
-        List<Object[]> totalData = invoiceRepository.getHostRevenueByDateRange(hostId, LocalDate.of(2000, 1, 1), today.plusDays(1));
-        BigDecimal totalRevenue = totalData.stream()
-                .map(row -> (BigDecimal) row[1])
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalRevenue = invoiceRepository.sumTotalHostRevenue(hostId);
 
         return DashboardStatsResponse.builder()
                 .totalHotels(totalHotels)
@@ -135,11 +127,11 @@ public class StatisticsService {
                     BigDecimal homestayAmt = toBigDecimal(row[2]);
                     BigDecimal commissionAmt = toBigDecimal(row[3]);
                     long count = ((Number) row[4]).longValue();
-                    totalRevenue = totalRevenue.add(revenue);
+                    totalRevenue = totalRevenue.add(commissionAmt); // Admin total is commission
 
                     dataPoints.add(RevenueResponse.RevenueDataPoint.builder()
                             .label(String.format("%02d/%02d", day, month))
-                            .revenue(revenue)
+                            .revenue(commissionAmt) // Admin revenue is commission
                             .homestayAmount(homestayAmt)
                             .commissionAmount(commissionAmt)
                             .invoiceCount(count)
@@ -155,11 +147,11 @@ public class StatisticsService {
                     BigDecimal homestayAmt = toBigDecimal(row[2]);
                     BigDecimal commissionAmt = toBigDecimal(row[3]);
                     long count = ((Number) row[4]).longValue();
-                    totalRevenue = totalRevenue.add(revenue);
+                    totalRevenue = totalRevenue.add(commissionAmt); // Admin total is commission
 
                     dataPoints.add(RevenueResponse.RevenueDataPoint.builder()
                             .label("T" + m)
-                            .revenue(revenue)
+                            .revenue(commissionAmt) // Admin revenue is commission
                             .homestayAmount(homestayAmt)
                             .commissionAmount(commissionAmt)
                             .invoiceCount(count)
@@ -175,11 +167,11 @@ public class StatisticsService {
                     BigDecimal homestayAmt = toBigDecimal(row[2]);
                     BigDecimal commissionAmt = toBigDecimal(row[3]);
                     long count = ((Number) row[4]).longValue();
-                    totalRevenue = totalRevenue.add(revenue);
+                    totalRevenue = totalRevenue.add(commissionAmt); // Admin total is commission
 
                     dataPoints.add(RevenueResponse.RevenueDataPoint.builder()
                             .label(String.valueOf(y))
-                            .revenue(revenue)
+                            .revenue(commissionAmt) // Admin revenue is commission
                             .homestayAmount(homestayAmt)
                             .commissionAmount(commissionAmt)
                             .invoiceCount(count)

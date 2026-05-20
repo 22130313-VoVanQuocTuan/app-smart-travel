@@ -10,29 +10,28 @@ import 'package:smart_travel/presentation/blocs/statistics/statistics_state.dart
 import 'package:smart_travel/presentation/widgets/statistic/host_statistics_overview_widget.dart';
 import 'package:smart_travel/injection_container.dart' as di;
 
-class HostDashboardScreen extends StatelessWidget {
+class HostDashboardScreen extends StatefulWidget {
   const HostDashboardScreen({super.key});
 
   @override
+  State<HostDashboardScreen> createState() => _HostDashboardScreenState();
+}
+
+class _HostDashboardScreenState extends State<HostDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final profileState = context.read<ProfileBloc>().state;
+    if (profileState is! ProfileLoaded) {
+      context.read<ProfileBloc>().add(LoadProfile());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) {
-        final bloc = di.sl<StatisticsBloc>();
-        final profileState = context.read<ProfileBloc>().state;
-        if (profileState is ProfileLoaded) {
-          bloc.add(LoadHostDashboardStats(profileState.user.id));
-        }
-        return bloc;
-      },
-      child: BlocListener<ProfileBloc, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileLoaded) {
-            context.read<StatisticsBloc>().add(LoadHostDashboardStats(state.user.id));
-          }
-        },
-        child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
         title: const Text('Quản Lý Homestay'),
         centerTitle: true,
         elevation: 2,
@@ -72,48 +71,62 @@ class HostDashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // Statistics Overview
-            BlocBuilder<StatisticsBloc, StatisticsState>(
-              builder: (context, state) {
-                if (state is StatisticsLoaded) {
-                  final profileState = context.read<ProfileBloc>().state;
-                  final currentHostId = (profileState is ProfileLoaded) ? profileState.user.id : 0;
-                  return HostStatisticsOverviewWidget(stats: state.stats, hostId: currentHostId);
-                }
-                if (state is StatisticsError) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Lỗi: ${state.message}',
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
+            BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, profileState) {
+                if (profileState is ProfileLoaded) {
+                  return BlocProvider(
+                    create: (context) => di.sl<StatisticsBloc>()..add(LoadHostDashboardStats(profileState.user.id)),
+                    child: BlocBuilder<StatisticsBloc, StatisticsState>(
+                      builder: (context, state) {
+                        if (state is StatisticsLoaded) {
+                          return HostStatisticsOverviewWidget(stats: state.stats, hostId: profileState.user.id);
+                        }
+                        if (state is StatisticsError) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Lỗi: ${state.message}',
+                                style: const TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+                        }
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [const Color(0xFF7C4DFF).withValues(alpha: 0.7), const Color(0xFF7C4DFF)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Colors.white),
+                          ),
+                        );
+                      },
                     ),
                   );
                 }
-                if (state is StatisticsLoading) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [const Color(0xFF7C4DFF).withValues(alpha: 0.7), const Color(0xFF7C4DFF)],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
+                // Nếu chưa load profile, hiển thị loading khung chờ
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Center(child: CircularProgressIndicator()),
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -161,8 +174,6 @@ class HostDashboardScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-      ),
       ),
     );
   }
