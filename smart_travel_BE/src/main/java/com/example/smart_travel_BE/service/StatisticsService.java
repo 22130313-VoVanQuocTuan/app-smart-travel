@@ -70,6 +70,23 @@ public class StatisticsService {
                         .build())
                 .collect(Collectors.toList());
 
+        List<DashboardStatsResponse.TopHomestayDTO> topHomestays = invoiceRepository.getTopHomestaysByRevenue().stream()
+                .map(row -> DashboardStatsResponse.TopHomestayDTO.builder()
+                        .id((Long) row[0])
+                        .name((String) row[1])
+                        .hostName((String) row[2])
+                        .totalRevenue((BigDecimal) row[3])
+                        .build())
+                .collect(Collectors.toList());
+
+        List<DashboardStatsResponse.TopHostDTO> topHosts = invoiceRepository.getTopHostsByRevenue().stream()
+                .map(row -> DashboardStatsResponse.TopHostDTO.builder()
+                        .id((Long) row[0])
+                        .name((String) row[1])
+                        .totalRevenue((BigDecimal) row[2])
+                        .build())
+                .collect(Collectors.toList());
+
         return DashboardStatsResponse.builder()
                 .totalUsers(totalUsers)
                 .totalUsersByRoleUSER(userCount)
@@ -84,6 +101,8 @@ public class StatisticsService {
                 .todayRevenue(todayRevenue != null ? todayRevenue : BigDecimal.ZERO)
                 .totalRevenue(totalRevenue != null ? totalRevenue : BigDecimal.ZERO)
                 .topDestinations(topDestinations)
+                .topHomestays(topHomestays)
+                .topHosts(topHosts)
                 .build();
     }
 
