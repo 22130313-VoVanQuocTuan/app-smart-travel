@@ -4,7 +4,9 @@
 
         android:label="smart_travel_FE"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+
         <!-- Thêm meta-data cho Facebook App ID -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
@@ -33,6 +35,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="@string/facebook_login_protocol_scheme" />
+                <data android:scheme="smarttravel" />
             </intent-filter>
         </activity>
 
@@ -82,6 +85,8 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <package android:name="com.mservice.momotransfer" />
+        <package android:name="vn.momo.platform" />
         <package android:name="com.facebook.katana" />
         <package android:name="com.facebook.orca" />
         <package android:name="com.facebook.lite" />

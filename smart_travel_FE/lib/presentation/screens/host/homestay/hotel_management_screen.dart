@@ -173,6 +173,38 @@ class _HomestayManagementScreenState extends State<HomestayManagementScreen> {
         flexibleSpace: Container(decoration: const BoxDecoration(gradient: AppColors.mainGradient)),
         elevation: 0,
         actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'terms') {
+                Navigator.pushNamed(context, '/terms-of-service');
+              } else if (value == 'privacy') {
+                Navigator.pushNamed(context, '/privacy-policy');
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'terms',
+                child: Row(
+                  children: [
+                    Icon(Icons.description_outlined, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text('Điều khoản dịch vụ'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'privacy',
+                child: Row(
+                  children: [
+                    Icon(Icons.privacy_tip_outlined, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text('Chính sách bảo mật'),
+                  ],
+                ),
+              ),
+            ],
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 26),
+          ),
           if (isHotelAdmin)
             IconButton(
               onPressed: () => _showModal(homestay: null),

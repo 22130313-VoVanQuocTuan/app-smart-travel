@@ -251,14 +251,7 @@ public class BookingService {
         }
         booking.setFinalPrice(finalPrice);
 
-        // 9. Cập nhật số phòng
-        roomType.setAvailableRooms(roomType.getAvailableRooms() - request.getNumberOfRooms());
-        roomTypeRepository.save(roomType);
-
-        homestay.setAvailableRooms(homestay.getAvailableRooms() - request.getNumberOfRooms());
-        homestayRepository.save(homestay);
-
-        // 10. Lưu booking
+        // 9. Lưu booking (không trừ số phòng vì kiểm tra theo từng ngày cụ thể dựa vào lịch booking hiện có)
         Booking savedBooking = bookingRepository.save(booking);
 
         if (booking.getBookingTours() != null && !booking.getBookingTours().isEmpty()) {
@@ -268,7 +261,7 @@ public class BookingService {
             }
         }
 
-        // 11. Tạo response
+        // 10. Tạo response
         List<BookingResponse.TourBookingInfo> tourInfos = new ArrayList<>();
         if (savedBooking.getBookingTours() != null && !savedBooking.getBookingTours().isEmpty()) {
             for (BookingTour bt : savedBooking.getBookingTours()) {
@@ -417,8 +410,11 @@ public class BookingService {
         // Update status
         booking.setStatus(newStatus);
         
-        if ("CANCELLED".equals(newStatus)) {
-            booking.setCancellationReason(cancellationReason);
+        // Restore available rooms when CHECKED_OUT or CANCELLED
+        if ("CHECKED_OUT".equals(newStatus) || "CANCELLED".equals(newStatus)) {
+            if ("CANCELLED".equals(newStatus)) {
+                booking.setCancellationReason(cancellationReason);
+            }
             
             // Restore available rooms
             if (booking.getRoomType() != null) {
