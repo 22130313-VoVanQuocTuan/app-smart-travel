@@ -60,11 +60,7 @@ class _HostBookingListScreenState extends State<HostBookingListScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
-              if (mounted) {
-                context.read<HostBookingBloc>().add(const RefreshHostBookingsEvent());
-              }
-            },
+            onPressed: _reloadBookings,
             tooltip: 'Làm mới',
           ),
         ],
@@ -164,12 +160,7 @@ class _HostBookingListScreenState extends State<HostBookingListScreen> {
                   }
 
                   return RefreshIndicator(
-                    onRefresh: () async {
-                      if (mounted) {
-                        context.read<HostBookingBloc>().add(const RefreshHostBookingsEvent());
-                      }
-                      return Future.value();
-                    },
+                    onRefresh: _pullToRefresh,
                     child: ListView.builder(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: state.filteredBookings.length,
@@ -177,16 +168,7 @@ class _HostBookingListScreenState extends State<HostBookingListScreen> {
                         final booking = state.filteredBookings[index];
                         return BookingListItem(
                           booking: booking,
-                          onTap: () async {
-                            await Navigator.pushNamed(
-                              context,
-                              RouteNames.hostBookingDetail,
-                              arguments: booking.id,
-                            );
-                            if (mounted) {
-                              context.read<HostBookingBloc>().add(const RefreshHostBookingsEvent());
-                            }
-                          },
+                          onTap: () => _navigateToDetail(context, booking.id),
                         );
                       },
                     ),
@@ -199,6 +181,47 @@ class _HostBookingListScreenState extends State<HostBookingListScreen> {
         ],
       ),
     );
+  }
+
+  // Navigate to detail and reload on return
+  Future<void> _navigateToDetail(BuildContext context, int bookingId) async {
+    await Navigator.pushNamed(
+      context,
+      RouteNames.hostBookingDetail,
+      arguments: bookingId,
+    );
+    
+    // Reload dữ liệu khi quay lại
+    if (mounted) {
+      // Delay 300ms để ensure navigation pop animation hoàn thành
+      await Future.delayed(const Duration(milliseconds: 300));
+      _reloadBookings();
+    }
+  }
+
+  // Reload bookings
+  void _reloadBookings() {
+    if (mounted) {
+      if (selectedStatus != null) {
+        context.read<HostBookingBloc>().add(
+          FilterBookingsByStatusEvent(selectedStatus!),
+        );
+      } else if (startDate != null && endDate != null) {
+        context.read<HostBookingBloc>().add(
+          FilterBookingsByDateRangeEvent(
+            startDate: startDate!,
+            endDate: endDate!,
+          ),
+        );
+      } else {
+        context.read<HostBookingBloc>().add(const LoadHostBookingsEvent());
+      }
+    }
+  }
+
+  // Pull to refresh
+  Future<void> _pullToRefresh() async {
+    return Future.delayed(const Duration(milliseconds: 300), _reloadBookings);
   }
 
   // Hàm đếm số lượng booking theo từng trạng thái
@@ -300,7 +323,7 @@ class _HostBookingListScreenState extends State<HostBookingListScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? color.withOpacity(0.15)
+              ? color.withValues(alpha: 0.15)
               : Colors.grey[100],
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
@@ -551,10 +574,10 @@ class BookingListItem extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(booking.status).withOpacity(0.15),
+                      color: _getStatusColor(booking.status).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: _getStatusColor(booking.status).withOpacity(0.5),
+                        color: _getStatusColor(booking.status).withValues(alpha: 0.5),
                       ),
                     ),
                     child: Text(

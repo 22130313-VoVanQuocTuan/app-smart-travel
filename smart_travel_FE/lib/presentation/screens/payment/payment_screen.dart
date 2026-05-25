@@ -129,7 +129,7 @@ class PaymentScreen extends StatelessWidget {
                 ),
                 if (state is PaymentLoading)
                   Container(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
                   ),
               ],
@@ -156,7 +156,7 @@ class PaymentScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(color: Colors.grey.shade300),
           boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 3, offset: const Offset(0, 2)),
+            BoxShadow(color: Colors.grey.withValues(alpha: 0.1), spreadRadius: 1, blurRadius: 3, offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
@@ -202,15 +202,11 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           InAppWebView(
             key: webViewKey,
             initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-            initialOptions: InAppWebViewGroupOptions(
-              android: AndroidInAppWebViewOptions(
-                mixedContentMode: AndroidMixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-                domStorageEnabled: true,
-                useHybridComposition: true,
-              ),
-              crossPlatform: InAppWebViewOptions(
-                javaScriptEnabled: true,
-              ),
+            initialSettings: InAppWebViewSettings(
+              javaScriptEnabled: true,
+              domStorageEnabled: true,
+              mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+              useHybridComposition: true,
             ),
             onWebViewCreated: (controller) {
               webViewController = controller;
@@ -220,10 +216,24 @@ class _PaymentWebViewState extends State<PaymentWebView> {
             },
             onLoadStop: (controller, url) {
               setState(() => _isLoading = false);
+              // ✅ Auto-handle payment result if page loaded
+              if (url.toString().contains("/api/v1/payment/payment-result") ||
+                  url.toString().contains("/payment-result")) {
+                print(">>> Payment result page loaded, preparing to close...");
+                // Auto-close WebView after 2 seconds to show result page
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted) {
+                    _handlePaymentResult(url.toString());
+                  }
+                });
+              }
             },
             shouldOverrideUrlLoading: (controller, navigationAction) async {
               final url = navigationAction.request.url.toString();
               print(">>> WebView URL: $url");
+              if (url.contains("momo") || url.contains("://momo")) {
+                print(">>> Phát hiện URL liên quan đến MoMo: $url");
+              }
 
               // XỬ LÝ URL MOMO SCHEME
               if (url.startsWith("momo://")) {
@@ -242,17 +252,16 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 return NavigationActionPolicy.CANCEL;
               }
 
-              // XỬ LÝ URL TRẢ VỀ THÀNH CÔNG
-              if (url.contains("127.0.0.1") ||
-                  url.contains("localhost") ||
-                  url.contains("10.0.2.2") ||
-                  url.contains("/payment/momo-return") ||
-                  url.contains("/payment/vnpay-return")) {
+               // XỰ LÝ URL TRẢ VỀ THÀNH CÔNG - NEW Endpoint
+               if (url.contains("/api/v1/payment/payment-result") || 
+                   url.contains("/payment-result") ||
+                   url.contains("/payment/momo-return") ||
+                   url.contains("/payment/vnpay-return")) {
 
-                print(">>> PHÁT HIỆN URL TRẢ VỀ: $url");
-                _handlePaymentResult(url);
-                return NavigationActionPolicy.CANCEL;
-              }
+                 print(">>> PHÁT HIỆN URL TRẢ VỀ: $url");
+                 _handlePaymentResult(url);
+                 return NavigationActionPolicy.ALLOW;  // Allow page to load, then auto-handle
+               }
               return NavigationActionPolicy.ALLOW;
             },
           ),
@@ -279,26 +288,80 @@ class _PaymentWebViewState extends State<PaymentWebView> {
     );
   }
 
-  void _handlePaymentResult(String url) {
-    final uri = Uri.parse(url);
-    final momoResultCode = uri.queryParameters['resultCode'];
-    final vnpResponseCode = uri.queryParameters['vnp_ResponseCode'];
-
-    bool isSuccess = false;
-    if (momoResultCode == '0' || vnpResponseCode == '00') {
-      isSuccess = true;
-    }
-
-    if (isSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Thanh toán thành công!"), backgroundColor: Colors.green, duration: Duration(seconds: 3)),
-      );
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Giao dịch thất bại hoặc bị hủy"), backgroundColor: Colors.red, duration: Duration(seconds: 3)),
-      );
-      Navigator.of(context).pop();
-    }
-  }
+   void _handlePaymentResult(String url) {
+     try {
+       final uri = Uri.parse(url);
+       
+       // ✅ NEW: Parse from new /payment-result endpoint params
+       final status = uri.queryParameters['status'];  // "success" or "failed"
+       final paymentId = uri.queryParameters['paymentId'];
+       final method = uri.queryParameters['method'];  // "vnpay" or "momo"
+       final backendMessage = uri.queryParameters['message'];
+       
+       // ✅ FALLBACK: Parse old endpoint params if new ones don't exist
+       final momoResultCode = uri.queryParameters['resultCode'];
+       final vnpResponseCode = uri.queryParameters['vnp_ResponseCode'];
+       
+       bool isSuccess = false;
+       String displayMessage = "Giao dịch thất bại hoặc bị hủy";
+       
+       // ✅ Check new status first
+       if (status != null) {
+         isSuccess = status == 'success';
+         if (isSuccess) {
+           displayMessage = "Thanh toán ${method?.toUpperCase() ?? 'online'} thành công!";
+           if (backendMessage != null) {
+             try {
+               displayMessage = Uri.decodeComponent(backendMessage);
+             } catch (e) {
+               // Keep default message if decode fails
+             }
+           }
+         } else {
+           displayMessage = "Thanh toán ${method?.toUpperCase() ?? 'online'} thất bại!";
+         }
+       } 
+       // ✅ Fallback to old params
+       else if (momoResultCode != null || vnpResponseCode != null) {
+         isSuccess = momoResultCode == '0' || vnpResponseCode == '00';
+         if (isSuccess) {
+           displayMessage = "Thanh toán thành công!";
+         }
+       }
+       
+       // ✅ Log detailed info
+       print(">>> Payment Result - Status: $status, PaymentId: $paymentId, Method: $method, Success: $isSuccess");
+       
+       if (isSuccess) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(
+             content: Text(displayMessage),
+             backgroundColor: Colors.green,
+             duration: const Duration(seconds: 3),
+           ),
+         );
+         // ✅ Back to home screen
+         Navigator.of(context).popUntil((route) => route.isFirst);
+       } else {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(
+             content: Text(displayMessage),
+             backgroundColor: Colors.red,
+             duration: const Duration(seconds: 3),
+           ),
+         );
+         // Back to payment screen to retry
+         Navigator.of(context).pop();
+       }
+     } catch (e) {
+       print(">>> Error handling payment result: $e");
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(
+           content: Text("Lỗi xử lý kết quả thanh toán: $e"),
+           backgroundColor: Colors.red,
+         ),
+       );
+       Navigator.of(context).pop();
+     }
+   }
 }

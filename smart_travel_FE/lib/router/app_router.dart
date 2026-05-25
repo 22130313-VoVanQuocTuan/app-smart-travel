@@ -18,6 +18,8 @@ import 'package:smart_travel/presentation/screens/host/booking/host_booking_deta
 import 'package:smart_travel/presentation/screens/host/booking/host_booking_list_screen.dart';
 import 'package:smart_travel/presentation/screens/host/homestay/hotel_management_screen.dart';
 import 'package:smart_travel/presentation/screens/host/tour/tour_management_screen.dart';
+import 'package:smart_travel/presentation/screens/legal/privacy_policy_screen.dart';
+import 'package:smart_travel/presentation/screens/legal/terms_of_service_screen.dart';
 import 'package:smart_travel/presentation/screens/splash/splash_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/profile_screen.dart';
 import 'package:smart_travel/presentation/screens/profile/edit_profile_screen.dart';
@@ -28,6 +30,8 @@ import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart
 import 'package:smart_travel/presentation/screens/tour/tour_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
 import 'package:smart_travel/presentation/screens/user/user_booking_screen.dart';
+import 'package:smart_travel/presentation/screens/user/user_booking_screen.dart';
+import 'package:smart_travel/presentation/screens/payment/payment_result_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
 import '../presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
@@ -145,10 +149,28 @@ class AppRouter {
       case RouteNames.userLevel:
         return MaterialPageRoute(builder: (_) => const UserLevelScreen());
       case RouteNames.myInvoices:
-        return MaterialPageRoute(builder: (_) => const UserBookingScreen());
+         return MaterialPageRoute(builder: (_) => const UserBookingScreen());
 
+       // Payment routes
+       case RouteNames.paymentResult:
+         final args = settings.arguments as Map<String, dynamic>?;
+         return MaterialPageRoute(
+           builder: (_) => PaymentResultScreen(
+             status: args?['status'] as String?,
+             paymentId: args?['paymentId'] as String?,
+             method: args?['method'] as String?,
+             message: args?['message'] as String?,
+           ),
+           settings: settings,
+         );
 
-        // HOST routes
+         // Legal routes
+         case RouteNames.termsOfService:
+           return MaterialPageRoute(builder: (_) => const TermsOfServiceScreen());
+         case RouteNames.privacyPolicy:
+           return MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen());
+
+         // HOST routes
       case RouteNames.hostDashboard:
         return MaterialPageRoute(builder: (_) => const HostDashboardScreen());
       case RouteNames.hostHomestayManagement:

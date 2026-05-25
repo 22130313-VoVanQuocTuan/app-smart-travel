@@ -23,7 +23,10 @@ class HostBookingBloc extends Bloc<HostBookingEvent, HostBookingState> {
       LoadHostBookingsEvent event,
       Emitter<HostBookingState> emit,
       ) async {
-    emit(HostBookingLoading());
+    // Only emit loading if we don't already have data
+    if (allBookings.isEmpty) {
+      emit(HostBookingLoading());
+    }
     try {
       final bookings = await bookingService.getHostBookings();
       allBookings = bookings;
@@ -70,37 +73,53 @@ class HostBookingBloc extends Bloc<HostBookingEvent, HostBookingState> {
       FilterBookingsByStatusEvent event,
       Emitter<HostBookingState> emit,
       ) {
+    // Handle case when state might not be HostBookingLoaded (e.g., after viewing detail)
+    late List<HostBooking> bookings;
+    
     if (state is HostBookingLoaded) {
       final currentState = state as HostBookingLoaded;
-      final filtered = event.status == 'ALL'
-          ? currentState.bookings
-          : currentState.bookings.where((b) => b.status == event.status).toList();
-
-      emit(HostBookingLoaded(
-        bookings: currentState.bookings,
-        filteredBookings: filtered,
-        activeFilter: event.status == 'ALL' ? null : event.status,
-      ));
+      bookings = currentState.bookings;
+    } else {
+      // If state is not loaded, use all bookings from memory
+      bookings = allBookings;
     }
+
+    final filtered = event.status == 'ALL'
+        ? bookings
+        : bookings.where((b) => b.status == event.status).toList();
+
+    emit(HostBookingLoaded(
+      bookings: bookings,
+      filteredBookings: filtered,
+      activeFilter: event.status == 'ALL' ? null : event.status,
+    ));
   }
 
   void _onFilterByDateRange(
       FilterBookingsByDateRangeEvent event,
       Emitter<HostBookingState> emit,
       ) {
+    // Handle case when state might not be HostBookingLoaded
+    late List<HostBooking> bookings;
+    
     if (state is HostBookingLoaded) {
       final currentState = state as HostBookingLoaded;
-      final filtered = currentState.bookings.where((b) {
-        return (b.startDate.isAfter(event.startDate) || b.startDate.isAtSameMomentAs(event.startDate)) &&
-            (b.endDate.isBefore(event.endDate) || b.endDate.isAtSameMomentAs(event.endDate));
-      }).toList();
-
-      emit(HostBookingLoaded(
-        bookings: currentState.bookings,
-        filteredBookings: filtered,
-        activeFilter: currentState.activeFilter,
-      ));
+      bookings = currentState.bookings;
+    } else {
+      // If state is not loaded, use all bookings from memory
+      bookings = allBookings;
     }
+
+    final filtered = bookings.where((b) {
+      return (b.startDate.isAfter(event.startDate) || b.startDate.isAtSameMomentAs(event.startDate)) &&
+          (b.endDate.isBefore(event.endDate) || b.endDate.isAtSameMomentAs(event.endDate));
+    }).toList();
+
+    emit(HostBookingLoaded(
+      bookings: bookings,
+      filteredBookings: filtered,
+      activeFilter: null,
+    ));
   }
 
   Future<void> _onUpdateBookingStatus(
