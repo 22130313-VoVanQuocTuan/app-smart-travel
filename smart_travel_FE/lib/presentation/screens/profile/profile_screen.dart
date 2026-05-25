@@ -329,6 +329,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           title: AppLocalizations.of(context)!.helpAndInfo,
                           items: [
                             ProfileMenuItemWidget(
+                              icon: Icons.description_outlined,
+                              title: 'Điều khoản dịch vụ',
+                              iconColor: AppColors.primary,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/terms-of-service',
+                                );
+                              },
+                            ),
+                            ProfileMenuItemWidget(
+                              icon: Icons.privacy_tip_outlined,
+                              title: 'Chính sách bảo mật',
+                              iconColor: AppColors.primary,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/privacy-policy',
+                                );
+                              },
+                            ),
+                            ProfileMenuItemWidget(
                               icon: Icons.info_outline,
                               title: AppLocalizations.of(context)!.aboutUs,
                               iconColor: AppColors.primary,

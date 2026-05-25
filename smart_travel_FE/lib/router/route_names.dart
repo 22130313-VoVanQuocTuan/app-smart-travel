@@ -61,6 +61,13 @@ class RouteNames {
   static const String hostBookings = '/host-bookings';
   static const String hostBookingDetail = '/host-booking-detail';
 
-  static const String hostReviews = '/host-reviews';
+   static const String hostReviews = '/host-reviews';
 
+   // Payment routes
+   static const String paymentResult = '/payment-result';
+
+   // Legal routes
+   static const String termsOfService = '/terms-of-service';
+   static const String privacyPolicy = '/privacy-policy';
 }
+

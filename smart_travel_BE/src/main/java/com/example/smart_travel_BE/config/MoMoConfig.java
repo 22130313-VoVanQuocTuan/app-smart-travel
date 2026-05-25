@@ -9,9 +9,9 @@ import java.util.Formatter;
 
 public class MoMoConfig {
 
-    public static final String PARTNER_CODE = "MOMO";
-    public static final String ACCESS_KEY = "F8BBA842ECF85";
-    public static final String SECRET_KEY = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+    public static final String PARTNER_CODE = "MOMONPMB20210629";
+    public static final String ACCESS_KEY = "Q2XhhSdgpKUlQ4Ky";
+    public static final String SECRET_KEY = "k6B53GQKSjktZGJBK2MyrDa7w9S6RyCf";
     public static final String MOMO_API_URL = "https://test-payment.momo.vn/v2/gateway/api/create"; // Endpoint Sandbox
     public static final String REDIRECT_URL = "http://10.0.2.2:8080/api/v1/payment/momo-return";
     public static final String IPN_URL = "http://10.0.2.2:8080/api/v1/payment/momo-ipn";
