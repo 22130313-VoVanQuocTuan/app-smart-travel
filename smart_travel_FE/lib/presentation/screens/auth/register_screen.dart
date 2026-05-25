@@ -1,5 +1,6 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:lottie/lottie.dart';
@@ -546,27 +547,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: RichText(
-                                        text: const TextSpan(
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF6B7280),
-                                          ),
+                                        text: TextSpan(
+                                          style: DefaultTextStyle.of(context).style,
                                           children: [
-                                            TextSpan(text: 'Tôi đồng ý với '),
+                                            const TextSpan(text: 'Tôi đồng ý với '),
                                             TextSpan(
                                               text: 'Điều khoản dịch vụ',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: AppColors.primary,
                                                 fontWeight: FontWeight.w600,
+                                                decoration: TextDecoration.underline,
                                               ),
+                                              recognizer: TapGestureRecognizer()
+                                                ..onTap = () {
+                                                  Navigator.pushNamed(context, '/terms-of-service');
+                                                },
                                             ),
-                                            TextSpan(text: ' và '),
+                                            const TextSpan(text: ' và '),
                                             TextSpan(
                                               text: 'Chính sách bảo mật',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: AppColors.primary,
                                                 fontWeight: FontWeight.w600,
+                                                decoration: TextDecoration.underline,
                                               ),
+                                              recognizer: TapGestureRecognizer()
+                                                ..onTap = () {
+                                                  Navigator.pushNamed(context, '/privacy-policy');
+                                                },
                                             ),
                                           ],
                                         ),
