@@ -8,7 +8,6 @@ class ReviewHtdModel {
   final int likesCount;
   final bool isApproved;
   final String createdAt;
-  final List<String> images;
 
   ReviewHtdModel({
     required this.id,
@@ -18,7 +17,6 @@ class ReviewHtdModel {
     required this.likesCount,
     required this.isApproved,
     required this.createdAt,
-    required this.images,
   });
 
   factory ReviewHtdModel.fromJson(Map<String, dynamic> json) {
@@ -30,7 +28,6 @@ class ReviewHtdModel {
       likesCount: json['likesCount'] as int,
       isApproved: json['isApproved'] as bool,
       createdAt: json['createdAt'] as String,
-      images: List<String>.from(json['images'] ?? []),
     );
   }
 
@@ -43,7 +40,6 @@ class ReviewHtdModel {
       likesCount: likesCount,
       isApproved: isApproved,
       createdAt: createdAt,
-      images: images,
     );
   }
 }

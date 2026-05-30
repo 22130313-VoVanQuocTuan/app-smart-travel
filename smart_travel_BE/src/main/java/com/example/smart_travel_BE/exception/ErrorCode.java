@@ -173,7 +173,20 @@ public enum ErrorCode {
     NOT_ENOUGH_ROOMS(1009, "Không đủ phòng trống cho yêu cầu này", HttpStatus.BAD_REQUEST),
     PAYMENT_NOT_COMPLETED(1010, "Thanh toán chưa hoàn tất", HttpStatus.BAD_REQUEST),
     INVALID_BOOKING_STATUS(1011, "Trạng thái booking không hợp lệ cho thao tác này", HttpStatus.BAD_REQUEST),
-    INVALID_QR_CODE(1012, "Mã QR không hợp lệ", HttpStatus.BAD_REQUEST),
+     INVALID_QR_CODE(1012, "Mã QR không hợp lệ", HttpStatus.BAD_REQUEST),
+     
+     // Review errors
+     REVIEW_NOT_FOUND(1200, "Không tìm thấy đánh giá", HttpStatus.NOT_FOUND),
+     BOOKING_NOT_COMPLETED(1201, "Booking chưa hoàn tất, không thể đánh giá", HttpStatus.BAD_REQUEST),
+     REVIEW_ALREADY_EXISTS(1202, "Bạn đã đánh giá homestay này rồi", HttpStatus.BAD_REQUEST),
+     REVIEW_CREATE_FAILED(1203, "Tạo đánh giá thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
+     INVALID_RATING(1204, "Đánh giá phải từ 1 đến 5 sao", HttpStatus.BAD_REQUEST),
+     ;
+
+
+
+
+
     ;
 
 

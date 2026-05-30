@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:smart_travel/data/models/user/user_booking_model.dart';
-import 'package:smart_travel/data/models/booking/cancellation_policy_response.dart';
 import 'package:smart_travel/presentation/blocs/user_booking/user_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/user_booking/user_booking_event.dart';
 import 'package:smart_travel/presentation/blocs/user_booking/user_booking_state.dart';
 import 'package:smart_travel/presentation/screens/user/qr_display_screen.dart';
-import 'package:smart_travel/presentation/theme/app_colors.dart';
+import 'package:smart_travel/presentation/screens/user/review_dialog.dart';
+import 'package:smart_travel/domain/repositories/review_repository.dart';
+import 'package:smart_travel/injection_container.dart' as di;
 
 class UserBookingDetailScreen extends StatefulWidget {
   final UserBooking booking;
@@ -24,6 +25,42 @@ class UserBookingDetailScreen extends StatefulWidget {
 
 class _UserBookingDetailScreenState extends State<UserBookingDetailScreen> {
   final TextEditingController _reasonController = TextEditingController();
+  bool _hasReviewed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfUserReviewedHotel();
+  }
+
+  Future<void> _checkIfUserReviewedHotel() async {
+    if (widget.booking.status != 'COMPLETED') {
+      return; // Only check for completed bookings
+    }
+
+    try {
+      // Get review repository from service locator
+      final reviewRepository = di.sl<ReviewRepository>();
+      final hasReviewed = await reviewRepository.checkIfUserReviewedHotel(
+        hotelId: widget.booking.hotelId,
+      );
+      
+      if (mounted) {
+        setState(() => _hasReviewed = hasReviewed);
+      }
+    } catch (e) {
+      // If error checking, allow review (safer approach)
+      if (mounted) {
+        setState(() => _hasReviewed = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
 
   bool get _canCancel {
     return widget.booking.status == 'PENDING' || widget.booking.status == 'CONFIRMED';
@@ -272,6 +309,36 @@ class _UserBookingDetailScreenState extends State<UserBookingDetailScreen> {
           ),
         ),
         actions: [
+          if (widget.booking.status == 'COMPLETED')
+            IconButton(
+              icon: Icon(
+                _hasReviewed ? Icons.star : Icons.star_outline,
+                color: _hasReviewed ? Colors.amber : null,
+              ),
+              onPressed: _hasReviewed
+                  ? () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Bạn đã đánh giá homestay này rồi 👍'),
+                          backgroundColor: Colors.blue,
+                        ),
+                      );
+                    }
+                  : () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => ReviewDialog(
+                          bookingId: widget.booking.id,
+                          hotelName: widget.booking.hotelName,
+                          onSubmit: () {
+                            // After successful review, update state
+                            setState(() => _hasReviewed = true);
+                          },
+                        ),
+                      );
+                    },
+              tooltip: _hasReviewed ? 'Đã đánh giá' : 'Đánh giá homestay',
+            ),
           if (_canCancel)
             IconButton(
               icon: const Icon(Icons.cancel_outlined),
@@ -393,8 +460,6 @@ class _UserBookingDetailScreenState extends State<UserBookingDetailScreen> {
   }
 
   Widget _buildPriceCard() {
-    final formatter = NumberFormat('#,###');
-
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -553,7 +618,7 @@ class _UserBookingDetailScreenState extends State<UserBookingDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(

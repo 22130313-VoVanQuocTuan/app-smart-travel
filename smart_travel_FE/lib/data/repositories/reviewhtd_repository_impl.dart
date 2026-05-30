@@ -13,13 +13,11 @@ class ReviewHtdRepositoryImpl implements ReviewHtdRepository {
     required String type,
     required int serviceId,
     int? rating,
-    bool? hasImage,
   }) async {
     final models = await remoteDataSource.getReviewHtd(
       type: type,
       serviceId: serviceId,
       rating: rating,
-      hasImage: hasImage,
     );
     return models.map((m) => m.toEntity()).toList();
   }

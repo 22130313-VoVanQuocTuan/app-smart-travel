@@ -49,7 +49,6 @@ public interface DestinationMapper {
     HotelSummaryResponse map(Homestay homestay);
 
     // Chuyển Review -> ReviewResponse (danh sách ảnh)
-    @Mapping(target = "images", source = "images")
     ReviewResponse map(Review review);
 
     @AfterMapping
@@ -100,15 +99,7 @@ public interface DestinationMapper {
         }
     }
 
-    // ====== Chuyển danh sách ảnh Review -> danh sách URL ======
-    default List<String> map(List<ReviewImage> images) {
-        if (images == null) {
-            return new ArrayList<>();
-        }
-        return images.stream()
-                .map(ReviewImage::getImageUrl)
-                .collect(Collectors.toList());
-    }
+
 
 //    @AfterMapping
 //    default void mapDestinationImages(Destination destination, @MappingTarget DestinationDetailResponse response) {

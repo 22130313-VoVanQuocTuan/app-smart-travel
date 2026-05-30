@@ -14,7 +14,6 @@ class ReviewHtdBloc extends Bloc<ReviewHtdEvent, ReviewHtdState> {
           type: event.type,
           serviceId: event.serviceId,
           rating: event.rating,
-          hasImage: event.hasImage,
         );
         emit(ReviewHtdLoaded(reviews));
       } catch (e) {

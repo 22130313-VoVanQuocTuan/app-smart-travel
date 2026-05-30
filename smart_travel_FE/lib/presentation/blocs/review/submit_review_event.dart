@@ -15,3 +15,18 @@ class SubmitReview extends SubmitReviewEvent {
     required this.images,
   });
 }
+
+class CreateReviewEvent extends SubmitReviewEvent {
+  final int bookingId;
+  final int rating;
+  final String? comment;
+  final List<String> imageUrls;
+
+  CreateReviewEvent({
+    required this.bookingId,
+    required this.rating,
+    this.comment,
+    required this.imageUrls,
+  });
+}
+

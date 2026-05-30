@@ -6,6 +6,5 @@ abstract class ReviewHtdRepository {
     required String type,
     required int serviceId,
     int? rating,
-    bool? hasImage,
   });
 }

@@ -1,5 +1,5 @@
+// lib/data/datasources/reviewhtd_remote_data_source.dart
 import 'package:smart_travel/core/network/dio_client.dart';
-import '../../../core/constants/api_constants.dart';
 import '../../models/review/reviewhtd_model.dart';
 
 abstract class ReviewHtdRemoteDataSource {
@@ -7,7 +7,6 @@ abstract class ReviewHtdRemoteDataSource {
     required String type,
     required int serviceId,
     int? rating,
-    bool? hasImage,
   });
 }
 
@@ -21,38 +20,34 @@ class ReviewHtdRemoteDataSourceImpl implements ReviewHtdRemoteDataSource {
     required String type,
     required int serviceId,
     int? rating,
-    bool? hasImage,
   }) async {
-    // Build URL thủ công – giống hệt InvoiceRemoteDataSourceImpl
-    final StringBuffer urlBuffer = StringBuffer(ApiConstants.allReview);
+    try {
 
-    final List<String> queryParts = [];
+      final String url = '/reviews/hotel/$serviceId';
 
-    queryParts.add('type=$type');
-    queryParts.add('serviceId=$serviceId');
+      final response = await dioClient.get(url);
 
-    if (rating != null) {
-      queryParts.add('rating=$rating');
-    }
 
-    if (hasImage != null) {
-      queryParts.add('hasImage=${hasImage.toString().toLowerCase()}');
-    }
+      if (response.statusCode == 200) {
+        final List<dynamic> list = response.data is List ? response.data : [];
 
-    if (queryParts.isNotEmpty) {
-      urlBuffer.write('?${queryParts.join('&')}');
-    }
+        // Chuyển đổi sang model
+        List<ReviewHtdModel> reviews = list
+            .map((json) => ReviewHtdModel.fromJson(json as Map<String, dynamic>))
+            .toList();
 
-    final String url = urlBuffer.toString();
+        // Lọc theo rating (nếu có)
+        if (rating != null) {
+          reviews = reviews.where((r) => r.rating == rating).toList();
+        }
 
-    // Gọi API bằng dioClient inject từ constructor
-    final response = await dioClient.get(url);
-
-    if (response.data['code'] == 1000) {
-      final List<dynamic> list = response.data['data'];
-      return list.map((json) => ReviewHtdModel.fromJson(json as Map<String, dynamic>)).toList();
-    } else {
-      throw Exception(response.data['msg'] ?? 'Load review failed');
+        return reviews;
+      } else {
+        throw Exception('Lỗi tải review: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi getReviewHtd: $e');
+      return [];
     }
   }
 }
