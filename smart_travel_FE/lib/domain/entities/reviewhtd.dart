@@ -6,7 +6,6 @@ class ReviewHtd {
   final int likesCount;
   final bool isApproved;
   final String createdAt;
-  final List<String> images;
 
   const ReviewHtd({
     required this.id,
@@ -16,6 +15,5 @@ class ReviewHtd {
     required this.likesCount,
     required this.isApproved,
     required this.createdAt,
-    required this.images,
   });
 }

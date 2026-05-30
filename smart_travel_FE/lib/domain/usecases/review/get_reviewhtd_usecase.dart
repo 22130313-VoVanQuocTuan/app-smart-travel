@@ -10,13 +10,11 @@ class GetReviewHtdUseCase {
     required String type,
     required int serviceId,
     int? rating,
-    bool? hasImage,
   }) async {
     return await repository.getReviewHtd(
       type: type,
       serviceId: serviceId,
       rating: rating,
-      hasImage: hasImage,
     );
   }
 }

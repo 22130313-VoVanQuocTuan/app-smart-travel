@@ -9,7 +9,16 @@ abstract class ReviewRemoteDataSource {
     required int rating,
     String? comment,
     required String invoiceNumber,
-    required List<XFile> images
+  });
+  
+  Future<Map<String, dynamic>> createReview({
+    required int bookingId,
+    required int rating,
+    String? comment,
+  });
+  
+  Future<bool> checkIfUserReviewedHotel({
+    required int hotelId,
   });
 }
 
@@ -23,7 +32,6 @@ class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
     required int rating,
     String? comment,
     required String invoiceNumber,
-    required List<XFile> images
   }) async {
     final String endpoint = ApiConstants.invoiceReview;
 
@@ -33,13 +41,6 @@ class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
       "invoiceNumber": invoiceNumber,
     });
 
-    for (var image in images) {
-      formData.files.add(MapEntry(
-        "images",
-        await MultipartFile.fromFile(image.path, filename: image.name),
-      ));
-    }
-
     final response = await dioClient.post(endpoint, data: formData);
 
     if (response.data['code'] != 1000) {
@@ -47,4 +48,45 @@ class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
     }
   }
 
+  @override
+  Future<Map<String, dynamic>> createReview({
+    required int bookingId,
+    required int rating,
+    String? comment,
+  }) async {
+    final String endpoint = '/reviews/create';
+
+    final Map<String, dynamic> body = {
+      'bookingId': bookingId,
+      'rating': rating,
+      if (comment != null && comment.isNotEmpty) 'comment': comment,
+    };
+
+    final response = await dioClient.post(endpoint, data: body);
+    
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return response.data;
+    } else {
+      throw Exception(response.data['error'] ?? 'Tạo review thất bại');
+    }
+  }
+
+  @override
+  Future<bool> checkIfUserReviewedHotel({
+    required int hotelId,
+  }) async {
+    final String endpoint = '/reviews/check/$hotelId';
+
+    try {
+      final response = await dioClient.get(endpoint);
+      
+      if (response.statusCode == 200) {
+        return response.data['hasReviewed'] as bool? ?? false;
+      }
+      return false;
+    } catch (e) {
+      // If error, assume not reviewed (allow review)
+      return false;
+    }
+  }
 }
