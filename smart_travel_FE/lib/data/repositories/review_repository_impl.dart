@@ -13,13 +13,33 @@ class ReviewRepositoryImpl implements ReviewRepository {
     required int rating,
     String? comment,
     required String invoiceNumber,
-    required List<XFile> images
   }) async {
     await remoteDataSource.submitReview(
       rating: rating,
       comment: comment,
       invoiceNumber: invoiceNumber,
-      images: images
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>> createReview({
+    required int bookingId,
+    required int rating,
+    String? comment,
+  }) async {
+    return await remoteDataSource.createReview(
+      bookingId: bookingId,
+      rating: rating,
+      comment: comment,
+    );
+  }
+
+  @override
+  Future<bool> checkIfUserReviewedHotel({
+    required int hotelId,
+  }) async {
+    return await remoteDataSource.checkIfUserReviewedHotel(
+      hotelId: hotelId,
     );
   }
 }

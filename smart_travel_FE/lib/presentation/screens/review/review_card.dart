@@ -5,7 +5,6 @@ class ReviewCard extends StatelessWidget {
   final String userFullName;
   final int rating;
   final String? comment;
-  final List<String> images;
   final int likesCount;
   final String createdAt; // format "2025-10-11T22:15:00"
 
@@ -14,7 +13,6 @@ class ReviewCard extends StatelessWidget {
     required this.userFullName,
     required this.rating,
     this.comment,
-    required this.images,
     required this.likesCount,
     required this.createdAt,
   }) : super(key: key);
@@ -101,41 +99,7 @@ class ReviewCard extends StatelessWidget {
               style: const TextStyle(fontSize: 15, height: 1.5),
             ),
           if (comment != null && comment!.isNotEmpty) const SizedBox(height: 12),
-
-          // Ảnh – carousel ngang, bấm phóng to
-          if (images.isNotEmpty)
-            SizedBox(
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: images.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      // Phóng to ảnh full screen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FullScreenImage(url: images[index]),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      width: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        image: DecorationImage(
-                          image: NetworkImage(images[index]),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          if (images.isNotEmpty) const SizedBox(height: 12),
+          const SizedBox(height: 12),
 
         ],
       ),

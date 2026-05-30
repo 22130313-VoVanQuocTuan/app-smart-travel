@@ -12,13 +12,11 @@ class SubmitReviewUseCase {
     required int rating,
     String? comment,
     required String invoiceNumber,
-    required List<XFile> images,
   }) async {
     return await repository.submitReview(
       rating: rating,
       comment: comment,
       invoiceNumber: invoiceNumber,
-      images: images
     );
   }
 }

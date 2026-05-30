@@ -82,9 +82,6 @@ public class Destination {
     private List<DestinationImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> reviews = new ArrayList<>();
-
-    @OneToMany(mappedBy = "destination", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Homestay> homestays = new ArrayList<>();
 
 }

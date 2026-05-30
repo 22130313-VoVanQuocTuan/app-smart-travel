@@ -8,7 +8,6 @@ class ReviewResponse {
   final int? likesCount;
   final bool? isApproved;
   final DateTime? createdAt;
-  final List<String>? images;
 
   ReviewResponse({
     required this.id,
@@ -18,7 +17,6 @@ class ReviewResponse {
     this.likesCount,
     this.isApproved,
     this.createdAt,
-    this.images,
   });
 
   factory ReviewResponse.fromJson(Map<String, dynamic> json) {
@@ -32,9 +30,7 @@ class ReviewResponse {
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : null,
-      images: json['images'] != null
-          ? List<String>.from(json['images'] as List)
-          : null,
+
     );
   }
 
@@ -47,7 +43,6 @@ class ReviewResponse {
       likesCount: likesCount,
       isApproved: isApproved,
       createdAt: createdAt,
-      imageUrls: images,
     );
   }
 }

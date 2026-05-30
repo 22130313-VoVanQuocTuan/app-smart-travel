@@ -36,7 +36,6 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
         type: widget.type,
         serviceId: widget.serviceId,
         rating: selectedRating,
-        hasImage: hasImageFilter,
       ),
     );
   }
@@ -81,27 +80,6 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
                 ],
               ),
               const SizedBox(height: 12),
-              // Filter ảnh
-              Row(
-                children: [
-                  const Icon(Icons.photo_library, color: AppColors.primary, size: 20),
-                  const SizedBox(width: 8),
-                  const Text("Hình ảnh", style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildImageFilterChip(null, "Tất cả"),
-                          _buildImageFilterChip(true, "Có ảnh"),
-                          _buildImageFilterChip(false, "Không có ảnh"),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
@@ -148,7 +126,6 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
                       userFullName: review.userFullName,
                       rating: review.rating,
                       comment: review.comment,
-                      images: List<String>.from(review.images ?? []),
                       likesCount: review.likesCount,
                       createdAt: review.createdAt,
                     );
@@ -189,28 +166,5 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
     );
   }
 
-  Widget _buildImageFilterChip(bool? hasImage, String label) {
-    final isSelected = hasImageFilter == hasImage;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: isSelected,
-        selectedColor: AppColors.primary.withOpacity(0.2),
-        backgroundColor: Colors.grey[100],
-        labelStyle: TextStyle(
-          color: isSelected ? AppColors.primary : Colors.black87,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-        onSelected: (selected) {
-          if (selected) {
-            setState(() {
-              hasImageFilter = hasImage;
-            });
-            _loadReviews();
-          }
-        },
-      ),
-    );
-  }
+
 }
