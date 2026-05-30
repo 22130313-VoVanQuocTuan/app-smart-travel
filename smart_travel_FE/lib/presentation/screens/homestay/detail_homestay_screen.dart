@@ -1,9 +1,8 @@
 // lib/presentation/screens/homestay/detail_homestay_screen.dart
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart' hide Marker;
+import 'package:smart_travel/core/network/dio_client.dart';
 import 'package:smart_travel/domain/entities/homestay.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_event.dart';
@@ -15,12 +14,14 @@ import 'package:smart_travel/presentation/widgets/homestay/homestay_info_section
 import 'package:smart_travel/presentation/widgets/homestay/homestay_map.dart';
 import 'package:smart_travel/presentation/widgets/homestay/homestay_room_type.dart';
 import 'package:smart_travel/presentation/widgets/homestay/homestay_tour_section.dart';
+import 'package:smart_travel/presentation/widgets/homestay/homestay_rating_section.dart';
 import 'package:smart_travel/presentation/widgets/review/review_list_widget.dart';
-import '../../../injection_container.dart';
+import '../../../injection_container.dart' as di;
 import '../../blocs/review/reviewhtd_bloc.dart';
 
 class DetailHomestayScreen extends StatefulWidget {
-  const DetailHomestayScreen({Key? key}) : super(key: key);
+  final DioClient? dioClient;
+  const DetailHomestayScreen({Key? key, this.dioClient}) : super(key: key);
 
   @override
   State<DetailHomestayScreen> createState() => _DetailHomestayScreenState();
@@ -30,26 +31,53 @@ class _DetailHomestayScreenState extends State<DetailHomestayScreen>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
 
+
   final Set<int> _selectedTourIds = {};
+  double _averageRating = 0.0;
+  int _reviewCount = 0;
+  late int _homestayId;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final homestayId = ModalRoute.of(context)!.settings.arguments as int;
+      _homestayId = ModalRoute.of(context)!.settings.arguments as int;
       context.read<HomestayDetailBloc>().add(
         GetHomestayDetailEvent(
-          homestayId: homestayId,
+          homestayId: _homestayId,
           checkIn: DateTime.now(),
           checkOut: DateTime.now().add(const Duration(days: 1)),
         ),
       );
+      _fetchRatings();
     });
 
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     )..forward();
+  }
+
+  Future<void> _fetchRatings() async {
+    final DioClient dioClient = widget.dioClient ?? di.sl<DioClient>();
+    try {
+      final response = await dioClient.get('/reviews/hotel/$_homestayId/average');
+      
+      if (response.statusCode == 200 && mounted) {
+        setState(() {
+          _averageRating = (response.data['averageRating'] as num?)?.toDouble() ?? 0.0;
+          _reviewCount = response.data['reviewCount'] as int? ?? 0;
+        });
+      }
+    } catch (e) {
+      // Handle error silently - show default values
+      if (mounted) {
+        setState(() {
+          _averageRating = 0.0;
+          _reviewCount = 0;
+        });
+      }
+    }
   }
 
   @override
@@ -158,12 +186,25 @@ class _DetailHomestayScreenState extends State<DetailHomestayScreen>
                   ),
                   SliverToBoxAdapter(child: HomestayMapSection(homestay: homestay)),
                   const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  
+                  // Rating Section
+                  SliverToBoxAdapter(
+                    child: HomestayRatingSection(
+                      averageRating: _averageRating,
+                      reviewCount: _reviewCount,
+                      onViewAllReviews: () {
+                        // Scroll to reviews section or navigate if needed
+                      },
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                  
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        "Đánh giá từ khách hàng",
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        "Nhận xét chi tiết từ khách",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -171,10 +212,10 @@ class _DetailHomestayScreenState extends State<DetailHomestayScreen>
                     child: SizedBox(
                       height: 500,
                       child: BlocProvider(
-                        create: (_) => ReviewHtdBloc(sl()),
+                        create: (_) => ReviewHtdBloc(di.sl()),
                         child: ReviewListWidget(
                           type: "HOTEL",
-                          serviceId: homestay.id,
+                          serviceId: _homestayId,
                         ),
                       ),
                     ),

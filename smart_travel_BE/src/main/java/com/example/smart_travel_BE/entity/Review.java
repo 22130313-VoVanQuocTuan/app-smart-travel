@@ -37,16 +37,8 @@ public class Review {
     @NotFound(action = NotFoundAction.IGNORE)
     private User user;  // Assuming User entity exists
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_id")
-    @JsonIgnore
-    private Destination destination;
-
     @Column(name = "hotel_id")
     private Long hotelId;
-
-    @Column(name = "tour_id")
-    private Long tourId;
 
     @Column(name = "rating", nullable = false)
     private Integer rating;
@@ -68,6 +60,4 @@ public class Review {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewImage> images = new ArrayList<>();
 }

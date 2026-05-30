@@ -20,8 +20,10 @@ import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
 import 'package:smart_travel/presentation/blocs/province/provicne_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/province/province_bloc.dart';
+import 'package:smart_travel/presentation/blocs/review/submit_review_bloc.dart';
 import 'package:smart_travel/presentation/blocs/user_booking/user_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/weather/weather_bloc.dart';
+import 'package:smart_travel/presentation/widgets/homestay/homestay_room_type.dart';
 import 'package:smart_travel/router/app_router.dart';
 import 'package:smart_travel/router/route_names.dart';
 import 'package:smart_travel/presentation/blocs/tour/tour_detail_bloc.dart';
@@ -91,6 +93,8 @@ class _MyAppState extends State<MyApp> {
           BlocProvider(create: (_) => di.sl<AdminUserBloc>()),
           BlocProvider(create: (_) => di.sl<HostBookingBloc>()),
           BlocProvider(create: (_) => di.sl<UserBookingBloc>()),
+          BlocProvider(create: (_) => di.sl<SubmitReviewBloc>()),
+
 
 
         ],

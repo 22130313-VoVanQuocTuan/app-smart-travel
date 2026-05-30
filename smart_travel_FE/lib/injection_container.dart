@@ -180,6 +180,7 @@ import 'domain/usecases/invoice/get_transaction_history_usecase.dart';
 import 'domain/usecases/invoice/search_active_invoices_usecase.dart';
 import 'domain/usecases/review/get_reviewhtd_usecase.dart';
 import 'domain/usecases/review/submit_review_usecase.dart';
+import 'domain/usecases/review/create_review_usecase.dart';
 import 'domain/usecases/voucher/create_voucher_uc.dart';
 import 'domain/usecases/voucher/delete_voucher_uc.dart';
 import 'domain/usecases/voucher/get_all_voucher_uc.dart';
@@ -696,9 +697,17 @@ Future<void> init() async {
     () => SubmitReviewUseCase(sl<ReviewRepository>()),
   );
 
-  // Submit Review Bloc
+  // Create Review UseCase (NEW)
+  sl.registerLazySingleton<CreateReviewUseCase>(
+    () => CreateReviewUseCase(sl<ReviewRepository>()),
+  );
+
+  // Submit Review Bloc (NOW taking 2 arguments)
   sl.registerFactory<SubmitReviewBloc>(
-    () => SubmitReviewBloc(sl<SubmitReviewUseCase>()),
+    () => SubmitReviewBloc(
+      sl<SubmitReviewUseCase>(),
+      sl<CreateReviewUseCase>(),
+    ),
   );
 
   // ReviewHtd Remote DataSource

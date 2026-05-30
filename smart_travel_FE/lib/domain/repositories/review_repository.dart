@@ -5,6 +5,15 @@ abstract class ReviewRepository {
     required int rating,
     String? comment,
     required String invoiceNumber,
-    required List<XFile> images
+  });
+  
+  Future<Map<String, dynamic>> createReview({
+    required int bookingId,
+    required int rating,
+    String? comment,
+  });
+  
+  Future<bool> checkIfUserReviewedHotel({
+    required int hotelId,
   });
 }

@@ -80,6 +80,7 @@ dependencies:
   flutter_screenutil: ^5.9.0 #Responsive UI
   google_fonts: ^6.1.0
   material_design_icons_flutter: ^7.0.7296
+  flutter_rating_bar: ^4.0.1 #Rating stars
 
 
 
