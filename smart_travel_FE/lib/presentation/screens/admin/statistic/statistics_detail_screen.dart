@@ -179,7 +179,15 @@ class _StatisticsDetailScreenState extends State<StatisticsDetailScreen> {
         const SizedBox(height: 20),
 
         // Top destinations
-        if (stats.topDestinations.isNotEmpty) _buildTopDestinations(stats.topDestinations),
+        _buildTopDestinations(stats.topDestinations),
+        const SizedBox(height: 20),
+
+        // Top homestays by revenue
+        _buildTopHomestays(stats.topHomestays),
+        const SizedBox(height: 20),
+
+        // Top hosts by revenue
+        _buildTopHosts(stats.topHosts),
       ],
     );
   }
@@ -339,6 +347,142 @@ class _StatisticsDetailScreenState extends State<StatisticsDetailScreen> {
               ),
             );
           }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopHomestays(List<TopHomestay> homestays) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.home_work_rounded, color: Color(0xFF7C4DFF), size: 20),
+              SizedBox(width: 8),
+              Text('Top Doanh Thu Homestay', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (homestays.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(child: Text('Chưa có dữ liệu thống kê', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic))),
+            )
+          else
+            ...homestays.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final homestay = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28, height: 28,
+                      decoration: BoxDecoration(
+                        color: idx < 3 ? const Color(0xFF7C4DFF) : const Color(0xFFBDBDBD),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(child: Text('${idx + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(homestay.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text('Chủ nhà: ${homestay.hostName}', style: const TextStyle(fontSize: 12, color: Color(0xFF9E9E9E))),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: const Color(0xFFE8EAF6), borderRadius: BorderRadius.circular(8)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.attach_money_rounded, size: 14, color: Color(0xFF3F51B5)),
+                          const SizedBox(width: 4),
+                          Text(_currencyFormat.format(homestay.totalRevenue), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF3F51B5))),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopHosts(List<TopHost> hosts) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.person_pin_rounded, color: Color(0xFF00BCD4), size: 20),
+              SizedBox(width: 8),
+              Text('Top Doanh Thu Chủ Homestay', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (hosts.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(child: Text('Chưa có dữ liệu thống kê', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic))),
+            )
+          else
+            ...hosts.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final host = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28, height: 28,
+                      decoration: BoxDecoration(
+                        color: idx < 3 ? const Color(0xFF00BCD4) : const Color(0xFFBDBDBD),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(child: Text('${idx + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13))),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(host.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: const Color(0xFFE0F7FA), borderRadius: BorderRadius.circular(8)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.attach_money_rounded, size: 14, color: Color(0xFF00838F)),
+                          const SizedBox(width: 4),
+                          Text(_currencyFormat.format(host.totalRevenue), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF00838F))),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );
