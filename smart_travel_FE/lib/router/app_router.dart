@@ -39,7 +39,10 @@ import '../presentation/blocs/admin_host_approval/host_approval_bloc.dart';
 import '../presentation/blocs/admin_host_approval/host_approval_event.dart';
 import '../presentation/blocs/admin_voucher/voucher_bloc.dart';
 import '../presentation/blocs/admin_voucher/voucher_event.dart';
+import '../presentation/blocs/finance/finance_bloc.dart';
+import '../presentation/blocs/finance/finance_event.dart';
 import '../presentation/screens/admin/admin_dashboard.dart';
+import '../presentation/screens/admin/finance/finance_dashboard_screen.dart';
 import '../presentation/screens/admin/invoice/admin_invoice_screen.dart';
 import '../presentation/screens/admin/voucher/voucher_management_screen.dart';
 import '../presentation/screens/admin/admin_host_approval_screen.dart';
@@ -82,7 +85,14 @@ class AppRouter {
               child: const VoucherManagementScreen(),
             ),
           );
-
+      case RouteNames.adminFinance:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => di.sl<FinanceBloc>()
+              ..add(GetFinanceSummaryEvent()),
+            child: const FinanceDashboardScreen(),
+          ),
+        );
 
       //User
       case RouteNames.home:
