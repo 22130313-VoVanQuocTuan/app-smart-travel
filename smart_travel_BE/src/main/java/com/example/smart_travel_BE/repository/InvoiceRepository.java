@@ -273,4 +273,22 @@ ORDER BY b.createdAt DESC
            "WHERE h.owner.id = :ownerId " +
            "AND i.issueDate = :date")
     long countHostInvoicesByDate(@Param("ownerId") Long ownerId, @Param("date") LocalDate date);
+
+    @Query("""
+       SELECT COALESCE(SUM(i.totalAmount),0)
+       FROM Invoice i
+       """)
+    BigDecimal getTotalRevenue();
+
+    @Query("""
+       SELECT COALESCE(SUM(i.commissionAmount),0)
+       FROM Invoice i
+       """)
+    BigDecimal getTotalCommission();
+
+    @Query("""
+       SELECT COALESCE(SUM(i.homestayAmount),0)
+       FROM Invoice i
+       """)
+    BigDecimal getTotalHomestayRevenue();
 }

@@ -69,5 +69,6 @@ class RouteNames {
    // Legal routes
    static const String termsOfService = '/terms-of-service';
    static const String privacyPolicy = '/privacy-policy';
+  static const adminFinance = "/admin/adminFinance";
 }
 
