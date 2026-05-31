@@ -127,7 +127,10 @@
     //Weather
     static const String weather = 'https://api.openweathermap.org/data/2.5/';
 
-
+    //fiance
+    static const financeSummary = '/admin/finance/summary';
+    static const financeMonthly = '/admin/finance/monthly';
+    static const financePdf = '/admin/finance/export-pdf';
 
     // Timeout
     static const Duration connectionTimeout = Duration(seconds: 30);

@@ -94,6 +94,7 @@ import 'package:smart_travel/presentation/blocs/chat/chat_bloc.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_bloc.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/favorite/favorite_bloc.dart';
+import 'package:smart_travel/presentation/blocs/finance/finance_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_management_bloc.dart';
@@ -150,6 +151,7 @@ import 'package:smart_travel/domain/usecases/tour/create_tour_usecase.dart';
 import 'package:smart_travel/domain/usecases/tour/delete_tour_usecase.dart';
 import 'package:smart_travel/domain/usecases/tour/update_tour_usecase.dart';
 
+import 'data/data_sources/remote/finance_data_source.dart';
 import 'data/data_sources/remote/invoice_remote_data_source.dart';
 import 'data/data_sources/remote/review_remote_data_source.dart';
 import 'data/data_sources/remote/reviewhtd_remote_data_source.dart';
@@ -158,6 +160,7 @@ import 'data/repositories/chat_repository_impl.dart';
 import 'data/repositories/invoice_repository_impl.dart';
 import 'data/repositories/review_repository_impl.dart';
 import 'data/repositories/reviewhtd_repository_impl.dart';
+
 
 import 'data/repositories/voucher_repository_impl.dart';
 import 'domain/repositories/comparison_repository.dart';
@@ -751,5 +754,17 @@ Future<void> init() async {
 
   sl.registerLazySingleton<AdminCancelOrderUseCase>(
     () => AdminCancelOrderUseCase(sl<InvoiceRepository>()),
+  );
+
+  sl.registerLazySingleton<FinanceDataSource>(
+    () => FinanceDataSourceImpl(
+      dioClient: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => FinanceBloc(
+      financeDataSource: sl(),
+    ),
   );
 }
