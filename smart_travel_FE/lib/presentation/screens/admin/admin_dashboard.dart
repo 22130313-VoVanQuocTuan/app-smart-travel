@@ -58,6 +58,12 @@ class AdminDashboardScreen extends StatelessWidget {
       'label': 'Banner',
       'color': Colors.amberAccent,
     },
+    {
+      'id': 'admin/adminFinance',
+      'icon': Icons.account_balance_wallet,
+      'label': 'Tài Chính',
+      'color': Colors.green,
+    },
   ];
 
   @override
