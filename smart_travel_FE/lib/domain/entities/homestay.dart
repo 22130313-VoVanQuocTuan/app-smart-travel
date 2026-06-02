@@ -2,6 +2,8 @@
 class Homestay {
   final int id;
   final String? name;
+  final int? ownerId;
+  final String? ownerName;
   final String? address;
   final String? description;
   final String? phone;
@@ -26,6 +28,8 @@ class Homestay {
   Homestay({
     required this.id,
     required this.name,
+    this.ownerId,
+    this.ownerName,
     this.address,
     this.description,
     this.phone,
@@ -52,6 +56,8 @@ class Homestay {
     return Homestay(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
+      ownerId: json['ownerId'],
+      ownerName: json['ownerName'],
       address: json['address'] ?? '',
       description: json['description'],
       phone: json['phone'],

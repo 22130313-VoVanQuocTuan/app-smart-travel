@@ -26,8 +26,6 @@ class RouteNames {
   ///Destination
   static const String destinationDetail = '/destination-detail';
 
-
-
   static const String provinceDetail = '/province/detail';
 
   // Tour routes
@@ -36,6 +34,10 @@ class RouteNames {
 
   // AI Chat
   static const String aiChat = '/ai-chat';
+
+  // User Chat (Chat với chủ homestay)
+  static const String userChat = '/user-chat';
+  static const String hostChatList = '/host/chat-list';
 
   // Hotel routes
   static const String homestayList = '/homestay-list';
