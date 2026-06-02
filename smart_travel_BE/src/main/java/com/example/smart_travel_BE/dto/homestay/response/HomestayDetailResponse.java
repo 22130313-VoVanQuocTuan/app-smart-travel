@@ -13,6 +13,8 @@ import java.util.List;
 public class HomestayDetailResponse {
     private Long id;
     private String name;
+    private Long ownerId;
+    private String ownerName;
     private String address;
     private Integer stars;
     private Double rating;
