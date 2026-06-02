@@ -159,6 +159,8 @@ public class HomestayService {
                 .amenities(convertAmenitiesToList(homestay.getAmenities()))
                 .destinationId(homestay.getDestination() != null ? homestay.getDestination().getId() : null)
                 .availableTours(availableTours) // THÊM MỚI
+                .ownerId(homestay.getOwner().getId())
+                .ownerName(homestay.getOwner().getFullName())
                 .build();
     }
 
