@@ -9,6 +9,7 @@ import 'package:smart_travel/presentation/blocs/statistics/statistics_event.dart
 import 'package:smart_travel/presentation/blocs/statistics/statistics_state.dart';
 import 'package:smart_travel/presentation/widgets/statistic/host_statistics_overview_widget.dart';
 import 'package:smart_travel/injection_container.dart' as di;
+import 'package:smart_travel/router/route_names.dart';
 
 class HostDashboardScreen extends StatefulWidget {
   const HostDashboardScreen({super.key});
@@ -41,8 +42,33 @@ class _HostDashboardScreenState extends State<HostDashboardScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              _showLogoutDialog(context);
+              // 1. Lấy state từ ProfileBloc để có ID và Tên chuẩn
+              final profileState = context.read<ProfileBloc>().state;
+
+              if (profileState is ProfileLoaded) {
+                final hostId = profileState.user.id; // Lấy ID từ user entity
+                final hostName = profileState.user.fullName ?? "Chủ Homestay";
+
+                // 2. Chuyển hướng
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.hostChatList,
+                  arguments: {
+                    'ownerId': hostId,
+                    'ownerName': hostName,
+                  },
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Đang tải dữ liệu hồ sơ, vui lòng đợi...")),
+                );
+              }
             },
+            icon: const Icon(Icons.chat_bubble_outline, color: Colors.white, size: 26),
+            tooltip: "Tin nhắn từ khách",
+          ),
+          IconButton(
+            onPressed: () => _showLogoutDialog(context),
             icon: const Icon(Icons.logout),
           ),
         ],
