@@ -91,6 +91,8 @@ import 'package:smart_travel/presentation/blocs/admin_voucher/voucher_bloc.dart'
 import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
 import 'package:smart_travel/presentation/blocs/banner/banner_bloc.dart';
 import 'package:smart_travel/presentation/blocs/chat/chat_bloc.dart';
+import 'package:smart_travel/presentation/blocs/chat/owner_chat_list_bloc.dart';
+import 'package:smart_travel/presentation/blocs/chat/user_chat_bloc.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_bloc.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/favorite/favorite_bloc.dart';
@@ -215,8 +217,12 @@ Future<void> init() async {
   sl.registerLazySingleton<DioClient>(() => DioClient(storage: sl()));
 
   //Local data sources
+  //Local data sources
   sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(storage: sl()),
+        () => AuthLocalDataSourceImpl(
+      storage: sl(),
+      sharedPreferences: sl(), // Bổ sung dòng này!
+    ),
   );
 
   //Remote data sources (dùng DioClient đã register)
@@ -450,6 +456,9 @@ Future<void> init() async {
   // Chat
   sl.registerLazySingleton(() => ChatRepository(sl()));
   sl.registerFactory(() => ChatBloc(sl()));
+
+  sl.registerFactory(() => UserChatBloc(sharedPreferences: sl()));
+  sl.registerFactory(() => OwnerChatListBloc());
 
   sl.registerFactory(
     () => HostApprovalBloc(

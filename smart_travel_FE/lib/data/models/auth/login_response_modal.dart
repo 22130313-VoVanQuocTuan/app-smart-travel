@@ -1,6 +1,7 @@
 import 'package:smart_travel/domain/entities/auth.dart';
 
 class LoginResponseModal {
+  final int? userId;
   final String token;
   final String? refreshToken;
   final String? role;
@@ -8,6 +9,7 @@ class LoginResponseModal {
   final bool? hostVerified; // null for non-HOST, true/false for HOST
 
   LoginResponseModal({
+    this.userId,
     required this.token,
     required this.refreshToken,
     required this.role,
@@ -18,6 +20,7 @@ class LoginResponseModal {
   // Chuyển từ Json → Modal (data)
   factory LoginResponseModal.fromJson(Map<String, dynamic> json) {
     return LoginResponseModal(
+      userId: (json['userId'] ?? json['id']) as int?,
       token: json['token'] as String,
       refreshToken: json['refreshToken'] as String?,
       role: json['role'] as String?,
@@ -29,6 +32,7 @@ class LoginResponseModal {
   // Chuyển từ Model → Entity (domain)
   AuthEntity toEntity() {
     return AuthEntity(
+      userId: userId,
       fullName: fullName,
       token: token,
       refreshToken: refreshToken,

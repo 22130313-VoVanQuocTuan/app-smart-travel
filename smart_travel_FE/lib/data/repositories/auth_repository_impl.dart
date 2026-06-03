@@ -41,6 +41,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> _saveAuthSession(LoginResponseModal responseModel) async {
     await localDataSource.saveToken(responseModel.token);
 
+    final userId = responseModel.userId;
+    if (userId != null) {
+      await localDataSource.saveUserId(userId);
+    }
+
     final refreshToken = responseModel.refreshToken;
     if (refreshToken != null && refreshToken.isNotEmpty) {
       await localDataSource.saveRefreshToken(refreshToken);
