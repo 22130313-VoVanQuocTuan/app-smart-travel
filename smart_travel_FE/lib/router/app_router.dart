@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_travel/presentation/blocs/chat/owner_chat_list_bloc.dart';
+import 'package:smart_travel/presentation/blocs/chat/user_chat_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
+import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
+import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
 import 'package:smart_travel/presentation/screens/admin/banner/banner_management_screen.dart';
 import 'package:smart_travel/presentation/screens/admin/destination/destination_management_screen.dart';
 import 'package:smart_travel/presentation/screens/admin/province/province_mgt.dart';
@@ -32,6 +37,8 @@ import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
 import 'package:smart_travel/presentation/screens/user/user_booking_screen.dart';
 import 'package:smart_travel/presentation/screens/user/user_booking_screen.dart';
 import 'package:smart_travel/presentation/screens/payment/payment_result_screen.dart';
+import 'package:smart_travel/presentation/widgets/homestay/owner_chat_list_screen.dart';
+import 'package:smart_travel/presentation/widgets/homestay/user_chat_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 import '../injection_container.dart' as di;
 import '../presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
@@ -39,6 +46,7 @@ import '../presentation/blocs/admin_host_approval/host_approval_bloc.dart';
 import '../presentation/blocs/admin_host_approval/host_approval_event.dart';
 import '../presentation/blocs/admin_voucher/voucher_bloc.dart';
 import '../presentation/blocs/admin_voucher/voucher_event.dart';
+import '../presentation/blocs/chat/user_chat_event.dart';
 import '../presentation/blocs/finance/finance_bloc.dart';
 import '../presentation/blocs/finance/finance_event.dart';
 import '../presentation/screens/admin/admin_dashboard.dart';
@@ -124,6 +132,56 @@ class AppRouter {
       // AI Chat
       case RouteNames.aiChat:
         return MaterialPageRoute(builder: (_) => const AIChatScreen());
+
+      case RouteNames.userChat:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final targetId = args?['ownerId'] ?? 0;
+        final ownerName = args?['ownerName'] ?? 'Chủ homestay';
+
+        return MaterialPageRoute(
+          builder: (context) {
+            final profileState = context.read<ProfileBloc>().state;
+            int myId = 0;
+            String myName = "Khách hàng"; // Mặc định nếu chưa có tên
+
+            if (profileState is ProfileLoaded) {
+              myId = profileState.user.id ?? 0;
+              myName = profileState.user.fullName ?? "Khách hàng"; // Lấy tên thật của Khách
+            }
+
+            if (myId == 0) {
+              return const Scaffold(body: Center(child: Text("Đang đồng bộ dữ liệu...")));
+            }
+
+            return BlocProvider(
+              create: (_) => di.sl<UserChatBloc>()..add(
+                LoadChatEvent(
+                    myId: myId,
+                    targetId: targetId,
+                    myName: myName,       // Truyền tên khách
+                    targetName: ownerName // Truyền tên chủ
+                ),
+              ),
+              child: UserChatScreen(
+                ownerId: targetId,
+                ownerName: ownerName,
+              ),
+            );
+          },
+          settings: settings,
+        );
+
+      case RouteNames.hostChatList:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => di.sl<OwnerChatListBloc>(), // Gọi Bloc đã đăng ký
+            child: OwnerChatListScreen(
+              ownerId: args['ownerId'] ?? 0,
+              ownerName: args['ownerName'] ?? 'Chủ Homestay',
+            ),
+          ),
+        );
 
     // Hotel
       case RouteNames.homestayList:

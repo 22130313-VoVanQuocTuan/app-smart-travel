@@ -1,10 +1,13 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_travel/data/models/auth/login_response_modal.dart';
 abstract class AuthLocalDataSource {
   Future<void> saveToken(String token);
   Future<void> saveRole(String role);
   Future<void> saveRefreshToken(String refreshToken);
   Future<void> saveFullName(String role);
+  Future<void> saveUserId(int userId);
+  Future<int?> getUserId();
   Future<String?> getToken();
   Future<String?> getRefreshToken();
   Future<String?> getRole();
@@ -15,8 +18,9 @@ abstract class AuthLocalDataSource {
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final FlutterSecureStorage storage;
+  final SharedPreferences sharedPreferences;
 
-  AuthLocalDataSourceImpl({required this.storage});
+  AuthLocalDataSourceImpl({required this.storage, required this.sharedPreferences});
 
   static const _keyToken = 'auth_token';
   static const _keyRole = 'role';
@@ -47,6 +51,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<String?> getRole() async =>
       await storage.read(key: _keyRole);
 
+
   @override
   Future<void> saveFullName(String fullName) async {
     await storage.write(key: _keyFullName, value: fullName);
@@ -56,7 +61,20 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       await storage.read(key: _keyFullName);
 
   @override
-  Future<void> clear() async => await storage.deleteAll();
+  Future<void> saveUserId(int userId) async {
+    await sharedPreferences.setInt('userId', userId);
+  }
+
+  @override
+  Future<int?> getUserId() async {
+    return sharedPreferences.getInt('userId');
+  }
+
+  @override
+  Future<void> clear() async {
+    await storage.deleteAll();
+    await sharedPreferences.remove('userId'); // Dọn sạch sẽ ID cũ khi đăng xuất
+  }
 
 
 }
