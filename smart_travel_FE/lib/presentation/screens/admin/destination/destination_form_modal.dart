@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
-import 'package:smart_travel/domain/entities/destinations.dart';
 import 'package:smart_travel/domain/params/destination_add_params.dart';
 import 'package:smart_travel/domain/params/destination_update_params.dart';
 import 'package:smart_travel/presentation/blocs/destiantion/destination_bloc.dart';
@@ -665,8 +664,8 @@ class _DestinationFormModalState extends State<DestinationFormModal> {
       child: Column(
         children: [
           QuillSimpleToolbar(
-            configurations: QuillSimpleToolbarConfigurations(
-              controller: _quillCtrl,
+            controller: _quillCtrl,
+            config: const QuillSimpleToolbarConfig(
               showFontFamily: false,
               showSearchButton: false,
               showInlineCode: false,
@@ -676,9 +675,8 @@ class _DestinationFormModalState extends State<DestinationFormModal> {
           SizedBox(
             height: 200,
             child: QuillEditor.basic(
-              configurations:  QuillEditorConfigurations(
-                controller: _quillCtrl,
-
+              controller: _quillCtrl,
+              config: const QuillEditorConfig(
                 padding: EdgeInsets.all(12),
                 placeholder: 'Nhập mô tả...',
               ),

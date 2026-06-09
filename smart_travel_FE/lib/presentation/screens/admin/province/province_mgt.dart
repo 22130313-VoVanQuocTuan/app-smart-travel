@@ -162,15 +162,12 @@ class _ProvinceManagementScreenState extends State<ProvinceManagementScreen> {
                   const SizedBox(height: 4),
                   // --- TRÌNH HIỂN THỊ QUILL
                   QuillEditor.basic(
-                    configurations:  QuillEditorConfigurations(
-                      controller: readOnlyController, // Controller đã tạo ở trên
+                    controller: readOnlyController, // Controller đã tạo ở trên
+                    config: const QuillEditorConfig(
                       // Cấu hình hiển thị
                       showCursor: false,     // Ẩn con trỏ
                       enableInteractiveSelection: false, // Tắt chọn text (tuỳ chọn)
                       padding: EdgeInsets.zero, // Bỏ padding mặc định
-                      sharedConfigurations: QuillSharedConfigurations(
-                        locale: Locale('vi'), // Hỗ trợ tiếng Việt nếu cần
-                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
