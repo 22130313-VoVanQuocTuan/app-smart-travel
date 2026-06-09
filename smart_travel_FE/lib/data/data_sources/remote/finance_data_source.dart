@@ -5,9 +5,27 @@ import '../../models/finance/finance_monthly_model.dart';
 import '../../models/finance/finance_summary_model.dart';
 
 abstract class FinanceDataSource {
-  Future<FinanceSummaryModel> getSummary();
-  Future<List<FinanceMonthlyModel>> getMonthlyData(int year);
-  Future<List<int>> exportPdf();
+  Future<FinanceSummaryModel> getSummary({
+    int? year,
+    String? startDate,
+    String? endDate,
+    String? groupBy,
+    int? quarter,
+  });
+  Future<List<FinanceMonthlyModel>> getMonthlyData({
+    int? year,
+    String? startDate,
+    String? endDate,
+    String? groupBy,
+    int? quarter,
+  });
+  Future<List<int>> exportPdf({
+    String? startDate,
+    String? endDate,
+    String? groupBy,
+    int? year,
+    int? quarter,
+  });
 }
 
 class FinanceDataSourceImpl implements FinanceDataSource {
@@ -18,9 +36,23 @@ class FinanceDataSourceImpl implements FinanceDataSource {
   });
 
   @override
-  Future<FinanceSummaryModel> getSummary() async {
+  Future<FinanceSummaryModel> getSummary({
+    int? year,
+    String? startDate,
+    String? endDate,
+    String? groupBy,
+    int? quarter,
+  }) async {
+    final queryParameters = <String, dynamic>{};
+    if (year != null) queryParameters['year'] = year;
+    if (startDate != null) queryParameters['startDate'] = startDate;
+    if (endDate != null) queryParameters['endDate'] = endDate;
+    if (groupBy != null) queryParameters['groupBy'] = groupBy;
+    if (quarter != null) queryParameters['quarter'] = quarter;
+
     final response = await dioClient.get(
       ApiConstants.financeSummary,
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
     );
 
     return FinanceSummaryModel.fromJson(
@@ -29,9 +61,23 @@ class FinanceDataSourceImpl implements FinanceDataSource {
   }
 
   @override
-  Future<List<FinanceMonthlyModel>> getMonthlyData(int year) async {
+  Future<List<FinanceMonthlyModel>> getMonthlyData({
+    int? year,
+    String? startDate,
+    String? endDate,
+    String? groupBy,
+    int? quarter,
+  }) async {
+    final queryParameters = <String, dynamic>{};
+    if (year != null) queryParameters['year'] = year;
+    if (startDate != null) queryParameters['startDate'] = startDate;
+    if (endDate != null) queryParameters['endDate'] = endDate;
+    if (groupBy != null) queryParameters['groupBy'] = groupBy;
+    if (quarter != null) queryParameters['quarter'] = quarter;
+
     final response = await dioClient.get(
-      '${ApiConstants.financeMonthly}?year=$year',
+      ApiConstants.financeMonthly,
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
     );
 
     final data = response.data['data'] as List<dynamic>;
@@ -41,9 +87,23 @@ class FinanceDataSourceImpl implements FinanceDataSource {
   }
 
   @override
-  Future<List<int>> exportPdf() async {
+  Future<List<int>> exportPdf({
+    String? startDate,
+    String? endDate,
+    String? groupBy,
+    int? year,
+    int? quarter,
+  }) async {
+    final queryParameters = <String, dynamic>{};
+    if (startDate != null) queryParameters['startDate'] = startDate;
+    if (endDate != null) queryParameters['endDate'] = endDate;
+    if (groupBy != null) queryParameters['groupBy'] = groupBy;
+    if (year != null) queryParameters['year'] = year;
+    if (quarter != null) queryParameters['quarter'] = quarter;
+
     final response = await dioClient.dio.get(
       ApiConstants.financePdf,
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
       options: Options(
         responseType: ResponseType.bytes,
         headers: {

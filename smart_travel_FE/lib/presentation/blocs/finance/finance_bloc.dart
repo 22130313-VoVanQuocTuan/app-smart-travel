@@ -25,12 +25,24 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
 
       emit(FinanceLoading());
 
-      final summary = await financeDataSource.getSummary();
+      final summary = await financeDataSource.getSummary(
+        year: event.year,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        groupBy: event.groupBy,
+        quarter: event.quarter,
+      );
+
       final currentYear = DateTime.now().year;
       List<FinanceMonthlyModel> monthlyData = [];
 
       try {
-        monthlyData = await financeDataSource.getMonthlyData(currentYear);
+        monthlyData = await financeDataSource.getMonthlyData(
+          year: event.year ?? currentYear,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          groupBy: event.groupBy,
+        );
       } catch (_) {
         monthlyData = [];
       }

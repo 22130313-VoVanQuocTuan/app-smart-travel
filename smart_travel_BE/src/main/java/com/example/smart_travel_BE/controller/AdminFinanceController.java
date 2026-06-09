@@ -23,39 +23,78 @@ public class AdminFinanceController {
     private final FinanceService financeService;
 
     @GetMapping("/summary")
-    public ResponseEntity<APIResponse<FinanceSummaryDTO>> summary() {
+    public ResponseEntity<APIResponse<FinanceSummaryDTO>> summary(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String groupBy,
+            @RequestParam(required = false) Integer quarter
+    ) {
+        final FinanceSummaryDTO result;
+
+        if (startDate != null && endDate != null) {
+            result = financeService.getSummary(
+                    null,
+                    LocalDate.parse(startDate),
+                    LocalDate.parse(endDate),
+                    groupBy,
+                    quarter
+            );
+        } else {
+            result = financeService.getSummary(year, null, null, groupBy, quarter);
+        }
 
         return ResponseEntity.ok(
                 APIResponse.<FinanceSummaryDTO>builder()
                         .msg("Finance summary")
-                        .data(financeService.getSummary())
+                        .data(result)
                         .build()
         );
     }
 
     @GetMapping("/monthly")
     public ResponseEntity<APIResponse<List<RevenueChartDTO>>> monthly(
-            @RequestParam int year
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String groupBy,
+            @RequestParam(required = false) Integer quarter
     ) {
+        final List<RevenueChartDTO> result;
+
+        if (startDate != null && endDate != null) {
+            result = financeService.getRevenueByDateRange(
+                    LocalDate.parse(startDate),
+                    LocalDate.parse(endDate)
+            );
+        } else {
+            result = financeService.getRevenueByGroup(groupBy, year, quarter);
+        }
 
         return ResponseEntity.ok(
                 APIResponse.<List<RevenueChartDTO>>builder()
                         .msg("Monthly revenue")
-                        .data(financeService.getMonthlyRevenue(year))
+                        .data(result)
                         .build()
         );
     }
 
     @GetMapping(value = "/export-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> exportPdf(
-            @RequestParam(required = false) Integer year
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String groupBy,
+            @RequestParam(required = false) Integer quarter
     ) {
-        final int exportYear = year == null ? LocalDate.now().getYear() : year;
+        final LocalDate start = startDate != null ? LocalDate.parse(startDate) : null;
+        final LocalDate end = endDate != null ? LocalDate.parse(endDate) : null;
+        final int exportYear = year != null ? year : (start != null ? start.getYear() : LocalDate.now().getYear());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=finance_report_" + exportYear + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
-                .body(financeService.exportFinancialPdf(exportYear));
+                .body(financeService.exportFinancialPdf(year, start, end, groupBy, quarter));
     }
 }

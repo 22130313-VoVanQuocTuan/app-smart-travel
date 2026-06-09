@@ -50,7 +50,29 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
            "GROUP BY MONTH(i.issueDate) ORDER BY MONTH(i.issueDate)")
     List<Object[]> getSystemRevenueByMonth(@Param("year") int year);
 
-    // --- Hệ thống doanh thu theo YEAR ---
+    @Query("SELECT CASE " +
+           "WHEN MONTH(i.issueDate) BETWEEN 1 AND 3 THEN 1 " +
+           "WHEN MONTH(i.issueDate) BETWEEN 4 AND 6 THEN 2 " +
+           "WHEN MONTH(i.issueDate) BETWEEN 7 AND 9 THEN 3 " +
+           "ELSE 4 END, " +
+           "COALESCE(SUM(i.totalAmount), 0), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i " +
+           "WHERE YEAR(i.issueDate) = :year " +
+           "GROUP BY CASE " +
+           "WHEN MONTH(i.issueDate) BETWEEN 1 AND 3 THEN 1 " +
+           "WHEN MONTH(i.issueDate) BETWEEN 4 AND 6 THEN 2 " +
+           "WHEN MONTH(i.issueDate) BETWEEN 7 AND 9 THEN 3 " +
+           "ELSE 4 END " +
+           "ORDER BY CASE " +
+           "WHEN MONTH(i.issueDate) BETWEEN 1 AND 3 THEN 1 " +
+           "WHEN MONTH(i.issueDate) BETWEEN 4 AND 6 THEN 2 " +
+           "WHEN MONTH(i.issueDate) BETWEEN 7 AND 9 THEN 3 " +
+           "ELSE 4 END")
+    List<Object[]> getSystemRevenueByQuarter(@Param("year") int year);
+
     @Query("SELECT YEAR(i.issueDate), " +
            "COALESCE(SUM(i.totalAmount), 0), " +
            "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
@@ -59,6 +81,45 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
            "FROM Invoice i " +
            "GROUP BY YEAR(i.issueDate) ORDER BY YEAR(i.issueDate)")
     List<Object[]> getSystemRevenueByYear();
+
+    @Query("SELECT i.issueDate, " +
+           "COALESCE(SUM(i.totalAmount), 0), " +
+           "COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0), " +
+           "COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0), " +
+           "COUNT(i) " +
+           "FROM Invoice i " +
+           "WHERE i.issueDate BETWEEN :startDate AND :endDate " +
+           "GROUP BY i.issueDate ORDER BY i.issueDate")
+    List<Object[]> getSystemRevenueByDateRange(@Param("startDate") LocalDate startDate,
+                                               @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i WHERE i.issueDate BETWEEN :startDate AND :endDate")
+    BigDecimal sumTotalAmountByDateRange(@Param("startDate") LocalDate startDate,
+                                         @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(i.commissionAmount), 0) FROM Invoice i WHERE i.issueDate BETWEEN :startDate AND :endDate")
+    BigDecimal sumCommissionAmountByDateRange(@Param("startDate") LocalDate startDate,
+                                               @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0) FROM Invoice i WHERE i.issueDate BETWEEN :startDate AND :endDate")
+    BigDecimal sumHomestayAmountByDateRange(@Param("startDate") LocalDate startDate,
+                                            @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COUNT(i) FROM Invoice i WHERE i.issueDate BETWEEN :startDate AND :endDate")
+    long countByIssueDateBetween(@Param("startDate") LocalDate startDate,
+                                 @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i WHERE YEAR(i.issueDate) = :year")
+    BigDecimal sumTotalAmountByYear(@Param("year") int year);
+
+    @Query("SELECT COALESCE(SUM(i.commissionAmount), 0) FROM Invoice i WHERE YEAR(i.issueDate) = :year")
+    BigDecimal sumCommissionAmountByYear(@Param("year") int year);
+
+    @Query("SELECT COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0) FROM Invoice i WHERE YEAR(i.issueDate) = :year")
+    BigDecimal sumHomestayAmountByYear(@Param("year") int year);
+
+    @Query("SELECT COUNT(i) FROM Invoice i WHERE YEAR(i.issueDate) = :year")
+    long countByIssueDateYear(@Param("year") int year);
 
     // --- Chủ Homestay doanh thu theo DAY ---
     @Query("SELECT DAY(i.issueDate), " +
