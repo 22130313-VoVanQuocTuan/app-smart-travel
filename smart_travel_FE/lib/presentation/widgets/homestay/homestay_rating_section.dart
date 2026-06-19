@@ -128,7 +128,7 @@ class HomestayRatingSection extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onViewAllReviews,
-                icon: const Icon(Icons.comment),
+                icon: const Icon(Icons.chat_bubble_outline_rounded),
                 label: Text('Xem tất cả $reviewCount đánh giá'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,

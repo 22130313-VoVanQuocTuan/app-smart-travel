@@ -370,7 +370,7 @@ class _HomestayListScreenState extends State<HomestayListScreen> {
                 errorBuilder: (_, __, ___) => Container(
                   height: 180,
                   color: Colors.grey[300],
-                  child: const Center(child: Icon(Icons.hotel_rounded, size: 40, color: Color(0xFF6B7280))),
+                  child: const Center(child: Icon(Icons.cottage_outlined, size: 40, color: Color(0xFF6B7280))),
                 ),
               ),
             ),
@@ -396,7 +396,7 @@ class _HomestayListScreenState extends State<HomestayListScreen> {
                             Row(
                               children: [
                                 Row(
-                                  children: List.generate(homestay.stars ?? 0, (i) => const Icon(Icons.star_rounded, color: Colors.orange, size: 18)),
+                                  children: List.generate(homestay.stars ?? 0, (i) => const Icon(Icons.star_border_rounded, color: Colors.orange, size: 18)),
                                 ),
                                 const SizedBox(width: 8),
                                 if (homestay.rating != null && homestay.rating! > 0)
@@ -415,7 +415,7 @@ class _HomestayListScreenState extends State<HomestayListScreen> {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                Icon(Icons.location_on_outlined, size: 16, color: AppColors.textGray),
+                                Icon(Icons.place_outlined, size: 16, color: AppColors.textGray),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(

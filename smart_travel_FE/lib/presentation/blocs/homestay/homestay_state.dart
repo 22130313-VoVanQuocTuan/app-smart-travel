@@ -38,3 +38,24 @@ class HomestayError extends HomestayState {
   @override
   List<Object?> get props => [message];
 }
+
+// States riêng cho Top Revenue Homestays (dùng trên HomeScreen)
+class TopRevenueHomestaysLoading extends HomestayState {}
+
+class TopRevenueHomestaysLoaded extends HomestayState {
+  final List<Homestay> homestays;
+
+  const TopRevenueHomestaysLoaded({required this.homestays});
+
+  @override
+  List<Object?> get props => [homestays];
+}
+
+class TopRevenueHomestaysError extends HomestayState {
+  final String message;
+
+  const TopRevenueHomestaysError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

@@ -665,7 +665,7 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    isHotel ? Icons.hotel_rounded : Icons.tour_rounded,
+                    isHotel ? Icons.cottage_outlined : Icons.tour_rounded,
                     color: isHotel ? Colors.blue : Colors.orange,
                     size: 28,
                   ),

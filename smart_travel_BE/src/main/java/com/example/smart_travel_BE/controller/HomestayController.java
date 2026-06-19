@@ -173,6 +173,22 @@ public class HomestayController {
                         .build());    }
 
     /**
+     * 7b. Lấy danh sách homestay có doanh thu cao nhất (top revenue)
+     * GET /api/v1/homestays/top-revenue?limit=5
+     */
+    @GetMapping("/top-revenue")
+    public ResponseEntity<APIResponse<List<HomestayResponse>>> getTopRevenueHomestays(
+            @RequestParam(defaultValue = "5") Integer limit
+    ) {
+        List<HomestayResponse> responses = homestayService.getTopHomestaysByRevenue(limit);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(APIResponse.<List<HomestayResponse>>builder()
+                        .msg("Lấy danh sách homestay doanh thu cao thành công")
+                        .data(responses)
+                        .build());
+    }
+
+    /**
      * 8. Lấy danh sách homestay theo destination
      * GET /api/v1/homestays/destination/{destinationId}
      */
