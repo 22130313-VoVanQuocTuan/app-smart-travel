@@ -72,7 +72,7 @@ class _HotelImageCarouselSliverState extends State<HomestayImageCarouselSliver> 
               BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12),
             ],
           ),
-          child: const Icon(Icons.arrow_back, color: textDark, size: 24),
+          child: const Icon(Icons.arrow_back_ios_new_rounded, color: textDark, size: 24),
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -93,7 +93,7 @@ class _HotelImageCarouselSliverState extends State<HomestayImageCarouselSliver> 
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, size: 64, color: Colors.grey),
+                    child: const Icon(Icons.image_not_supported_outlined, size: 64, color: Colors.grey),
                   ),
                 );
               },

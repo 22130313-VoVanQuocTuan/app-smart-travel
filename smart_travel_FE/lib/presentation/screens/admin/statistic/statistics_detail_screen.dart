@@ -166,7 +166,7 @@ class _StatisticsDetailScreenState extends State<StatisticsDetailScreen> {
           children: [
             _buildStatCard('Tỉnh Thành', '${stats.totalProvinces}', Icons.location_city_rounded, const Color(0xFF1A73E8)),
             _buildStatCard('Địa Điểm', '${stats.totalDestinations}', Icons.place_rounded, const Color(0xFF00BCD4)),
-            _buildStatCard('Homestay', '${stats.totalHotels}', Icons.hotel_rounded, const Color(0xFF7C4DFF)),
+            _buildStatCard('Homestay', '${stats.totalHotels}', Icons.cottage_outlined, const Color(0xFF7C4DFF)),
             _buildStatCard('Tour', '${stats.totalTours}', Icons.tour_rounded, const Color(0xFFFF6D00)),
             _buildStatCard('Voucher', '${stats.totalVouchers}', Icons.card_giftcard_rounded, const Color(0xFF00C853)),
             _buildStatCard('Hóa Đơn', '${stats.todayInvoices}', Icons.receipt_rounded, const Color(0xFFE91E63)),

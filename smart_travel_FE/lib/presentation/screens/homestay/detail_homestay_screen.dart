@@ -183,7 +183,7 @@ class _DetailHomestayScreenState extends State<DetailHomestayScreen>
               highlightElevation: 0,
               splashColor: Colors.white.withOpacity(0.3),
               tooltip: 'Chat với Chủ nhà',
-              child: const Icon(Icons.maps_ugc_rounded, color: Colors.white, size: 26),
+              child: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 26),
               onPressed: () {
                 final homestay = state.homestay;
                 if (homestay.ownerId != null) {

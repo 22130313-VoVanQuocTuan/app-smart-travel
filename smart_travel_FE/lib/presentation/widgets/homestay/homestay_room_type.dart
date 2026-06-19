@@ -116,7 +116,7 @@ class HomestayRoomTypeWidget extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.hotel_rounded,
+                            Icons.bed_outlined,
                             size: 26,
                             color: primaryColor,
                           ),
@@ -142,7 +142,7 @@ class HomestayRoomTypeWidget extends StatelessWidget {
                               Row(
                                 children: [
                                   Icon(
-                                    Icons.people_rounded,
+                                    Icons.people_outline_rounded,
                                     size: 16,
                                     color: Colors.grey[600],
                                   ),
@@ -201,7 +201,7 @@ class HomestayRoomTypeWidget extends StatelessWidget {
                               Row(
                                 children: [
                                   Icon(
-                                    Icons.check_circle_outline,
+                                    Icons.check_circle_outline_rounded,
                                     size: 16,
                                     color: Colors.grey[600],
                                   ),
@@ -393,16 +393,16 @@ class HomestayRoomTypeWidget extends StatelessWidget {
       return Icons.wifi;
     } else if (amenityLower.contains('giường') ||
         amenityLower.contains('bed')) {
-      return Icons.king_bed_rounded;
+      return Icons.bed_outlined;
     } else if (amenityLower.contains('view') ||
         amenityLower.contains('cửa sổ')) {
-      return Icons.window_rounded;
+      return Icons.window_outlined;
     } else if (amenityLower.contains('tắm') || amenityLower.contains('vòi')) {
-      return Icons.bathroom_rounded;
+      return Icons.bathtub_outlined;
     } else if (amenityLower.contains('ăn')) {
-      return Icons.restaurant_rounded;
+      return Icons.restaurant_outlined;
     }
-    return Icons.check_circle;
+    return Icons.check_circle_outline_rounded;
   }
 
   // --------------------------

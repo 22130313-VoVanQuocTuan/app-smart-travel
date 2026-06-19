@@ -99,7 +99,7 @@ class HostStatisticsOverviewWidget extends StatelessWidget {
                   child: _buildMiniStat(
                     'Homestay',
                     stats.totalHotels.toString(),
-                    Icons.hotel_rounded,
+                    Icons.cottage_outlined,
                   ),
                 ),
               ],
