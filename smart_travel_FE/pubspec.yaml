@@ -48,16 +48,16 @@ dependencies:
 #  webview_flutter: ^4.13.0 #Hiển thị website trong app
   flutter_inappwebview: ^6.0.0
 
-  flutter_quill: ^9.2.3  #Rich Text Editor
+  flutter_quill: any  #Rich Text Editor
   # Để chuyển đổi dữ liệu sang HTML gửi lên server
   vsc_quill_delta_to_html: ^1.0.0 #Chuyển Quill thành HTML
 
   # Firebase
-  firebase_auth: ^4.17.8
-  firebase_core: ^2.30.0
-  cloud_firestore: ^4.13.0
-  google_sign_in: ^6.2.1
-  flutter_facebook_auth: ^6.0.3
+  firebase_auth: any
+  firebase_core: any
+  cloud_firestore: any
+  google_sign_in: any
+  flutter_facebook_auth: any
 
   # Image Picker for Avatar Upload
   image_picker: ^1.0.7 #image_picker
@@ -88,6 +88,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+dependency_overrides:
+  intl: ^0.20.2
+  flutter_quill: ^11.5.1
 
 flutter:
   generate: true

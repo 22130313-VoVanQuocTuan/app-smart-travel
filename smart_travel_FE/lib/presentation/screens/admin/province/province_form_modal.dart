@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -367,8 +366,8 @@ class _ProvinceFormModalState extends State<ProvinceFormModal> {
             children: [
               // THANH CÔNG CỤ (Toolbar)
               QuillSimpleToolbar(
-                configurations:  QuillSimpleToolbarConfigurations(
-                  controller: _quillController,
+                controller: _quillController,
+                config: const QuillSimpleToolbarConfig(
                   showFontFamily: false, // Tắt bớt mấy cái không cần
                   showSearchButton: false,
                   showInlineCode: false,
@@ -384,8 +383,8 @@ class _ProvinceFormModalState extends State<ProvinceFormModal> {
               SizedBox(
                 height: 200, // Cần set chiều cao cố định hoặc dùng Expanded nếu cha cho phép
                 child: QuillEditor.basic(
-                  configurations:  QuillEditorConfigurations(
-                    controller: _quillController,
+                  controller: _quillController,
+                  config: const QuillEditorConfig(
                     padding: EdgeInsets.all(16),
                     placeholder: 'Nhập mô tả bài viết, chèn ảnh...',
                   ),

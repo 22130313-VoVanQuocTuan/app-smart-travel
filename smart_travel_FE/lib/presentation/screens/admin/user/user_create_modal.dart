@@ -312,8 +312,8 @@ class _UserCreateModalState extends State<UserCreateModal> {
       child: Column(
         children: [
           QuillSimpleToolbar(
-            configurations:  QuillSimpleToolbarConfigurations(
-              controller: _bioQuillCtrl,
+            controller: _bioQuillCtrl,
+            config: const QuillSimpleToolbarConfig(
               showFontFamily: false,
               showSearchButton: false,
               showInlineCode: false,
@@ -332,8 +332,8 @@ class _UserCreateModalState extends State<UserCreateModal> {
           SizedBox(
             height: 150,
             child: QuillEditor.basic(
-              configurations: QuillEditorConfigurations(
-                controller: _bioQuillCtrl,
+              controller: _bioQuillCtrl,
+              config: const QuillEditorConfig(
                 padding: EdgeInsets.all(12),
                 placeholder: 'Nhập giới thiệu bản thân...',
               ),

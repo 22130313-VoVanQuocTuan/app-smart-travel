@@ -221,6 +221,19 @@ class HomestayService {
     }
   }
 
+  // Lấy homestay có doanh thu cao nhất (top revenue)
+  Future<List<Homestay>> getTopRevenueHomestays({int limit = 5}) async {
+    try {
+      final response = await _dioClient.get('/homestays/top-revenue', options: Options(
+          extra: {'queryParams': {'limit': limit}}
+      ));
+      final data = response.data['data'] as List? ?? [];
+      return data.map((item) => Homestay.fromJson(item)).toList();
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   // Lấy homestay theo destination
   Future<List<Homestay>> getHomestaysByDestination(int destinationId) async {
     try {

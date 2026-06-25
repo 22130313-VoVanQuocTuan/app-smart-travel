@@ -43,7 +43,7 @@ class HomestayTourSection extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.tour, color: AppColors.primary, size: 24),
+              Icon(Icons.tour_outlined, color: AppColors.primary, size: 24),
               SizedBox(width: 8),
               Text(
                 "Tour du lịch đi kèm",

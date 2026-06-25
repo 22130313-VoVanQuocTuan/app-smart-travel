@@ -51,7 +51,7 @@ class HomestayInfoSection extends StatelessWidget {
                 ...List.generate(
                   homestay.stars ?? 0,
                   (_) => const Icon(
-                    Icons.star_rounded,
+                    Icons.star_border_rounded,
                     color: Color(0xFFFBBF24),
                     size: 18,
                   ),

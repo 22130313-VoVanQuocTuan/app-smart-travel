@@ -37,7 +37,7 @@ class HomestayMapSection extends StatelessWidget {
           // ===== Address + Button =====
           Row(
             children: [
-              const Icon(Icons.location_on, color: primaryColor, size: 20),
+              const Icon(Icons.place_outlined, color: primaryColor, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -53,7 +53,7 @@ class HomestayMapSection extends StatelessWidget {
               const SizedBox(width: 8),
               ElevatedButton.icon(
                 onPressed: () => _openGoogleMap(context),
-                icon: const Icon(Icons.directions, size: 18 , color: Colors.white,),
+                icon: const Icon(Icons.directions_outlined, size: 18 , color: Colors.white,),
                 label: const Text('Chỉ đường', style: TextStyle(fontSize: 13)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,

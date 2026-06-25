@@ -15,7 +15,7 @@ class AppBottomNavigationWithIndicator extends StatelessWidget {
   static final List<Map<String, dynamic>> _navItems = [
     {'icon': Icons.home_rounded, 'label': 'Trang chủ'},
     {'icon': Icons.explore_rounded, 'label': 'Khám phá'},
-    {'icon': Icons.hotel_rounded, 'label': 'Homestay'},
+    {'icon': Icons.cottage_outlined, 'label': 'Homestay'},
     {'icon': Icons.smart_toy_rounded, 'label': 'AI Chat'},
     {'icon': Icons.person_rounded, 'label': 'Cá nhân'},
   ];

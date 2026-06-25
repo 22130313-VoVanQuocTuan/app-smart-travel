@@ -152,13 +152,10 @@ class _DestinationManagementScreenState extends State<DestinationManagementScree
                     const Text("Mô tả:", style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     QuillEditor.basic(
-                      configurations: QuillEditorConfigurations(
-                        controller: readOnlyController,
+                      controller: readOnlyController,
+                      config: const QuillEditorConfig(
                         showCursor: false,
                         enableInteractiveSelection: false,
-                        sharedConfigurations: const QuillSharedConfigurations(
-                          locale: Locale('vi'),
-                        ),
                       ),
                     ),
 
