@@ -21,7 +21,7 @@ public class SecurityUtil {
      */
     public User getUserDetail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
+        
         if (authentication == null || authentication.getPrincipal() == null) {
             log.warn("No authentication found in SecurityContext");
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -59,7 +59,7 @@ public class SecurityUtil {
      */
     public boolean isAuthenticated() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated()
+        return authentication != null && authentication.isAuthenticated() 
                 && !(authentication.getPrincipal() instanceof String && authentication.getPrincipal().equals("anonymousUser"));
     }
 

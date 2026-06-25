@@ -47,7 +47,7 @@ class _HostDashboardScreenState extends State<HostDashboardScreen> {
 
               if (profileState is ProfileLoaded) {
                 final hostId = profileState.user.id; // Lấy ID từ user entity
-                final hostName = profileState.user.fullName ?? "Chủ Homestay";
+                final hostName = profileState.user.fullName;
 
                 // 2. Chuyển hướng
                 Navigator.pushNamed(
@@ -193,7 +193,7 @@ class _HostDashboardScreenState extends State<HostDashboardScreen> {
                     icon: Icons.person,
                     label: 'Thông Tin Tài Khoản',
                     color: Colors.pink,
-                    route: '/profile',
+                    route: RouteNames.hostProfile,
                   ),
                 ],
               ),

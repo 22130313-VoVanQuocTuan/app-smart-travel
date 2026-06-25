@@ -6,10 +6,11 @@ import 'package:smart_travel/data/models/booking/booking_model.dart';
 import 'package:smart_travel/presentation/blocs/host_booking/host_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/host_booking/host_booking_event.dart';
 import 'package:smart_travel/presentation/blocs/host_booking/host_booking_state.dart';
+import 'package:smart_travel/presentation/screens/booking/booking_qr_scanner_screen.dart';
 import 'package:smart_travel/router/route_names.dart';
 
 class HostBookingListScreen extends StatefulWidget {
-  const HostBookingListScreen({Key? key}) : super(key: key);
+  const HostBookingListScreen({super.key});
 
   @override
   State<HostBookingListScreen> createState() => _HostBookingListScreenState();
@@ -53,6 +54,11 @@ class _HostBookingListScreenState extends State<HostBookingListScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: _scanBookingQr,
+            tooltip: 'Scan booking QR',
+          ),
           IconButton(
             icon: const Icon(Icons.calendar_today),
             onPressed: () => _showDateRangePicker(),
@@ -197,6 +203,21 @@ class _HostBookingListScreenState extends State<HostBookingListScreen> {
       await Future.delayed(const Duration(milliseconds: 300));
       _reloadBookings();
     }
+  }
+
+  Future<void> _scanBookingQr() async {
+    final int? bookingId = await Navigator.push<int>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const BookingQrScannerScreen(),
+      ),
+    );
+
+    if (!mounted || bookingId == null) {
+      return;
+    }
+
+    await _navigateToDetail(context, bookingId);
   }
 
   // Reload bookings
@@ -481,8 +502,8 @@ class BookingListItem extends StatelessWidget {
   const BookingListItem({
     required this.booking,
     required this.onTap,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   Color _getStatusColor(String status) {
     switch (status) {

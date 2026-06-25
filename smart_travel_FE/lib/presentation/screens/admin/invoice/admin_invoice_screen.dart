@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/injection_container.dart' as di;
+import 'package:smart_travel/presentation/screens/booking/booking_qr_scanner_screen.dart';
 import 'package:smart_travel/presentation/blocs/admin_invoice/admin_invoice_bloc.dart';
-import 'package:smart_travel/presentation/screens/admin/invoice/qr_scanner_screen.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
 import 'package:smart_travel/presentation/widgets/invoice/admin_invoice_card.dart';
 
 import 'admin_invoice_detail_screen.dart';
 
 class AdminInvoiceScreen extends StatefulWidget {
-  const AdminInvoiceScreen({Key? key}) : super(key: key);
+  const AdminInvoiceScreen({super.key});
 
   @override
   State<AdminInvoiceScreen> createState() => _AdminInvoiceScreenState();
@@ -112,10 +111,15 @@ class _AdminInvoiceScreenState extends State<AdminInvoiceScreen> {
                   onTap: () async {
                     final bookingId = await Navigator.push<int>(
                       context,
-                      MaterialPageRoute(builder: (_) => const QRScannerScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const BookingQrScannerScreen(),
+                      ),
                     );
 
-                    if (bookingId != null && mounted) {
+                    if (!context.mounted || bookingId == null) {
+                      return;
+                    }
+
                       // Mở chi tiết, nhưng nếu lỗi thì Bloc sẽ xử lý
                       Navigator.push(
                         context,
@@ -123,7 +127,6 @@ class _AdminInvoiceScreenState extends State<AdminInvoiceScreen> {
                           builder: (_) => AdminInvoiceDetailScreen(bookingId: bookingId),
                         ),
                       );
-                    }
                   },
                   child: Icon(
                     Icons.qr_code_scanner,
@@ -242,7 +245,7 @@ class _AdminInvoiceScreenState extends State<AdminInvoiceScreen> {
           });
           _loadInvoices();
         },
-        selectedColor: AppColors.primary.withOpacity(0.2),
+        selectedColor: AppColors.primary.withValues(alpha: 0.2),
         backgroundColor: Colors.grey[100],
         labelStyle: TextStyle(
           color: isSelected ? AppColors.primary : Colors.black87,

@@ -53,12 +53,11 @@ dependencies:
   vsc_quill_delta_to_html: ^1.0.0 #Chuyển Quill thành HTML
 
   # Firebase
-  firebase_auth: any
-  firebase_core: any
-  cloud_firestore: any
-  google_sign_in: any
-  flutter_facebook_auth: any
-
+  firebase_auth: ^6.1.0
+  firebase_core: ^4.1.1
+  cloud_firestore: ^6.0.2
+  google_sign_in: ^7.2.0
+  flutter_facebook_auth: ^7.1.5
   # Image Picker for Avatar Upload
   image_picker: ^1.0.7 #image_picker
   #logo

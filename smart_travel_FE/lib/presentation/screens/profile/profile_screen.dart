@@ -65,22 +65,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.pushReplacementNamed(context, RouteNames.explore);
         break;
 
-      case 2: // Tour
-        setState(() => _selectedIndex = index);
-        Navigator.pushReplacementNamed(context, RouteNames.tourList);
-        break;
-
-      case 3: // Khách sạn
+      case 2: // Khách sạn
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.homestayList);
         break;
 
-      case 4: // AI Chat
+      case 3: // AI Chat
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.aiChat);
         break;
 
-      case 5: // Profile
+      case 4: // Profile
         setState(() => _selectedIndex = index);
         Navigator.pushReplacementNamed(context, RouteNames.profile);
         break;
