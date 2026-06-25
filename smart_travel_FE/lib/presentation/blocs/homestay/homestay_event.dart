@@ -43,3 +43,13 @@ class LoadHomestaysEvent extends HomestayEvent {
     minPrice, maxPrice, city, page, size, sortBy, sortDir
   ];
 }
+
+// Load danh sách homestay doanh thu cao nhất
+class LoadTopRevenueHomestaysEvent extends HomestayEvent {
+  final int limit;
+
+  const LoadTopRevenueHomestaysEvent({this.limit = 5});
+
+  @override
+  List<Object?> get props => [limit];
+}

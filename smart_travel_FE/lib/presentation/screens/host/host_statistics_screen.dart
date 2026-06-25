@@ -590,6 +590,75 @@ class _HostStatisticsScreenState extends State<HostStatisticsScreen> {
       );
     }
 
+    // Nếu chỉ có 1 homestay, biểu đồ tròn không có ý nghĩa (luôn 100%)
+    if (data.categories.length == 1) {
+      final item = data.categories.first;
+      return Container(
+        margin: const EdgeInsets.only(top: 20, bottom: 20),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F4F8),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+        ),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.home_work_rounded,
+              size: 48,
+              color: Color(0xFF00BCD4),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Tất cả doanh thu đều thuộc về:',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF757575),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              item.homestayName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A237E),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.monetization_on_rounded,
+                    color: Color(0xFFFF6D00),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Tổng tháng: ${_currencyFormat.format(data.totalRevenue)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Color(0xFF1A237E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: [
         SizedBox(

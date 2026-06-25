@@ -27,6 +27,11 @@ import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_event.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_state.dart';
+import 'package:smart_travel/presentation/blocs/homestay/top_revenue_homestay_bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_event.dart';
+import 'package:smart_travel/presentation/blocs/homestay/homestay_state.dart';
+import 'package:smart_travel/presentation/widgets/homestay/top_homestay_card.dart';
+import 'package:smart_travel/injection_container.dart' as di;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -148,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const CustomCategory(),
           _buildDestinationsListByCategory(),
           _buildFeaturedDestinations(),
+          _buildTopRevenueHomestays(),
           _buildPopularProvinces(),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
@@ -626,6 +632,118 @@ class _HomeScreenState extends State<HomeScreen> {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
         }
       },
+    );
+  }
+
+  // Top Homestay Doanh Thu Cao
+  Widget _buildTopRevenueHomestays() {
+    return BlocProvider(
+      create: (context) => di.sl<TopRevenueHomestayBloc>()
+        ..add(const LoadTopRevenueHomestaysEvent(limit: 5)),
+      child: BlocBuilder<TopRevenueHomestayBloc, HomestayState>(
+        builder: (context, state) {
+          if (state is TopRevenueHomestaysLoading) {
+            return const SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          } else if (state is TopRevenueHomestaysLoaded) {
+            final homestays = state.homestays;
+            if (homestays.isEmpty) {
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            }
+
+            return SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFF6B35), Color(0xFFFF3D00)],
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.local_fire_department_outlined,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Top Homestay Đáng Chú Ý',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).textTheme.titleLarge?.color,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Được đặt nhiều nhất trên hệ thống',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, RouteNames.homestayList);
+                          },
+                          child: Text(
+                            'Xem tất cả',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 290,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: homestays.length,
+                      itemBuilder: (context, index) {
+                        return TopHomestayCard(
+                          homestay: homestays[index],
+                          rank: index,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is TopRevenueHomestaysError) {
+            return const SliverToBoxAdapter(child: SizedBox.shrink());
+          }
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        },
+      ),
     );
   }
 

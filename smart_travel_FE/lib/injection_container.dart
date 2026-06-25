@@ -100,6 +100,7 @@ import 'package:smart_travel/presentation/blocs/finance/finance_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_management_bloc.dart';
+import 'package:smart_travel/presentation/blocs/homestay/top_revenue_homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/host_booking/host_booking_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/cancel_bloc.dart';
 import 'package:smart_travel/presentation/blocs/invoice/detail_bloc.dart';
@@ -508,6 +509,7 @@ Future<void> init() async {
 
   // ---  BLOC HOTEL ---
   sl.registerFactory(() => HomestayDetailBloc(homestayService: sl()));
+  sl.registerFactory(() => TopRevenueHomestayBloc(homestayService: sl()));
   sl.registerFactory(() => HostBookingBloc(bookingService: sl()));
   sl.registerFactory(() => UserBookingBloc(bookingService: sl()));
 

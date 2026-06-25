@@ -52,6 +52,9 @@ public class HomestayService {
     @Autowired
     private CloudinaryService cloudinaryService;
 
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+
     //Lấy danh sách khách sạn có phân trang + filter
     public Page<HomestayResponse> getHomestay(HomestayFilterRequest filter) {
         int page = (filter.getPage() != null && filter.getPage() >= 0) ? filter.getPage() : 0;
@@ -597,5 +600,53 @@ public class HomestayService {
                 .build();
     }
 
+    /**
+     * Lấy danh sách homestay có doanh thu cao nhất (top revenue)
+     * Sử dụng InvoiceRepository.getTopHomestaysByRevenue() để lấy theo tổng commission
+     */
+    @Transactional(readOnly = true)
+    public List<HomestayResponse> getTopHomestaysByRevenue(Integer limit) {
+        List<Object[]> topHomestays = invoiceRepository.getTopHomestaysByRevenue();
+
+        // Lấy danh sách homestay IDs từ kết quả (giới hạn theo limit)
+        List<Long> homestayIds = topHomestays.stream()
+                .limit(limit)
+                .map(obj -> (Long) obj[0])
+                .collect(Collectors.toList());
+
+        List<HomestayResponse> result = new ArrayList<>();
+
+        if (!homestayIds.isEmpty()) {
+            // Lấy chi tiết homestay từ DB
+            List<Homestay> homestays = hotelRepository.findAllById(homestayIds);
+
+            // Sắp xếp lại theo thứ tự doanh thu (giữ nguyên thứ tự từ query)
+            Map<Long, Homestay> homestayMap = homestays.stream()
+                    .collect(Collectors.toMap(Homestay::getId, h -> h));
+
+            result.addAll(homestayIds.stream()
+                    .map(homestayMap::get)
+                    .filter(h -> h != null && Boolean.TRUE.equals(h.getIsActive()))
+                    .map(this::convertToHomestayResponse)
+                    .collect(Collectors.toList()));
+        }
+
+        // Nếu danh sách homestay có doanh thu chưa đủ (ví dụ database ít hóa đơn)
+        // thì lấy thêm các homestay có rating cao nhất để bù vào cho đủ số lượng (limit)
+        if (result.size() < limit) {
+            List<Long> existingIds = result.stream().map(HomestayResponse::getId).collect(Collectors.toList());
+            Pageable pageable = PageRequest.of(0, limit);
+            Page<Homestay> fallbackHomestays = hotelRepository.findTopByOrderByAverageRatingDesc(pageable);
+            
+            for (Homestay h : fallbackHomestays) {
+                if (result.size() >= limit) break;
+                if (!existingIds.contains(h.getId()) && Boolean.TRUE.equals(h.getIsActive())) {
+                    result.add(convertToHomestayResponse(h));
+                }
+            }
+        }
+
+        return result;
+    }
 
 }
