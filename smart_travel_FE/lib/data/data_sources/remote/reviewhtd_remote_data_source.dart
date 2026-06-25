@@ -9,7 +9,6 @@ abstract class ReviewHtdRemoteDataSource {
     int? rating,
   });
 }
-
 class ReviewHtdRemoteDataSourceImpl implements ReviewHtdRemoteDataSource {
   final DioClient dioClient;
 

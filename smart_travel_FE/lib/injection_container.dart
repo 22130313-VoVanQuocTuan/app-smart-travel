@@ -202,7 +202,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => http.Client());
   sl.registerLazySingleton(() => Connectivity());
   sl.registerLazySingleton(() => FlutterSecureStorage());
-  sl.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn());
+  final googleSignIn = GoogleSignIn.instance;
+  await googleSignIn.initialize();
+  sl.registerLazySingleton<GoogleSignIn>(() => googleSignIn);
   sl.registerLazySingleton(() => Dio());
 
   final sharedPreferences = await SharedPreferences.getInstance();

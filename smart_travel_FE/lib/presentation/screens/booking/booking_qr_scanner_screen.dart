@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
 
-class QRScannerScreen extends StatefulWidget {
-  const QRScannerScreen({Key? key}) : super(key: key);
+class BookingQrScannerScreen extends StatefulWidget {
+  const BookingQrScannerScreen({super.key});
 
   @override
-  State<QRScannerScreen> createState() => _QRScannerScreenState();
+  State<BookingQrScannerScreen> createState() => _BookingQrScannerScreenState();
 }
 
-class _QRScannerScreenState extends State<QRScannerScreen> with WidgetsBindingObserver {
-  MobileScannerController controller = MobileScannerController(
+class _BookingQrScannerScreenState extends State<BookingQrScannerScreen>
+    with WidgetsBindingObserver {
+  final MobileScannerController controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     facing: CameraFacing.back,
     torchEnabled: false,
@@ -46,7 +47,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with WidgetsBindingOb
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text("Quét mã QR đơn hàng"),
+        title: const Text('Scan booking QR'),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -57,40 +58,29 @@ class _QRScannerScreenState extends State<QRScannerScreen> with WidgetsBindingOb
           MobileScanner(
             controller: controller,
             onDetect: (barcodeCapture) {
+              if (isScanned) return;
+
               final List<Barcode> barcodes = barcodeCapture.barcodes;
               for (final barcode in barcodes) {
-                if (isScanned) return;
-                isScanned = true;
-
-                controller.stop();
-
                 final String? code = barcode.rawValue;
                 if (code == null) {
-                  Navigator.pop(context); // Đóng + không return gì
+                  Navigator.pop(context);
                   return;
                 }
 
                 final RegExp regExp = RegExp(r'\d+');
-                final match = regExp.firstMatch(code);
-                final bookingIdStr = match?.group(0);
+                final RegExpMatch? match = regExp.firstMatch(code);
+                final String? bookingIdStr = match?.group(0);
+                final int? bookingId =
+                    bookingIdStr == null ? null : int.tryParse(bookingIdStr);
 
-                if (bookingIdStr == null) {
-                  Navigator.pop(context);
-                  return;
-                }
-
-                final bookingId = int.tryParse(bookingIdStr);
-                if (bookingId == null) {
-                  Navigator.pop(context);
-                  return;
-                }
-
-                // Thành công → return bookingId
+                isScanned = true;
+                controller.stop();
                 Navigator.pop(context, bookingId);
+                return;
               }
             },
           ),
-          // Khung quét
           Center(
             child: Container(
               width: 250,
@@ -101,7 +91,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> with WidgetsBindingOb
               ),
             ),
           ),
-          // Hướng dẫn
           Positioned(
             bottom: 100,
             left: 0,
@@ -110,11 +99,11 @@ class _QRScannerScreenState extends State<QRScannerScreen> with WidgetsBindingOb
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.symmetric(horizontal: 32),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                "Đặt mã QR đơn hàng vào khung để quét",
+                'Place the booking QR inside the frame to scan',
                 style: TextStyle(color: Colors.white, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
@@ -127,8 +116,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> with WidgetsBindingOb
 
   @override
   void dispose() {
-    controller.stop(); // Dừng camera
-    controller.dispose(); // Giải phóng tài nguyên
+    WidgetsBinding.instance.removeObserver(this);
+    controller.stop();
+    controller.dispose();
     super.dispose();
   }
 }

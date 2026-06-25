@@ -159,16 +159,16 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       //Google Sign In
       await googleSignIn.signOut();
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        return const Left(ServerFailure('Đăng nhập Google đã bị hủy!'));
-      }
-
+      final googleUser = await googleSignIn.authenticate();
       //Firebase Authentication
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
+      final googleIdToken = googleAuth.idToken;
+      if (googleIdToken == null || googleIdToken.isEmpty) {
+        await googleSignIn.signOut();
+        return const Left(ServerFailure('Khong lay duoc Google ID token!'));
+      }
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+        idToken: googleIdToken,
       );
       final userCredential =
       await firebaseAuth.signInWithCredential(credential);
@@ -229,7 +229,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Lấy access token từ Facebook
-      final accessToken = loginResult.accessToken!.token;
+      final accessToken = loginResult.accessToken!.tokenString;
 
       // Firebase Authentication
       final credential = FacebookAuthProvider.credential(accessToken);

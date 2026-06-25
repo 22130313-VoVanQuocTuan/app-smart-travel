@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_travel/presentation/blocs/chat/owner_chat_list_bloc.dart';
 import 'package:smart_travel/presentation/blocs/chat/user_chat_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
@@ -22,6 +21,7 @@ import 'package:smart_travel/presentation/screens/homestay/homestay_list_screen.
 import 'package:smart_travel/presentation/screens/host/booking/host_booking_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/host/booking/host_booking_list_screen.dart';
 import 'package:smart_travel/presentation/screens/host/homestay/hotel_management_screen.dart';
+import 'package:smart_travel/presentation/screens/host/host_profile_screen.dart';
 import 'package:smart_travel/presentation/screens/host/tour/tour_management_screen.dart';
 import 'package:smart_travel/presentation/screens/legal/privacy_policy_screen.dart';
 import 'package:smart_travel/presentation/screens/legal/terms_of_service_screen.dart';
@@ -34,7 +34,6 @@ import 'package:smart_travel/presentation/screens/profile/account_management_scr
 import 'package:smart_travel/presentation/screens/profile/user_level_screen.dart';
 import 'package:smart_travel/presentation/screens/tour/tour_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/chat/ai_chat_screen.dart';
-import 'package:smart_travel/presentation/screens/user/user_booking_screen.dart';
 import 'package:smart_travel/presentation/screens/user/user_booking_screen.dart';
 import 'package:smart_travel/presentation/screens/payment/payment_result_screen.dart';
 import 'package:smart_travel/presentation/widgets/homestay/owner_chat_list_screen.dart';
@@ -54,7 +53,6 @@ import '../presentation/screens/admin/finance/finance_dashboard_screen.dart';
 import '../presentation/screens/admin/invoice/admin_invoice_screen.dart';
 import '../presentation/screens/admin/voucher/voucher_management_screen.dart';
 import '../presentation/screens/admin/admin_host_approval_screen.dart';
-import '../presentation/screens/invoice/my_invoices_screen.dart';
 import '../presentation/screens/host/host_dashboard_screen.dart';
 import '../presentation/screens/host/host_pending_approval_screen.dart';
 import '../presentation/screens/admin/statistic/statistics_detail_screen.dart';
@@ -145,8 +143,8 @@ class AppRouter {
             String myName = "Khách hàng"; // Mặc định nếu chưa có tên
 
             if (profileState is ProfileLoaded) {
-              myId = profileState.user.id ?? 0;
-              myName = profileState.user.fullName ?? "Khách hàng"; // Lấy tên thật của Khách
+              myId = profileState.user.id;
+              myName = profileState.user.fullName; // Lấy tên thật của Khách
             }
 
             if (myId == 0) {
@@ -268,6 +266,8 @@ class AppRouter {
           builder: (_) => HostBookingDetailScreen(bookingId: bookingId),
           settings: settings,
         );
+      case RouteNames.hostProfile:
+        return MaterialPageRoute(builder: (_) => const HostProfileScreen());
 
 
       case RouteNames.hostReviews:
