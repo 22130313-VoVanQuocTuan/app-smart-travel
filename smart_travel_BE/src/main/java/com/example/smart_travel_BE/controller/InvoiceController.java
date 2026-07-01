@@ -118,7 +118,7 @@ public class InvoiceController {
             @RequestBody @Valid RefundRequest request) {
 
 
-        invoiceService.requestRefund(request.getBookingId(), request.getReason());
+        invoiceService.requestRefund(request);
 
         return APIResponse.<Void>builder()
                 .code(1000)

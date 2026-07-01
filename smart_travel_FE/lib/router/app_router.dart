@@ -6,6 +6,7 @@ import 'package:smart_travel/presentation/blocs/homestay/homestay_bloc.dart';
 import 'package:smart_travel/presentation/blocs/homestay/homestay_detail_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
 import 'package:smart_travel/presentation/blocs/profile/profile_state.dart';
+import 'package:smart_travel/presentation/province/province_detail_screen.dart';
 import 'package:smart_travel/presentation/screens/admin/banner/banner_management_screen.dart';
 import 'package:smart_travel/presentation/screens/admin/destination/destination_management_screen.dart';
 import 'package:smart_travel/presentation/screens/admin/province/province_mgt.dart';
@@ -69,6 +70,11 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ProvinceManagementScreen ());
       case RouteNames.adminUsers:
         return MaterialPageRoute(builder: (_) => const UserManagementScreen ());
+      case RouteNames.provinceDetail:
+        return MaterialPageRoute(
+          builder: (_) => const ProvinceDetailScreen(),
+          settings: settings,
+        );
       case '/admin/statistics':
         return MaterialPageRoute(builder: (_) => const StatisticsDetailScreen());
       case RouteNames.adminBanner:

@@ -134,11 +134,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Optional<Invoice> findByBooking_Id(Long bookingId);
 
     @Query("""
-        SELECT b FROM Booking b
+        SELECT DISTINCT b FROM Booking b
         LEFT JOIN FETCH b.invoice i
         LEFT JOIN FETCH b.payment p
         LEFT JOIN FETCH b.user u
         LEFT JOIN FETCH b.roomType rt
+        LEFT JOIN FETCH b.bookingTours bt
+        LEFT JOIN FETCH bt.tour t
         WHERE b.id = :bookingId
         """)
     Optional<Booking> findFullBookingById(@Param("bookingId") Long bookingId);
@@ -268,6 +270,35 @@ ORDER BY b.createdAt DESC
            "WHERE h.owner.id = :ownerId " +
            "AND i.issueDate = :date")
     BigDecimal sumHostRevenueByDate(@Param("ownerId") Long ownerId, @Param("date") LocalDate date);
+
+    @Query("""
+           SELECT h.owner.id,
+                  h.owner.fullName,
+                  COUNT(i),
+                  COALESCE(SUM(CASE WHEN UPPER(COALESCE(p.paymentMethod, '')) = 'CASH' THEN 0 ELSE 1 END), 0),
+                  COALESCE(SUM(CASE WHEN UPPER(COALESCE(p.paymentMethod, '')) = 'CASH' THEN 1 ELSE 0 END), 0),
+                  COALESCE(SUM(COALESCE(i.totalAmount, 0)), 0),
+                  COALESCE(SUM(CASE WHEN UPPER(COALESCE(p.paymentMethod, '')) = 'CASH' THEN 0 ELSE COALESCE(i.totalAmount, 0) END), 0),
+                  COALESCE(SUM(CASE WHEN UPPER(COALESCE(p.paymentMethod, '')) = 'CASH' THEN COALESCE(i.totalAmount, 0) ELSE 0 END), 0),
+                  COALESCE(SUM(CASE WHEN UPPER(COALESCE(p.paymentMethod, '')) = 'CASH' THEN 0 ELSE COALESCE(i.homestayAmount, 0) END), 0),
+                  COALESCE(SUM(CASE WHEN UPPER(COALESCE(p.paymentMethod, '')) = 'CASH' THEN COALESCE(i.commissionAmount, 0) ELSE 0 END), 0),
+                  COALESCE(SUM(COALESCE(i.commissionAmount, 0)), 0),
+                  COUNT(DISTINCT h.id)
+           FROM Invoice i
+           JOIN i.booking b
+           JOIN b.roomType rt
+           JOIN rt.homestay h
+           LEFT JOIN b.payment p
+           WHERE b.status = 'COMPLETED'
+             AND YEAR(COALESCE(b.updatedAt, i.issueDate)) = :year
+             AND MONTH(COALESCE(b.updatedAt, i.issueDate)) = :month
+           GROUP BY h.owner.id, h.owner.fullName
+           ORDER BY COALESCE(SUM(COALESCE(i.totalAmount, 0)), 0) DESC
+           """)
+    List<Object[]> getHostFinanceSettlementReport(
+            @Param("year") int year,
+            @Param("month") int month
+    );
 
     @Query("SELECT COALESCE(SUM(COALESCE(i.homestayAmount, i.totalAmount)), 0) " +
            "FROM Invoice i " +

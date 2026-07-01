@@ -7,6 +7,7 @@ class VoucherResponseModel {
   final String? expiryDate; // API trả về String ISO-8601
   final bool? isActive;
   final int? usageLimit;
+  final int? pointsRequired;
 
   VoucherResponseModel({
     this.id,
@@ -15,6 +16,7 @@ class VoucherResponseModel {
     this.expiryDate,
     this.isActive,
     this.usageLimit,
+    this.pointsRequired,
   });
 
   factory VoucherResponseModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class VoucherResponseModel {
       expiryDate: json['expiryDate'],
       isActive: json['isActive'],
       usageLimit: json['usageLimit'],
+      pointsRequired: (json['pointsRequired'] as num?)?.toInt(),
     );
   }
 
@@ -36,6 +39,7 @@ class VoucherResponseModel {
       expiryDate: expiryDate != null ? DateTime.parse(expiryDate!) : DateTime.now(),
       isActive: isActive ?? false,
       usageLimit: usageLimit ?? 0,
+      pointsRequired: pointsRequired ?? 0,
     );
   }
 }

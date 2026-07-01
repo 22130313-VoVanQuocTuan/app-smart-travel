@@ -22,6 +22,7 @@ class _VoucherFormModalState extends State<VoucherFormModal> {
   late TextEditingController _codeController;
   late TextEditingController _discountController;
   late TextEditingController _limitController;
+  late TextEditingController _pointsRequiredController;
 
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 30));
   bool _isActive = true;
@@ -34,6 +35,8 @@ class _VoucherFormModalState extends State<VoucherFormModal> {
         text: widget.voucher?.discountAmount.toStringAsFixed(0) ?? '');
     _limitController = TextEditingController(
         text: widget.voucher?.usageLimit.toString() ?? '100');
+    _pointsRequiredController = TextEditingController(
+        text: widget.voucher?.pointsRequired.toString() ?? '0');
 
     if (widget.voucher != null) {
       _selectedDate = widget.voucher!.expiryDate;
@@ -46,6 +49,7 @@ class _VoucherFormModalState extends State<VoucherFormModal> {
     _codeController.dispose();
     _discountController.dispose();
     _limitController.dispose();
+    _pointsRequiredController.dispose();
     super.dispose();
   }
 
@@ -66,6 +70,7 @@ class _VoucherFormModalState extends State<VoucherFormModal> {
       final code = _codeController.text.toUpperCase().trim();
       final discount = double.tryParse(_discountController.text) ?? 0;
       final limit = int.tryParse(_limitController.text) ?? 0;
+      final pointsRequired = int.tryParse(_pointsRequiredController.text) ?? 0;
 
       // Set thời gian là cuối ngày (23:59:59)
       final expiry = DateTime(
@@ -80,6 +85,7 @@ class _VoucherFormModalState extends State<VoucherFormModal> {
           expiryDate: expiry,
           isActive: _isActive,
           usageLimit: limit,
+          pointsRequired: pointsRequired,
         );
         context.read<VoucherBloc>().add(CreateVoucherEvent(params));
       } else {
@@ -91,6 +97,7 @@ class _VoucherFormModalState extends State<VoucherFormModal> {
           expiryDate: expiry,
           isActive: _isActive,
           usageLimit: limit,
+          pointsRequired: pointsRequired,
         );
         context.read<VoucherBloc>().add(UpdateVoucherEvent(params));
       }
@@ -156,6 +163,25 @@ class _VoucherFormModalState extends State<VoucherFormModal> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  TextFormField(
+                    controller: _pointsRequiredController,
+                    enabled: !isLoading,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Diem can doi",
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.stars),
+                    ),
+                    validator: (v) {
+                      final value = int.tryParse(v ?? '');
+                      if (value == null || value < 0) {
+                        return "Nhap so diem hop le";
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 12),
 

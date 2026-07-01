@@ -59,6 +59,24 @@ public class Invoice {
     @Column(name = "commission_paid_at")
     private LocalDateTime commissionPaidAt; // Thời gian thanh toán hoa hồng
 
+    @Column(name = "refund_bank_name", length = 150)
+    private String refundBankName;
+
+    @Column(name = "refund_bank_branch", length = 150)
+    private String refundBankBranch;
+
+    @Column(name = "refund_account_number", length = 50)
+    private String refundAccountNumber;
+
+    @Column(name = "refund_account_holder", length = 150)
+    private String refundAccountHolder;
+
+    @Column(name = "refund_requested_at")
+    private LocalDateTime refundRequestedAt;
+
+    @Column(name = "refund_approved_at")
+    private LocalDateTime refundApprovedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

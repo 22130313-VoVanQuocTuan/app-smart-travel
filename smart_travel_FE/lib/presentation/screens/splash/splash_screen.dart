@@ -3,25 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_bloc.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_event.dart';
 import 'package:smart_travel/presentation/blocs/auth/auth_state.dart';
-import 'package:smart_travel/presentation/blocs/banner/banner_bloc.dart';
-import 'package:smart_travel/presentation/blocs/banner/banner_event.dart';
-import 'package:smart_travel/presentation/blocs/destiantion/destination_bloc.dart';
-import 'package:smart_travel/presentation/blocs/destiantion/destination_event.dart';
-import 'package:smart_travel/presentation/blocs/profile/profile_bloc.dart';
-import 'package:smart_travel/presentation/blocs/profile/profile_event.dart';
-import 'package:smart_travel/presentation/blocs/province/province_bloc.dart';
-import 'package:smart_travel/presentation/blocs/province/province_event.dart';
-import 'dart:async';
+
 import '../../theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -29,21 +22,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    // Gửi sự kiện kiểm tra đăng nhập
     context.read<AuthBloc>().add(AppStarted());
-    //Load tất cả dữ liệu
-    _loadInitialAppData();
     _setupAnimations();
-  }
-  void _loadInitialAppData() {
-    // Dùng Future.microtask để đảm bảo context đã sẵn sàng
-    Future.microtask(() {
-      // Load tất cả dữ liệu bạn cần cho HomeScreen
-      context.read<DestinationBloc>().add(LoadAllDestinations());
-      context.read<ProvinceBloc>().add(LoadProvince());
-      context.read<ProfileBloc>().add(LoadProfile());
-      context.read<BannerBloc>().add(LoadAllBanner());
-    });
   }
 
   void _setupAnimations() {
@@ -69,7 +49,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.forward();
   }
 
-
   @override
   void dispose() {
     _controller.dispose();
@@ -79,191 +58,174 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-
-        listener: (context, state) async {
-          await Future.delayed(const Duration(seconds: 3));
-          if (state is AdminAuthenticated) {
-              Navigator.pushReplacementNamed(context, '/dashboard');
-            }else if(state is HostAuthenticated) {
-            Navigator.pushReplacementNamed(context, '/host-dashboard');
-            }
-            else if(state is UserAuthenticated) {
-              Navigator.pushReplacementNamed(context, '/home');
-            }
-           else if (state is Unauthenticated) {
-            Navigator.pushReplacementNamed(context, '/login');
-          }
-        },
-        child: Scaffold(
-          body: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/img_2.png"),
-                fit: BoxFit.cover,
-              ),
-
-            ),
-            child: Stack(
-              children: [
-                // Background decorative circles
-                Positioned(
-                  top: -50,
-                  right: -50,
-                  child: AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _fadeAnimation.value * 0.1,
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  bottom: -100,
-                  left: -100,
-                  child: AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _fadeAnimation.value * 0.1,
-                        child: Container(
-                          width: 300,
-                          height: 300,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // Main content
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo with animation
-                      AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) {
-                          return FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: ScaleTransition(
-                              scale: _scaleAnimation,
-                              child: Container(
-                                width: 150,
-                                height: 150,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 30,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(30),
-                                  child: Image.asset(
-                                    'assets/icons/logo.png',
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(
-                                        Icons.travel_explore,
-                                        size: 80,
-                                        color: Color(0xFF2563EB),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      // App title
-                      AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) {
-                          return FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: const Text(
-                              'Smart Travel',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Subtitle
-                      AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) {
-                          return FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: const Text(
-                              'Khám phá Việt Nam cùng SMART TRAVEL',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textWhite,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 60),
-
-                      // Loading indicator
-                      AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) {
-                          return FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: const SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
-                                strokeWidth: 3,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      listener: (context, state) {
+        if (state is AdminAuthenticated) {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        } else if (state is HostAuthenticated) {
+          Navigator.pushReplacementNamed(context, '/host-dashboard');
+        } else if (state is UserAuthenticated) {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else if (state is Unauthenticated) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/img_2.png'),
+              fit: BoxFit.cover,
             ),
           ),
-        )
+          child: Stack(
+            children: [
+              Positioned(
+                top: -50,
+                right: -50,
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeAnimation.value * 0.1,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                bottom: -100,
+                left: -100,
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeAnimation.value * 0.1,
+                      child: Container(
+                        width: 300,
+                        height: 300,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: ScaleTransition(
+                            scale: _scaleAnimation,
+                            child: Container(
+                              width: 150,
+                              height: 150,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 30,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(30),
+                                child: Image.asset(
+                                  'assets/icons/logo.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.travel_explore,
+                                      size: 80,
+                                      color: Color(0xFF2563EB),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: const Text(
+                            'Smart Travel',
+                            style: TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: const Text(
+                            'Khám phá Việt Nam cùng SMART TRAVEL',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textWhite,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 60),
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: const SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

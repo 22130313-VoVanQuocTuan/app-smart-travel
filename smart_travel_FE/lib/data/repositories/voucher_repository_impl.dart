@@ -43,6 +43,7 @@ class VoucherRepositoryImpl implements VoucherRepository {
         expiryDate: params.expiryDate.toIso8601String(),
         isActive: params.isActive,
         usageLimit: params.usageLimit,
+        pointsRequired: params.pointsRequired,
       );
 
       final model = await voucherDataSource.createVoucher(request);
@@ -67,6 +68,7 @@ class VoucherRepositoryImpl implements VoucherRepository {
         expiryDate: params.expiryDate.toIso8601String(),
         isActive: params.isActive,
         usageLimit: params.usageLimit,
+        pointsRequired: params.pointsRequired,
       );
 
       final model = await voucherDataSource.updateVoucher(request);

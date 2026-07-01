@@ -4,6 +4,7 @@ class VoucherCreateParams {
   final DateTime expiryDate;
   final bool isActive;
   final int usageLimit;
+  final int pointsRequired;
 
   VoucherCreateParams({
     required this.code,
@@ -11,6 +12,7 @@ class VoucherCreateParams {
     required this.expiryDate,
     required this.isActive,
     required this.usageLimit,
+    required this.pointsRequired,
   });
 
   Map<String, dynamic> toJson() => {
@@ -19,6 +21,7 @@ class VoucherCreateParams {
     "expiryDate": expiryDate.toIso8601String(),
     "isActive": isActive,
     "usageLimit": usageLimit,
+    "pointsRequired": pointsRequired,
   };
 }
 
@@ -29,6 +32,7 @@ class VoucherUpdateParams {
   final DateTime expiryDate;
   final bool isActive;
   final int usageLimit;
+  final int pointsRequired;
 
   VoucherUpdateParams({
     required this.id,
@@ -37,6 +41,7 @@ class VoucherUpdateParams {
     required this.expiryDate,
     required this.isActive,
     required this.usageLimit,
+    required this.pointsRequired,
   });
 
   Map<String, dynamic> toJson() => {
@@ -45,5 +50,6 @@ class VoucherUpdateParams {
     "expiryDate": expiryDate.toIso8601String(),
     "isActive": isActive,
     "usageLimit": usageLimit,
+    "pointsRequired": pointsRequired,
   };
 }

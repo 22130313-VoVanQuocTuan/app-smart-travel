@@ -11,7 +11,14 @@ abstract class InvoiceRemoteDataSource {
   Future<List<InvoiceModel>> getRefundedInvoices();
   Future<List<InvoiceModel>> getReviewableInvoices();
   Future<List<InvoiceModel>> searchActiveInvoices({required String keyword});
-  Future<void> cancelBooking({required int bookingId, required String reason});
+  Future<void> cancelBooking({
+    required int bookingId,
+    required String reason,
+    String? refundBankName,
+    String? refundBankBranch,
+    String? refundAccountNumber,
+    String? refundAccountHolder,
+  });
   Future<InvoiceDetailModel> getInvoiceDetail({required int bookingId});
   Future<List<AdminInvoiceModel>> getAdminInvoices({
     String? status,
@@ -114,12 +121,23 @@ class InvoiceRemoteDataSourceImpl implements InvoiceRemoteDataSource {
   }
 
   @override
-  Future<void> cancelBooking({required int bookingId, required String reason}) async {
+  Future<void> cancelBooking({
+    required int bookingId,
+    required String reason,
+    String? refundBankName,
+    String? refundBankBranch,
+    String? refundAccountNumber,
+    String? refundAccountHolder,
+  }) async {
     final response = await dioClient.post(
       ApiConstants.invoiceRefund,
       data: {
         "bookingId": bookingId,
         "reason": reason,
+        if (refundBankName != null && refundBankName.isNotEmpty) "refundBankName": refundBankName,
+        if (refundBankBranch != null && refundBankBranch.isNotEmpty) "refundBankBranch": refundBankBranch,
+        if (refundAccountNumber != null && refundAccountNumber.isNotEmpty) "refundAccountNumber": refundAccountNumber,
+        if (refundAccountHolder != null && refundAccountHolder.isNotEmpty) "refundAccountHolder": refundAccountHolder,
       },
     );
 

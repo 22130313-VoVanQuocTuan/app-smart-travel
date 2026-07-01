@@ -16,64 +16,97 @@ import '../../../blocs/auth/auth_state.dart';
 class AdminInvoiceDetailScreen extends StatelessWidget {
   final int bookingId;
 
-  const AdminInvoiceDetailScreen({Key? key, required this.bookingId}) : super(key: key);
+  const AdminInvoiceDetailScreen({super.key, required this.bookingId});
 
-  // --- HELPERS ---
-
-  String _formatDateTime(String? dateStr) {
-    if (dateStr == null) return "";
+  String _formatDateTime(String value) {
     try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('dd/MM/yyyy HH:mm').format(date);
-    } catch (e) {
-      return dateStr;
+      return DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(value));
+    } catch (_) {
+      return value;
     }
   }
 
-  String _formatDate(String? dateStr) {
-    if (dateStr == null) return "";
+  String _formatDate(String value) {
     try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('dd/MM/yyyy').format(date);
-    } catch (e) {
-      return dateStr;
+      return DateFormat('dd/MM/yyyy').format(DateTime.parse(value));
+    } catch (_) {
+      return value;
     }
   }
 
-  String _formatPrice(double? price) {
-    if (price == null) return "0 ₫";
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
-    return currencyFormatter.format(price);
+  String _formatPrice(double amount) {
+    final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    return formatter.format(amount);
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACTIVE': return const Color(0xFF00C853);
-      case 'CHECKED': return const Color(0xFF2962FF);
-      case 'COMPLETED': return const Color(0xFF009688);
-      case 'PENDING_REFUND': return const Color(0xFFFF6D00);
-      case 'REFUNDED': return const Color(0xFFAA00FF);
-      case 'CANCELED': return const Color(0xFFD50000);
-      default: return Colors.grey;
+  String _paymentMethodLabel(String value) {
+    switch (value.trim().toUpperCase()) {
+      case 'VNPAY':
+        return 'VNPay';
+      case 'MOMO':
+        return 'MoMo';
+      case 'BANK_TRANSFER':
+        return 'Chuyển khoản ngân hàng';
+      case 'CASH':
+        return 'Tiền mặt';
+      default:
+        return value.trim().isEmpty ? 'Chưa cập nhật' : value;
     }
   }
 
-  String _getStatusText(String status) {
+  String _paymentStatusLabel(String value) {
+    switch (value.trim().toUpperCase()) {
+      case 'PAID':
+      case 'COMPLETED':
+      case 'PAID_AT_HOMESTAY':
+        return 'Đã thanh toán';
+      case 'PENDING':
+        return 'Chờ thanh toán';
+      case 'FAILED':
+        return 'Thất bại';
+      case 'REFUNDED':
+        return 'Đã hoàn tiền';
+      default:
+        return value.trim().isEmpty ? 'Chưa cập nhật' : value;
+    }
+  }
+
+  String _statusLabel(String status) {
     switch (status.toUpperCase()) {
-      case 'ACTIVE': return "Đang hoạt động";
-      case 'CHECKED': return "Đã check-in";
-      case 'COMPLETED': return "Đã hoàn thành";
-      case 'PENDING_REFUND': return "Chờ hoàn tiền";
-      case 'REFUNDED': return "Đã hoàn tiền";
-      case 'CANCELED': return "Đã hủy";
-      default: return status;
+      case 'ACTIVE':
+        return 'Đang hoạt động';
+      case 'CHECKED':
+        return 'Đã check-in';
+      case 'COMPLETED':
+        return 'Hoàn thành';
+      case 'PENDING_REFUND':
+        return 'Chờ hoàn tiền';
+      case 'REFUNDED':
+        return 'Đã hoàn tiền';
+      case 'CANCELED':
+      case 'CANCELLED':
+        return 'Đã hủy đơn';
+      default:
+        return status;
+    }
+  }
+
+  String _safeText(String value) {
+    return value.trim().isEmpty ? 'Chưa cập nhật' : value;
+  }
+
+  bool _isOverdue(String endDate) {
+    try {
+      return DateTime.now().isAfter(DateTime.parse(endDate));
+    } catch (_) {
+      return false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: const Color(0xFFF4F6F9),
       body: BlocProvider(
         create: (_) => di.sl<AdminInvoiceDetailBloc>()..add(LoadAdminInvoiceDetail(bookingId)),
         child: BlocBuilder<AdminInvoiceDetailBloc, AdminInvoiceDetailState>(
@@ -81,6 +114,7 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
             if (state is AdminInvoiceDetailLoading) {
               return const Center(child: CircularProgressIndicator(color: AppColors.primary));
             }
+
             if (state is AdminInvoiceDetailError) {
               return Center(
                 child: Padding(
@@ -88,58 +122,45 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 80, color: Colors.red[400]),
-                      const SizedBox(height: 24),
-                      Text(
-                        state.message,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                      ),
+                      Icon(Icons.error_outline, size: 72, color: Colors.red[400]),
                       const SizedBox(height: 16),
-                      Text(
-                        "Vui lòng kiểm tra lại mã QR hoặc liên hệ quản trị viên",
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
+                      Text(state.message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15)),
+                      const SizedBox(height: 16),
                       ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back),
-                        label: const Text("Quay lại"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        ),
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        label: const Text('Quay lại', style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
                 ),
               );
             }
+
             if (state is AdminInvoiceDetailLoaded) {
-              final d = state.detail;
-              bool isHotel = d.hotelId != null;
-
-              // --- LOGIC HIỂN THỊ LÝ DO HỦY ---
-              final showCancellationReason = ["PENDING_REFUND", "REFUNDED", "CANCELLED"].contains(d.status.toUpperCase()) &&
-                  d.cancellationReason != null &&
-                  d.cancellationReason!.isNotEmpty;
-
-              // --- SỬ DỤNG COLUMN ĐỂ CHIA MÀN HÌNH: TRÊN LÀ LIST, DƯỚI LÀ NÚT ---
+              final detail = state.detail;
+              final isHotel = detail.hotelId != null;
               return Column(
                 children: [
-                  // Phần 1: Nội dung cuộn (Chiếm hết khoảng trống còn lại)
                   Expanded(
                     child: CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
                       slivers: [
-                        // --- HEADER ---
                         SliverAppBar(
-                          expandedHeight: 200.0,
+                          expandedHeight: 180,
                           pinned: true,
                           backgroundColor: AppColors.primary,
-                          leading: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-                            onPressed: () => Navigator.pop(context),
+                          elevation: 0,
+                          leading: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CircleAvatar(
+                              backgroundColor: Colors.black.withOpacity(0.15),
+                              child: IconButton(
+                                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
                           ),
                           flexibleSpace: FlexibleSpaceBar(
                             background: Container(
@@ -149,7 +170,7 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
                                   end: Alignment.bottomRight,
                                   colors: [
                                     AppColors.primary,
-                                    Color.lerp(AppColors.primary, Colors.black, 0.2)!,
+                                    Color.lerp(AppColors.primary, Colors.black, 0.25)!,
                                   ],
                                 ),
                               ),
@@ -158,24 +179,31 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
                                 children: [
                                   const SizedBox(height: 40),
                                   Text(
-                                    "TỔNG THANH TOÁN",
-                                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, letterSpacing: 1.5, fontWeight: FontWeight.w600),
+                                    detail.taxAmount > 0
+                                        ? _formatPrice(detail.totalWithTax)
+                                        : _formatPrice(detail.finalPrice),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _formatPrice(d.finalPrice),
-                                    style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 10),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      _getStatusText(d.status).toUpperCase(),
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                      _statusLabel(detail.status).toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        letterSpacing: 0.5,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -183,39 +211,34 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-
-                        // --- BODY ---
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(16),
                             child: Column(
                               children: [
-                                _buildInvoiceIdCard(d.invoiceNumber),
+                                _buildInvoiceCard(detail),
+                                const SizedBox(height: 12),
+                                if (detail.cancellationReason?.isNotEmpty == true)
+                                  _buildWarningCard(detail),
+                                _buildSectionTitle('DỊCH VỤ ĐẶT'),
+                                _buildServiceCard(detail, isHotel),
                                 const SizedBox(height: 16),
-
-                                if (showCancellationReason)
-                                  _buildWarningCard(d.cancellationReason!),
-
-                                _buildSectionTitle("DỊCH VỤ"),
-                                _buildServiceCard(d, isHotel),
+                                _buildSectionTitle('THÔNG TIN KHÁCH HÀNG'),
+                                _buildCustomerCard(detail),
+                                const SizedBox(height: 16),
+                                _buildSectionTitle('CHI TIẾT THANH TOÁN'),
+                                _buildPaymentCard(detail),
                                 const SizedBox(height: 20),
-
-                                _buildSectionTitle("KHÁCH HÀNG"),
-                                _buildCustomerCard(d),
-                                const SizedBox(height: 20),
-
-                                _buildSectionTitle("CHI TIẾT THANH TOÁN"),
-                                _buildPaymentCard(d),
-                                const SizedBox(height: 24),
-
-                                Column(
-                                  children: [
-                                    Text("Tạo lúc: ${_formatDateTime(d.createdAt)}", style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                                    const SizedBox(height: 4),
-                                    Text("Cập nhật: ${_formatDateTime(d.updatedAt)}", style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                                  ],
+                                Text(
+                                  'Ngày tạo đơn: ${_formatDateTime(detail.createdAt)}',
+                                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                                 ),
-                                const SizedBox(height: 20), // Khoảng cách cuối cùng
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Cập nhật cuối: ${_formatDateTime(detail.updatedAt)}',
+                                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                                ),
+                                const SizedBox(height: 24),
                               ],
                             ),
                           ),
@@ -223,36 +246,284 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // Phần 2: Thanh nút bấm chức năng (Nằm cố định ở đáy)
-                  _buildBottomBar(context, d),
+                  _buildBottomBar(context, detail),
                 ],
               );
             }
-            return const SizedBox();
+
+            return const SizedBox.shrink();
           },
         ),
       ),
     );
   }
 
-  bool _isOverdue(String? endDateStr) {
-    if (endDateStr == null) return false;
-    try {
-      final endDate = DateTime.parse(endDateStr);
-      final now = DateTime.now();
-      // So sánh: Nếu hiện tại sau ngày kết thúc -> Quá hạn
-      return now.isAfter(endDate);
-      // Lưu ý: Nếu muốn tính hết ngày mới quá hạn thì dùng: endDate.add(Duration(days: 1))
-    } catch (e) {
-      return false;
-    }
+  Widget _buildInvoiceCard(AdminInvoiceDetail detail) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Mã đơn đặt phòng', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+          SelectableText(
+            detail.invoiceNumber,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
+          ),
+        ],
+      ),
+    );
   }
 
+  Widget _buildServiceCard(AdminInvoiceDetail detail, bool isHotel) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isHotel ? Colors.blue[50] : Colors.orange[50],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isHotel ? Icons.holiday_village_outlined : Icons.tour_outlined,
+                  color: isHotel ? Colors.blue : Colors.orange,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      detail.serviceName,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                    if (detail.roomTypeName?.isNotEmpty == true) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        detail.roomTypeName!,
+                        style: TextStyle(fontSize: 13, color: Colors.grey[700], fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildInfoColumn(Icons.calendar_today_rounded, 'Nhận phòng', _formatDate(detail.startDate)),
+              ),
+              Container(width: 1, height: 28, color: Colors.grey[200]),
+              Expanded(
+                child: _buildInfoColumn(Icons.event_available_rounded, 'Trả phòng', _formatDate(detail.endDate)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildIconText(Icons.people_alt_rounded, '${detail.numberOfPeople} Khách'),
+                if ((detail.numberOfRooms ?? 0) > 0)
+                  _buildIconText(Icons.door_front_door_rounded, 'Số phòng: ${detail.numberOfRooms}'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildCustomerCard(AdminInvoiceDetail detail) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.primary.withOpacity(0.1),
+                child: Text(
+                  detail.customerName.isNotEmpty ? detail.customerName[0].toUpperCase() : 'K',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _safeText(detail.customerName),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _safeText(detail.customerEmail),
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildDetailRow(Icons.phone_iphone_rounded, 'Số điện thoại liên hệ', _safeText(detail.customerPhone)),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(height: 16)),
+          _buildDetailRow(
+            Icons.sticky_note_2_outlined,
+            'Yêu cầu đặc biệt từ khách hàng',
+            detail.specialRequests?.trim().isNotEmpty == true
+                ? detail.specialRequests!
+                : 'Không có yêu cầu đặc biệt',
+          ),
+        ],
+      ),
+    );
+  }
 
-  Widget _buildBottomBar(BuildContext context, AdminInvoiceDetail d) {
-    // 1. Lấy role hiện tại từ AuthBloc
+  Widget _buildPaymentCard(AdminInvoiceDetail detail) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        children: [
+          _buildPriceRow('Tổng tiền dịch vụ gốc', _formatPrice(detail.totalPrice)),
+          if (detail.discountAmount > 0)
+            _buildPriceRow('Giảm giá / Voucher áp dụng', '- ${_formatPrice(detail.discountAmount)}', color: Colors.green),
+          if (detail.taxAmount > 0)
+            _buildPriceRow(
+              'Thuế phí (${detail.taxRate.toStringAsFixed(0)}%)',
+              '+ ${_formatPrice(detail.taxAmount)}',
+            ),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(height: 16, thickness: 1)),
+          if (detail.taxAmount > 0)
+            _buildPriceRow('Tạm tính doanh thu', _formatPrice(detail.finalPrice)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Tổng số tiền thu', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              Text(
+                _formatPrice(detail.taxAmount > 0 ? detail.totalWithTax : detail.finalPrice),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: const Color(0xFFF8F9FA), borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.payment_outlined, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Trạng thái: ${_paymentStatusLabel(detail.paymentStatus)}',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 13),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.account_balance_wallet_outlined, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Hình thức: ${_paymentMethodLabel(detail.paymentMethod)}',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 13),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWarningCard(AdminInvoiceDetail detail) {
+    final refundLines = <String>[
+      if (detail.refundBankName?.isNotEmpty == true) 'Ngân hàng: ${detail.refundBankName}',
+      if (detail.refundBankBranch?.isNotEmpty == true) 'Chi nhánh: ${detail.refundBankBranch}',
+      if (detail.refundAccountNumber?.isNotEmpty == true) 'Số tài khoản: ${detail.refundAccountNumber}',
+      if (detail.refundAccountHolder?.isNotEmpty == true) 'Chủ tài khoản: ${detail.refundAccountHolder}',
+    ];
+
+    final content = [
+      detail.cancellationReason ?? '',
+      if (refundLines.isNotEmpty) refundLines.join('\n'),
+    ].where((e) => e.trim().isNotEmpty).join('\n\n');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.red.withOpacity(0.15)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, color: Colors.red[700], size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ghi chú bổ sung / Lý do hủy đơn',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red[800], fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Text(content, style: TextStyle(color: Colors.red[900], fontSize: 13, height: 1.4)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(BuildContext context, AdminInvoiceDetail detail) {
     final authState = context.read<AuthBloc>().state;
     String? currentRole;
 
@@ -260,301 +531,162 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
       currentRole = authState.response.role;
     } else if (authState is AdminAuthenticated) {
       currentRole = authState.role;
+    } else if (authState is HostAuthenticated) {
+      currentRole = authState.role;
     }
 
-    // Nếu không có role → ẩn hết nút (an toàn)
     if (currentRole == null) {
       return const SizedBox.shrink();
     }
 
-    // Phân quyền
-    final bool isRootAdmin = currentRole == "ADMIN";
-    final bool isHotelAdmin = currentRole == "ADMINHOTEL";
-    final bool isTourAdmin = currentRole == "ADMINTOUR";
-    final bool isAuthorizedAdmin = isHotelAdmin || isTourAdmin; // adminhotel hoặc admintour
+    final bool isRootAdmin = currentRole == 'ADMIN';
+    final bool isHotelAdmin = currentRole == 'ADMINHOTEL' || currentRole == 'HOST';
+    final bool isTourAdmin = currentRole == 'ADMINTOUR';
+    final bool canManage = isHotelAdmin || isTourAdmin;
+    final status = detail.status.toUpperCase();
+    final isOverdue = _isOverdue(detail.endDate);
 
-    // Logic ngày quá hạn
-    bool isOverdue = false;
-    try {
-      final endDate = DateTime.parse(d.endDate);
-      final now = DateTime.now();
-      if (now.isAfter(endDate)) isOverdue = true;
-    } catch (e) {
-      isOverdue = false;
-    }
-
-    final status = d.status.toUpperCase();
-
-    // Logic hiển thị nút theo trạng thái đơn
-    bool baseCheckIn = status == 'ACTIVE';
-    bool baseCheckOut = status == 'CHECKED';
-    bool baseRefund = status == 'PENDING_REFUND';
-    bool baseCancel = status == 'ACTIVE' && isOverdue;
-
-    // Áp dụng phân quyền
-    bool showCheckIn = baseCheckIn && isAuthorizedAdmin;
-    bool showCheckOut = baseCheckOut && isAuthorizedAdmin;
-    bool showRefund = baseRefund && isAuthorizedAdmin;
-    bool showCancel = baseCancel && (isRootAdmin || isAuthorizedAdmin); // root admin cũng được hủy
+    final showCheckIn = status == 'ACTIVE' && canManage;
+    final showCheckOut = status == 'CHECKED' && canManage;
+    final showRefund = status == 'PENDING_REFUND' && (isRootAdmin || canManage);
+    final showCancel = status == 'ACTIVE' && isOverdue && (isRootAdmin || canManage);
 
     if (!showCheckIn && !showCheckOut && !showRefund && !showCancel) {
       return const SizedBox.shrink();
     }
 
-    // Helper confirm dialog
-    Future<bool> _confirm(String title, String content) async {
-      final result = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Hủy")),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text("Xác nhận", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      );
-      return result ?? false;
-    }
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      color: Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, -2))],
+      ),
       child: SafeArea(
         top: false,
         child: Row(
           children: [
-            // DUYỆT HOÀN TIỀN - chỉ adminhotel/admintour
             if (showRefund)
               Expanded(
                 child: _buildActionButton(
-                  label: "Duyệt hoàn tiền",
-                  icon: Icons.price_check,
-                  color: Colors.orange,
+                  label: 'Duyệt hoàn tiền',
+                  icon: Icons.price_check_outlined,
+                  color: Colors.orange.shade700,
                   onPressed: () async {
-                    final confirm = await _confirm("Duyệt hoàn tiền", "Bạn chắc chắn muốn duyệt hoàn tiền cho đơn hàng này?");
-                    if (!confirm) return;
+                    final ok = await _confirm(
+                      context,
+                      'Duyệt hoàn tiền',
+                      'Bạn có chắc chắn muốn duyệt hoàn trả tiền cho đơn hàng này?',
+                    );
+                    if (!ok) return;
+                    if (!context.mounted) return;
 
                     try {
-                      await di.sl<AdminApproveRefundUseCase>()(bookingId: d.bookingId);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Duyệt hoàn tiền thành công!"), backgroundColor: Colors.green),
-                      );
-                      context.read<AdminInvoiceDetailBloc>().add(LoadAdminInvoiceDetail(d.bookingId));
+                      await di.sl<AdminApproveRefundUseCase>()(bookingId: detail.bookingId);
+                      if (!context.mounted) return;
+                      _reloadWithMessage(context, detail.bookingId, 'Duyệt hoàn tiền thành công');
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Lỗi: $e"), backgroundColor: Colors.red),
-                      );
+                      if (!context.mounted) return;
+                      _showError(context, e);
                     }
                   },
                 ),
               ),
-
             if (showRefund && (showCheckOut || showCheckIn || showCancel)) const SizedBox(width: 12),
-
-            // CHECK-OUT - chỉ adminhotel/admintour
             if (showCheckOut)
               Expanded(
                 child: _buildActionButton(
-                  label: "Check-out",
-                  icon: Icons.logout,
+                  label: 'Check-out',
+                  icon: Icons.logout_outlined,
                   color: Colors.teal,
                   onPressed: () async {
-                    final confirm = await _confirm("Check-out", "Xác nhận khách đã trả phòng và hoàn tất đơn hàng?");
-                    if (!confirm) return;
+                    final ok = await _confirm(
+                      context,
+                      'Xác nhận trả phòng',
+                      'Xác nhận khách hàng đã trả phòng và tiến hành hoàn tất hóa đơn này?',
+                    );
+                    if (!ok) return;
+                    if (!context.mounted) return;
 
                     try {
-                      await di.sl<AdminCheckOutUseCase>()(bookingId: d.bookingId);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Check-out thành công!"), backgroundColor: Colors.green),
-                      );
-                      context.read<AdminInvoiceDetailBloc>().add(LoadAdminInvoiceDetail(d.bookingId));
+                      await di.sl<AdminCheckOutUseCase>()(bookingId: detail.bookingId);
+                      if (!context.mounted) return;
+                      _reloadWithMessage(context, detail.bookingId, 'Check-out hoàn tất thành công');
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Lỗi: $e"), backgroundColor: Colors.red),
-                      );
+                      if (!context.mounted) return;
+                      _showError(context, e);
                     }
                   },
                 ),
               ),
-
             if (showCheckOut && (showCheckIn || showCancel)) const SizedBox(width: 12),
-
-            // CHECK-IN - chỉ adminhotel/admintour
             if (showCheckIn)
               Expanded(
                 child: _buildActionButton(
-                  label: "Check-in",
-                  icon: Icons.login,
-                  color: Colors.blue,
+                  label: 'Check-in',
+                  icon: Icons.login_outlined,
+                  color: Colors.blue.shade700,
                   onPressed: () async {
-                    // Phân biệt Hotel hay Tour
-                    final isHotel = d.hotelId != null;
+                    int? rooms;
+                    if (detail.hotelId != null) {
+                      rooms = await _askRoomCount(context);
+                      if (rooms == null) return;
+                      if (!context.mounted) return;
+                    }
 
-                    if (isHotel) {
-                      // Hotel: nhập số phòng bằng TextField
-                      final roomsCtrl = TextEditingController();
-                      final selectedRoomsStr = await showDialog<String>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text("Check-in: Nhập số phòng"),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text("Số phòng khách đã nhận:"),
-                              const SizedBox(height: 8),
-                              TextField(
-                                controller: roomsCtrl,
-                                keyboardType: TextInputType.number,
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                  hintText: "Ví dụ: 2",
-                                  filled: true,
-                                  fillColor: Colors.grey[100],
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy")),
-                            TextButton(
-                              onPressed: () {
-                                final text = roomsCtrl.text.trim();
-                                if (text.isEmpty) {
-                                  ScaffoldMessenger.of(ctx).showSnackBar(
-                                    const SnackBar(content: Text("Vui lòng nhập số phòng")),
-                                  );
-                                } else {
-                                  Navigator.pop(ctx, text);
-                                }
-                              },
-                              child: const Text("Xác nhận"),
-                            ),
-                          ],
-                        ),
+                    final ok = await _confirm(
+                      context,
+                      'Xác nhận nhận phòng',
+                      detail.hotelId != null
+                          ? 'Xác nhận thực hiện Check-in với $rooms phòng đã bàn giao?'
+                          : 'Xác nhận khách đã có mặt đầy đủ để bắt đầu lịch trình tour?',
+                    );
+                    if (!ok) return;
+                    if (!context.mounted) return;
+
+                    try {
+                      await di.sl<AdminCheckInUseCase>()(
+                        bookingId: detail.bookingId,
+                        numberOfRooms: rooms,
                       );
-
-                      if (selectedRoomsStr == null) return;
-
-                      final selectedRooms = int.tryParse(selectedRoomsStr);
-                      if (selectedRooms == null || selectedRooms <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Số phòng phải là số nguyên dương")),
-                        );
-                        return;
-                      }
-
-                      final confirm = await _confirm(
-                        "Check-in",
-                        "Check-in phòng $selectedRooms cho khách?",
-                      );
-                      if (!confirm) return;
-
-                      try {
-                        await di.sl<AdminCheckInUseCase>()(
-                          bookingId: d.bookingId,
-                          numberOfRooms: selectedRooms,
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Check-in thành công!"), backgroundColor: Colors.green),
-                        );
-                        context.read<AdminInvoiceDetailBloc>().add(LoadAdminInvoiceDetail(d.bookingId));
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Lỗi: $e"), backgroundColor: Colors.red),
-                        );
-                      }
-                    } else {
-                      // Tour: bấm là check-in luôn
-                      final confirm = await _confirm(
-                        "Check-in",
-                        "Xác nhận khách đã có mặt và bắt đầu tour?",
-                      );
-                      if (!confirm) return;
-
-                      try {
-                        await di.sl<AdminCheckInUseCase>()(bookingId: d.bookingId);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Check-in thành công!"), backgroundColor: Colors.green),
-                        );
-                        context.read<AdminInvoiceDetailBloc>().add(LoadAdminInvoiceDetail(d.bookingId));
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Lỗi: $e"), backgroundColor: Colors.red),
-                        );
-                      }
+                      if (!context.mounted) return;
+                      _reloadWithMessage(context, detail.bookingId, 'Check-in phòng thành công');
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      _showError(context, e);
                     }
                   },
                 ),
               ),
-
             if (showCheckIn && showCancel) const SizedBox(width: 12),
-
-            // HỦY ĐƠN - root admin + adminhotel + admintour
             if (showCancel)
               Expanded(
                 child: _buildActionButton(
-                  label: "Hủy đơn",
-                  icon: Icons.cancel_presentation,
-                  color: Colors.red,
-                  isOutlined: showCheckIn || showCheckOut || showRefund,
+                  label: 'Hủy đơn',
+                  icon: Icons.cancel_presentation_outlined,
+                  color: Colors.red.shade700,
                   onPressed: () async {
-                    final reasonCtrl = TextEditingController();
-                    final reason = await showDialog<String>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text("Lý do hủy đơn"),
-                        content: TextField(
-                          controller: reasonCtrl,
-                          maxLines: 3,
-                          decoration: const InputDecoration(
-                            hintText: "Ví dụ: khách không đến đúng giờ, yêu cầu hủy...",
-                          ),
-                        ),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy")),
-                          TextButton(
-                            onPressed: () {
-                              final text = reasonCtrl.text.trim();
-                              if (text.isEmpty) {
-                                ScaffoldMessenger.of(ctx).showSnackBar(
-                                  const SnackBar(content: Text("Vui lòng nhập lý do")),
-                                );
-                              } else {
-                                Navigator.pop(ctx, text);
-                              }
-                            },
-                            child: const Text("Gửi"),
-                          ),
-                        ],
-                      ),
-                    );
-
+                    final reason = await _askCancelReason(context);
                     if (reason == null || reason.isEmpty) return;
+                    if (!context.mounted) return;
 
-                    final confirm = await _confirm(
-                      "Hủy đơn hàng",
-                      "Bạn chắc chắn muốn hủy đơn này?\nLý do: $reason",
+                    final ok = await _confirm(
+                      context,
+                      'Hủy đơn hàng hệ thống',
+                      'Bạn chắc chắn muốn thực hiện hủy đơn đặt phòng này?\nLý do: $reason',
                     );
-                    if (!confirm) return;
+                    if (!ok) return;
+                    if (!context.mounted) return;
 
                     try {
                       await di.sl<AdminCancelOrderUseCase>()(
-                        bookingId: d.bookingId,
+                        bookingId: detail.bookingId,
                         cancelMessage: reason,
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Hủy đơn thành công!"), backgroundColor: Colors.green),
-                      );
-                      context.read<AdminInvoiceDetailBloc>().add(LoadAdminInvoiceDetail(d.bookingId));
+                      if (!context.mounted) return;
+                      _reloadWithMessage(context, detail.bookingId, 'Hủy đơn hàng thành công');
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Lỗi: $e"), backgroundColor: Colors.red),
-                      );
+                      if (!context.mounted) return;
+                      _showError(context, e);
                     }
                   },
                 ),
@@ -565,44 +697,151 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
     );
   }
 
-  // Widget vẽ nút (Giữ nguyên, nhưng thêm shadow đậm hơn chút cho nổi)
+  Future<bool> _confirm(BuildContext context, String title, String content) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xác nhận', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  Future<int?> _askRoomCount(BuildContext context) async {
+    final controller = TextEditingController();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Nhập số lượng phòng'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Ví dụ: 2',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Hủy', style: TextStyle(color: Colors.grey[600]))),
+          TextButton(
+            onPressed: () {
+              final value = int.tryParse(controller.text.trim());
+              if (value == null || value <= 0) {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(content: Text('Số phòng nhập vào không hợp lệ')),
+                );
+                return;
+              }
+              Navigator.pop(ctx, value);
+            },
+            child: const Text('Xác nhận', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return result;
+  }
+
+  Future<String?> _askCancelReason(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Lý do hủy đơn hàng'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            hintText: 'Nhập lý do chi tiết hủy đơn...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Hủy', style: TextStyle(color: Colors.grey[600]))),
+          TextButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isEmpty) {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(content: Text('Vui lòng nhập lý do cụ thể')),
+                );
+                return;
+              }
+              Navigator.pop(ctx, text);
+            },
+            child: const Text('Gửi duyệt', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _reloadWithMessage(BuildContext context, int bookingId, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
+    );
+    context.read<AdminInvoiceDetailBloc>().add(LoadAdminInvoiceDetail(bookingId));
+  }
+
+  void _showError(BuildContext context, Object error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Có lỗi xảy ra: $error'), backgroundColor: Colors.red),
+    );
+  }
+
   Widget _buildActionButton({
     required String label,
     required IconData icon,
     required Color color,
     required VoidCallback onPressed,
-    bool isOutlined = false,
   }) {
     return Container(
-      // Thêm shadow riêng cho từng nút để tạo cảm giác nổi 3D trên nền xám
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 12,
+            color: color.withOpacity(0.2),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: isOutlined ? Colors.white : color,
-          foregroundColor: isOutlined ? color : Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16), // Nút cao hơn chút cho dễ bấm
-          elevation: 0, // Tắt shadow mặc định của button để dùng shadow custom bên trên (hoặc để 0 cho phẳng)
-          side: isOutlined ? BorderSide(color: color, width: 2) : BorderSide.none,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         onPressed: onPressed,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 22),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Icon(icon, size: 20),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.3),
+              ),
             ),
           ],
         ),
@@ -610,266 +849,16 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
     );
   }
 
-  // --- COMPONENTS ---
-
   Widget _buildSectionTitle(String title) {
     return Container(
       alignment: Alignment.centerLeft,
-      margin: const EdgeInsets.only(bottom: 12, left: 4),
+      margin: const EdgeInsets.only(bottom: 10, top: 12, left: 4),
       child: Text(
         title,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600], letterSpacing: 1.2),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600], letterSpacing: 1.1),
       ),
     );
   }
-
-  Widget _buildInvoiceIdCard(String invoiceNumber) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text("Mã đơn hàng", style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500)),
-          SelectableText(
-            invoiceNumber,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildServiceCard(dynamic d, bool isHotel) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isHotel ? Colors.blue[50] : Colors.orange[50],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    isHotel ? Icons.cottage_outlined : Icons.tour_rounded,
-                    color: isHotel ? Colors.blue : Colors.orange,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        d.serviceName ?? "Dịch vụ không tên",
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF263238)),
-                      ),
-                      if (d.roomTypeName != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            d.roomTypeName!,
-                            style: TextStyle(fontSize: 14, color: Colors.grey[700], fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(child: _buildInfoColumn(Icons.calendar_today_rounded, "Check-in", _formatDate(d.startDate))),
-                Container(width: 1, height: 30, color: Colors.grey[200]),
-                Expanded(child: _buildInfoColumn(Icons.event_available_rounded, "Check-out", _formatDate(d.endDate))),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(12)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildIconText(Icons.people_alt_rounded, "${d.numberOfPeople ?? 1} Khách"),
-                  if (d.numberOfRooms != 0)
-                    _buildIconText(Icons.door_front_door_rounded, "Phòng số: ${d.numberOfRooms}"),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCustomerCard(dynamic d) {
-    // Logic kiểm tra yêu cầu đặc biệt
-    final bool hasSpecialRequest = d.specialRequests != null && d.specialRequests!.isNotEmpty;
-    final String requestText = hasSpecialRequest ? d.specialRequests! : "Không có yêu cầu đặc biệt";
-    final Color requestColor = hasSpecialRequest ? Colors.black87 : Colors.grey;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.primary.withOpacity(0.1),
-                child: Text(
-                  (d.customerName != null && d.customerName.isNotEmpty) ? d.customerName![0].toUpperCase() : "K",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(d.customerName ?? "Không rõ tên", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-                    const SizedBox(height: 4),
-                    Text(d.customerEmail ?? "Không có email", style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildDetailRow(Icons.phone_iphone_rounded, "Số điện thoại", d.customerPhone ?? "N/A"),
-
-          // --- LUÔN HIỂN THỊ DÒNG NÀY ---
-          const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider()),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.notes_rounded, size: 20, color: hasSpecialRequest ? Colors.orange[400] : Colors.grey[400]),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Yêu cầu khách hàng:", style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                    const SizedBox(height: 4),
-                    Text(
-                      requestText,
-                      style: TextStyle(
-                          fontStyle: hasSpecialRequest ? FontStyle.italic : FontStyle.normal,
-                          color: requestColor,
-                          fontSize: 14
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentCard(dynamic d) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
-      ),
-      child: Column(
-        children: [
-          _buildPriceRow("Tổng tiền dịch vụ", _formatPrice(d.totalPrice)),
-          if ((d.discountAmount ?? 0) > 0)
-            _buildPriceRow("Giảm giá / Voucher", "- ${_formatPrice(d.discountAmount)}", color: Colors.green),
-          if ((d.taxAmount ?? 0) > 0)
-            _buildPriceRow("Thuế & Phí", "+ ${_formatPrice(d.taxAmount)}"),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider(thickness: 1)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Thực thu", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(_formatPrice(d.finalPrice), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.payment, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 8),
-                Text(
-                    "Thanh toán: ${d.paymentStatus ?? 'N/A'}",
-                    style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 13)
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWarningCard(String reason) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline_rounded, color: Colors.red[700]),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Ghi chú / Lý do hủy", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red[800], fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(reason, style: TextStyle(color: Colors.red[900], fontSize: 14, height: 1.4)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Helpers UI nhỏ ---
 
   Widget _buildInfoColumn(IconData icon, String label, String value) {
     return Column(
@@ -877,12 +866,12 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: Colors.grey),
+            Icon(icon, size: 13, color: Colors.grey.shade500),
             const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
       ],
     );
@@ -891,24 +880,26 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
   Widget _buildIconText(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: Colors.blueGrey),
-        const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.blueGrey)),
+        Icon(icon, size: 18, color: Colors.blueGrey.shade600),
+        const SizedBox(width: 6),
+        Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.blueGrey.shade700)),
       ],
     );
   }
 
   Widget _buildDetailRow(IconData icon, String label, String value) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: Colors.grey[400]),
+        Icon(icon, size: 18, color: Colors.grey[400]),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-              Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87)),
             ],
           ),
         ),
@@ -922,8 +913,8 @@ class AdminInvoiceDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-          Text(price, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: color ?? Colors.black87)),
+          Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          Text(price, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color ?? Colors.black87)),
         ],
       ),
     );

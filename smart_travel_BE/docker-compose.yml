@@ -1,18 +1,30 @@
 version: '3.8'
 services:
-  mysql:
-    image: mysql:8.0.41-debian
-    container_name: smart-travel-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: smart_travel_db
+#  mysql:
+#    image: mysql:8.0.41-debian
+#    container_name: smart-travel-mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: tuan19042004
+#      MYSQL_DATABASE: smart_travel_db
+#    ports:
+#      - "3306:3306"
+#    volumes:
+#      - smart-travel-mysql-data:/var/lib/mysql
+#    networks:
+#      - smart-travel-network
+
+  smart-travel-backend:
+    build: .
+    container_name: smart-travel-backend
+    restart: always
     ports:
-      - "3306:3306"
+      - "8080:8080"
+    env_file:
+      - .env
     volumes:
-      - smart-travel-mysql-data:/var/lib/mysql
+      - /home/tuan/spring-app/uploads:/app/uploads
     networks:
       - smart-travel-network
-
 
 volumes:
   smart-travel-mysql-data:
@@ -20,4 +32,3 @@ volumes:
 networks:
   smart-travel-network:
     driver: bridge
-

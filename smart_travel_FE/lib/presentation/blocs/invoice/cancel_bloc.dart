@@ -13,7 +13,14 @@ class CancelBloc extends Bloc<CancelEvent, CancelState> {
     on<SubmitCancelRequest>((event, emit) async {
       emit(CancelLoading());
       try {
-        await cancelUseCase(bookingId: event.bookingId, reason: event.reason);
+        await cancelUseCase(
+          bookingId: event.bookingId,
+          reason: event.reason,
+          refundBankName: event.refundBankName,
+          refundBankBranch: event.refundBankBranch,
+          refundAccountNumber: event.refundAccountNumber,
+          refundAccountHolder: event.refundAccountHolder,
+        );
         emit(CancelSuccess());
       } catch (e) {
         emit(CancelError(e.toString()));

@@ -225,6 +225,7 @@ class MyInvoicesScreen extends StatelessWidget {
                                             endDate: invoice.endDate,
                                             nights: invoice.nights,
                                             status: invoice.status,
+                                            paymentMethod: invoice.paymentMethod,
                                             reviewed: invoice.reviewed,
                                           ),
                                         );

@@ -7,4 +7,15 @@ abstract class FinanceEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class GetFinanceSummaryEvent extends FinanceEvent {}
+class GetFinanceSummaryEvent extends FinanceEvent {
+  final int? year;
+  final int? month;
+
+  const GetFinanceSummaryEvent({
+    this.year,
+    this.month,
+  });
+
+  @override
+  List<Object?> get props => [year, month];
+}

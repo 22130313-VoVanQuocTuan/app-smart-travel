@@ -38,12 +38,20 @@ public class BookingResponse {
     private BigDecimal discountAmount;
     private String couponCode;
     private BigDecimal finalPrice;
+    private BigDecimal taxRate;
+    private BigDecimal taxAmount;
+    private BigDecimal totalWithTax;
 
     // Trạng thái
     private String status;
     private String message;
     private LocalDateTime createdAt;
     private  String cancellationReason;
+    private String paymentStatus;
+    private String paymentMethod;
+    private String customerName;
+    private String customerPhone;
+    private String customerEmail;
 
     @Data
     @Builder

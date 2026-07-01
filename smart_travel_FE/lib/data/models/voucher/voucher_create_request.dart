@@ -4,6 +4,7 @@ class VoucherCreateRequest {
   final String expiryDate;
   final bool isActive;
   final int usageLimit;
+  final int pointsRequired;
 
   VoucherCreateRequest({
     required this.code,
@@ -11,6 +12,7 @@ class VoucherCreateRequest {
     required this.expiryDate,
     required this.isActive,
     required this.usageLimit,
+    required this.pointsRequired,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +22,7 @@ class VoucherCreateRequest {
       'expiryDate': expiryDate,
       'isActive': isActive,
       'usageLimit': usageLimit,
+      'pointsRequired': pointsRequired,
     };
   }
 }

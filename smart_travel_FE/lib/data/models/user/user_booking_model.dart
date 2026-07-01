@@ -15,8 +15,13 @@ class UserBooking extends Equatable {
   final double totalPrice;
   final double discountAmount;
   final double finalPrice;
+  final double taxRate;
+  final double taxAmount;
+  final double totalWithTax;
   final String status;
   final String? cancellationReason;
+  final String? paymentStatus;
+  final String? paymentMethod;
   final String hotelAddress;
   final String hotelPhone;
   final String? qrCode;
@@ -38,8 +43,13 @@ class UserBooking extends Equatable {
     required this.totalPrice,
     required this.discountAmount,
     required this.finalPrice,
+    required this.taxRate,
+    required this.taxAmount,
+    required this.totalWithTax,
     required this.status,
     this.cancellationReason,
+    this.paymentStatus,
+    this.paymentMethod,
     required this.hotelAddress,
     required this.hotelPhone,
     this.qrCode,
@@ -63,8 +73,13 @@ class UserBooking extends Equatable {
       totalPrice: (json['totalPrice'] ?? 0).toDouble(),
       discountAmount: (json['discountAmount'] ?? 0).toDouble(),
       finalPrice: (json['finalPrice'] ?? 0).toDouble(),
+      taxRate: (json['taxRate'] ?? 0).toDouble(),
+      taxAmount: (json['taxAmount'] ?? 0).toDouble(),
+      totalWithTax: (json['totalWithTax'] ?? 0).toDouble(),
       status: json['status'] ?? 'PENDING',
       cancellationReason: json['cancellationReason'],
+      paymentStatus: json['paymentStatus'] as String?,
+      paymentMethod: json['paymentMethod'] as String?,
       hotelAddress: json['hotelAddress'] ?? '',
       hotelPhone: json['hotelPhone'] ?? '',
       qrCode: json['qrCode'],
@@ -74,11 +89,28 @@ class UserBooking extends Equatable {
     );
   }
 
-  bool get isActive => status == 'PENDING' || status == 'CONFIRMED';
-  bool get isPast => status == 'COMPLETED' || status == 'CANCELLED' || endDate.isBefore(DateTime.now());
-  bool get canCancel => status == 'PENDING' || status == 'CONFIRMED';
+  bool get isActive =>
+      status == 'PENDING' ||
+      status == 'CONFIRMED' ||
+      status == 'ACTIVE' ||
+      status == 'CHECKED_IN' ||
+      status == 'CHECKED_OUT';
+  bool get isPast {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return status == 'COMPLETED' ||
+        status == 'CANCELED' ||
+        status == 'CANCELLED' ||
+        status == 'PENDING_REFUND' ||
+        status == 'REFUNDED' ||
+        endDate.isBefore(today);
+  }
+  bool get isCurrentBooking => !isHistoryBooking;
+  bool get isHistoryBooking => isPast;
+  bool get canCancel =>
+      status == 'PENDING' || status == 'CONFIRMED' || status == 'ACTIVE';
   bool get canReview => status == 'COMPLETED';
 
   @override
-  List<Object?> get props => [id, status];
+  List<Object?> get props => [id, status, paymentStatus, paymentMethod];
 }

@@ -229,6 +229,7 @@ class _VoucherManagementScreenState extends State<VoucherManagementScreen> {
                                 ),
                               ),
                               Text("Số lượng: ${voucher.usageLimit}", style: const TextStyle(fontSize: 12)),
+                              Text("Đổi: ${voucher.pointsRequired} điểm", style: const TextStyle(fontSize: 12)),
                             ],
                           ),
                           trailing: Row(

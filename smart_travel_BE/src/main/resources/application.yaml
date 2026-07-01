@@ -24,8 +24,8 @@ spring:
       max-request-size: 20MB
 
   mail:
-    host: smtp.gmail.com
-    port: 587
+    host: smtp-relay.brevo.com
+    port: 2525
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
@@ -34,6 +34,10 @@ spring:
           auth: true
           starttls:
             enable: true
+  app:
+    mail:
+      from: tuansdev@gmail.com
+
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
@@ -52,3 +56,8 @@ cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME}
   api-key: ${CLOUDINARY_API_KEY}
   api-secret: ${CLOUDINARY_API_SECRET}
+
+app:
+  notifications:
+    refund:
+      admin-emails: ${REFUND_ADMIN_EMAILS:}

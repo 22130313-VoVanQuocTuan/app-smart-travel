@@ -49,7 +49,7 @@ public class PaymentService {
         // 2. Tạo payment
         Payment payment = new Payment();
         payment.setBooking(booking);
-        payment.setAmount(calculateTotalAmount(request));
+        payment.setAmount(resolveBookingTotalWithTax(booking));
         payment.setPaymentMethod(request.getPaymentMethod().toUpperCase());
         payment.setStatus("PENDING");
         payment.setCreatedAt(LocalDateTime.now());
@@ -181,6 +181,7 @@ public class PaymentService {
         BigDecimal totalPrice = roomTotal.add(tourTotal);
         BigDecimal finalPrice = totalPrice.subtract(request.getDiscountAmount() != null ? request.getDiscountAmount() : BigDecimal.ZERO);
         if (finalPrice.compareTo(BigDecimal.ZERO) < 0) finalPrice = BigDecimal.ZERO;
+        BigDecimal totalWithTax = calculateTotalWithTax(finalPrice);
 
         Booking booking = new Booking();
         booking.setUser(user);
@@ -195,6 +196,7 @@ public class PaymentService {
         booking.setTotalPrice(totalPrice);
         booking.setDiscountAmount(request.getDiscountAmount() != null ? request.getDiscountAmount() : BigDecimal.ZERO);
         booking.setFinalPrice(finalPrice);
+        booking.setTotalWithTax(totalWithTax);
         booking.setStatus("PENDING");
         booking.setCreatedAt(LocalDateTime.now());
         booking.setUpdatedAt(LocalDateTime.now());
@@ -254,6 +256,7 @@ public class PaymentService {
         BigDecimal totalPrice = roomTotal.add(tourTotal);
         BigDecimal finalPrice = totalPrice.subtract(request.getDiscountAmount() != null ? request.getDiscountAmount() : BigDecimal.ZERO);
         if (finalPrice.compareTo(BigDecimal.ZERO) < 0) finalPrice = BigDecimal.ZERO;
+        BigDecimal totalWithTax = calculateTotalWithTax(finalPrice);
 
         return Booking.builder()
                 .user(user)
@@ -267,6 +270,7 @@ public class PaymentService {
                 .totalPrice(totalPrice)
                 .discountAmount(request.getDiscountAmount() != null ? request.getDiscountAmount() : BigDecimal.ZERO)
                 .finalPrice(finalPrice)
+                .totalWithTax(totalWithTax)
                 .couponCode(request.getCouponCode())
                 .status("CONFIRMED")
                 .createdAt(LocalDateTime.now())
@@ -278,7 +282,7 @@ public class PaymentService {
     private Payment createPayment(Booking booking, PaymentRequest request, Long confirmedById, String confirmedRole) {
         Payment payment = new Payment();
         payment.setBooking(booking);
-        payment.setAmount(booking.getFinalPrice());
+        payment.setAmount(resolveBookingTotalWithTax(booking));
         payment.setPaymentMethod(request.getPaymentMethod());
 
         if ("ADMIN".equals(confirmedRole)) {
@@ -366,6 +370,22 @@ public class PaymentService {
                 : amount.multiply(taxRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 
+    private BigDecimal calculateTotalWithTax(BigDecimal finalPrice) {
+        BigDecimal safeFinalPrice = finalPrice != null ? finalPrice : BigDecimal.ZERO;
+        BigDecimal taxRate = systemConfigRepository.findFirstConfig()
+                .map(config -> config.getTaxRate() != null ? config.getTaxRate() : BigDecimal.ZERO)
+                .orElse(BigDecimal.ZERO);
+        BigDecimal taxAmount = calculateTax(safeFinalPrice, taxRate);
+        return safeFinalPrice.add(taxAmount);
+    }
+
+    private BigDecimal resolveBookingTotalWithTax(Booking booking) {
+        if (booking.getTotalWithTax() != null) {
+            return booking.getTotalWithTax();
+        }
+        return calculateTotalWithTax(booking.getFinalPrice());
+    }
+
     // ==================== UTILITIES ====================
     private String buildItemDetails(PaymentRequest request, Long confirmedById,
                                     String confirmedRole, Booking booking) {
@@ -428,7 +448,7 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         Booking booking = payment.getBooking();
-        booking.setStatus("ACTIVE");
+        booking.setStatus("PENDING");
         bookingRepository.save(booking);
 
         // Lấy cấu hình để tạo invoice

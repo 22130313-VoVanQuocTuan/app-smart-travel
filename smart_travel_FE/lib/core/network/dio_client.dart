@@ -22,13 +22,13 @@ class DioClient {
   )) {
 
     // Chỉ thêm 2 interceptor cơ bản
-    dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      error: true,
-      requestHeader: true,
-      logPrint: (log) => print('DIO: $log'),
-    ));
+    // dio.interceptors.add(LogInterceptor(
+    //   requestBody: true,
+    //   responseBody: true,
+    //   error: true,
+    //   requestHeader: true,
+    //   logPrint: (log) => print('DIO: $log'),
+    // ));
 
     dio.interceptors.add(AuthInterceptor(storage));
     dio.interceptors.add(ErrorInterceptor());

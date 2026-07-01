@@ -30,6 +30,7 @@ public class InvoiceMapper {
                 .endDate(booking.getEndDate())
                 .nights(calculateNights(booking))
                 .status(booking.getStatus())
+                .paymentMethod(booking.getPayment() != null ? booking.getPayment().getPaymentMethod() : null)
                 .isReviewed(invoice != null && invoice.isReviewed())
                 .build();
     }

@@ -12,6 +12,7 @@ class InvoiceStatusCard extends StatelessWidget {
   final String endDate;
   final int nights;
   final String status;
+  final String? paymentMethod;
   final bool reviewed;
 
   const InvoiceStatusCard({
@@ -23,6 +24,7 @@ class InvoiceStatusCard extends StatelessWidget {
     required this.endDate,
     required this.nights,
     required this.status,
+    this.paymentMethod,
     required this.reviewed,
   }) : super(key: key);
 
@@ -31,7 +33,6 @@ class InvoiceStatusCard extends StatelessWidget {
     return "${parts[2]}/${parts[1]}/${parts[0]}";
   }
 
-  // Map trạng thái + màu + text
   ({String text, Color backgroundColor, Color textColor}) getStatusInfo() {
     switch (status.toUpperCase()) {
       case 'ACTIVE':
@@ -53,6 +54,7 @@ class InvoiceStatusCard extends StatelessWidget {
         textColor: Colors.green[700]!,
         );
       case 'CANCELED':
+      case 'CANCELLED':
         return (
         text: "Đã hủy",
         backgroundColor: Colors.red.withOpacity(0.15),
@@ -94,6 +96,7 @@ class InvoiceStatusCard extends StatelessWidget {
                 "endDate": endDate,
                 "nights": nights,
                 "status": status,
+                "paymentMethod": paymentMethod,
                 "reviewed": reviewed,
               },
             ),
@@ -119,7 +122,7 @@ class InvoiceStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isHotel = nights > 0;
     final statusInfo = getStatusInfo();
-    final bool canCancel = status.toUpperCase() == 'ACTIVE'; // Chỉ ACTIVE mới được hủy
+    final bool canCancel = status.toUpperCase() == 'ACTIVE';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -147,9 +150,7 @@ class InvoiceStatusCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => InvoiceDetailScreen(
-                bookingId: bookingId,
-              ),
+              builder: (context) => InvoiceDetailScreen(bookingId: bookingId),
             ),
           );
         },
@@ -158,7 +159,6 @@ class InvoiceStatusCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Mã đặt chỗ + Tùy chọn (menu động)
               Row(
                 children: [
                   Expanded(
@@ -182,7 +182,9 @@ class InvoiceStatusCard extends StatelessWidget {
                       ),
                     ),
                     offset: const Offset(0, 36),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     color: Colors.white,
                     elevation: 6,
                     itemBuilder: (context) => [
@@ -200,8 +202,6 @@ class InvoiceStatusCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-
-              // Tên tour/khách sạn
               Row(
                 children: [
                   Icon(
@@ -225,23 +225,35 @@ class InvoiceStatusCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-
-              // Ngày + số đêm
               Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 18, color: Colors.grey),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 18,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
                         children: [
-                          TextSpan(text: "${_formatDate(startDate)} - ${_formatDate(endDate)}"),
+                          TextSpan(
+                            text:
+                            "${_formatDate(startDate)} - ${_formatDate(endDate)}",
+                          ),
                           if (isHotel) ...[
                             const TextSpan(text: " · "),
                             TextSpan(
                               text: "$nights đêm",
-                              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ],
@@ -251,10 +263,9 @@ class InvoiceStatusCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-
-              // Trạng thái động
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: statusInfo.backgroundColor,
                   borderRadius: BorderRadius.circular(4),

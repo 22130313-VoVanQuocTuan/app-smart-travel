@@ -13,8 +13,8 @@ public class MoMoConfig {
     public static final String ACCESS_KEY = "Q2XhhSdgpKUlQ4Ky";
     public static final String SECRET_KEY = "k6B53GQKSjktZGJBK2MyrDa7w9S6RyCf";
     public static final String MOMO_API_URL = "https://test-payment.momo.vn/v2/gateway/api/create"; // Endpoint Sandbox
-    public static final String REDIRECT_URL = "http://10.0.2.2:8080/api/v1/payment/momo-return";
-    public static final String IPN_URL = "http://10.0.2.2:8080/api/v1/payment/momo-ipn";
+    public static final String REDIRECT_URL = "http://137.184.31.152:8080/api/v1/payment/momo-return";
+    public static final String IPN_URL = "http://137.184.31.152:8080/api/v1/payment/momo-ipn";
 
     public static String signHmacSHA256(String data, String secretKey) {
         try {

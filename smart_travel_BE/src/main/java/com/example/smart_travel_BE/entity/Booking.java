@@ -68,6 +68,9 @@ public class Booking {
     @Column(name = "final_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal finalPrice;
 
+    @Column(name = "total_with_tax", precision = 12, scale = 2)
+    private BigDecimal totalWithTax;
+
     @Column(name = "coupon_code", length = 50)
     private String couponCode;
 

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../data/models/finance/finance_host_settlement_model.dart';
 import '../../../data/models/finance/finance_monthly_model.dart';
 import '../../../data/models/finance/finance_summary_model.dart';
 
@@ -16,14 +17,26 @@ class FinanceLoading extends FinanceState {}
 class FinanceLoaded extends FinanceState {
   final FinanceSummaryModel summary;
   final List<FinanceMonthlyModel> monthlyData;
+  final List<FinanceHostSettlementModel> hostSettlements;
+  final int selectedYear;
+  final int selectedMonth;
 
   const FinanceLoaded({
     required this.summary,
     this.monthlyData = const [],
+    this.hostSettlements = const [],
+    required this.selectedYear,
+    required this.selectedMonth,
   });
 
   @override
-  List<Object?> get props => [summary, monthlyData];
+  List<Object?> get props => [
+    summary,
+    monthlyData,
+    hostSettlements,
+    selectedYear,
+    selectedMonth,
+  ];
 }
 
 class FinanceError extends FinanceState {

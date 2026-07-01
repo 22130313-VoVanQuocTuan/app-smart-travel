@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SmartTravelBeApplication {
 
 	public static void main(String[] args) {
-		System.out.println("Hello World");
+		System.out.println("Version 30-6");
 		SpringApplication.run(SmartTravelBeApplication.class, args);
 	}
 

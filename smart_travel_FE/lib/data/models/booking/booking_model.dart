@@ -13,6 +13,7 @@ class HostBooking {
   final int numberOfPeople;
   final double totalPrice;
   final double finalPrice;
+  final double totalWithTax;
   final String status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -31,6 +32,7 @@ class HostBooking {
     required this.numberOfPeople,
     required this.totalPrice,
     required this.finalPrice,
+    required this.totalWithTax,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
@@ -51,6 +53,7 @@ class HostBooking {
       numberOfPeople: json['numberOfPeople'] ?? 1,
       totalPrice: (json['totalPrice'] ?? 0).toDouble(),
       finalPrice: (json['finalPrice'] ?? 0).toDouble(),
+      totalWithTax: (json['totalWithTax'] ?? 0).toDouble(),
       status: json['status'] ?? 'PENDING',
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
@@ -64,7 +67,7 @@ class BookingDetail {
   final int? hotelId;
   final String hotelName;
   final int? roomTypeId;
-  final String? roomTypeName;  //  Có thể null
+  final String? roomTypeName;
   final DateTime startDate;
   final DateTime endDate;
   final int nights;
@@ -75,12 +78,20 @@ class BookingDetail {
   final double totalTourPrice;
   final double totalPrice;
   final double discountAmount;
-  final String? couponCode;  //  Có thể null
+  final String? couponCode;
   final double finalPrice;
+  final double taxRate;
+  final double taxAmount;
+  final double totalWithTax;
   final String status;
-  final String? message;  // Có thể null
-  final DateTime? createdAt;  // Có thể null
-  final String? cancellationReason;  // Có thể null
+  final String? paymentStatus;
+  final String? paymentMethod;
+  final String customerName;
+  final String customerPhone;
+  final String customerEmail;
+  final String? message;
+  final DateTime? createdAt;
+  final String? cancellationReason;
 
   BookingDetail({
     required this.id,
@@ -101,10 +112,18 @@ class BookingDetail {
     required this.discountAmount,
     this.couponCode,
     required this.finalPrice,
+    required this.taxRate,
+    required this.taxAmount,
+    required this.totalWithTax,
     required this.status,
+    this.paymentStatus,
+    this.paymentMethod,
+    required this.customerName,
+    required this.customerPhone,
+    required this.customerEmail,
     this.message,
     this.createdAt,
-      this.cancellationReason,
+    this.cancellationReason,
   });
 
   factory BookingDetail.fromJson(Map<String, dynamic> json) {
@@ -127,20 +146,24 @@ class BookingDetail {
       totalTourPrice: (json['totalTourPrice'] ?? 0).toDouble(),
       totalPrice: (json['totalPrice'] ?? 0).toDouble(),
       discountAmount: (json['discountAmount'] ?? 0).toDouble(),
-      couponCode: json['couponCode'],  //  Có thể null
+      couponCode: json['couponCode'],
       finalPrice: (json['finalPrice'] ?? 0).toDouble(),
+      taxRate: (json['taxRate'] ?? 0).toDouble(),
+      taxAmount: (json['taxAmount'] ?? 0).toDouble(),
+      totalWithTax: (json['totalWithTax'] ?? 0).toDouble(),
       status: json['status'] ?? 'PENDING',
-      message: json['message'],  //  Có thể null
+      paymentStatus: json['paymentStatus'] as String?,
+      paymentMethod: json['paymentMethod'] as String?,
+      customerName: json['customerName'] ?? 'Khach hang',
+      customerPhone: json['customerPhone'] ?? '',
+      customerEmail: json['customerEmail'] ?? '',
+      message: json['message'],
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      cancellationReason: json['cancellationReason'],  //  Có thể null
+      cancellationReason: json['cancellationReason'],
     );
   }
-
-  // Getter cho customer info (tạm thời vì API chưa trả về)
-  String get customerName => 'Khách hàng';
-  String get customerPhone => '';
-  String get customerEmail => '';
 }
+
 class TourBookingInfo {
   final int tourId;
   final String tourName;

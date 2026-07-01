@@ -1,6 +1,6 @@
   class ApiConstants {
-    static const String baseUrl = 'http://10.0.2.2:8080/api/v1';
-    //static const String baseUrl = 'http://192.168.1.12:8080/api/v1';
+   // static const String baseUrl = 'http://10.0.2.2:8080/api/v1';
+    static const String baseUrl = 'http://137.184.31.152:8080/api/v1';
 
     //Auth
     static const String register = '/auth/register';
@@ -130,6 +130,7 @@
     //fiance
     static const financeSummary = '/admin/finance/summary';
     static const financeMonthly = '/admin/finance/monthly';
+    static const financeHostSettlements = '/admin/finance/host-settlements';
     static const financePdf = '/admin/finance/export-pdf';
 
     // Timeout

@@ -22,14 +22,14 @@ public class EmailService {
     JavaMailSender mailSender;
 
     @NonFinal
-    @Value("${spring.mail.username}")
+    @Value("${spring.app.mail.from}")
     String fromEmail;
 
     public void sendVerificationEmail(EmailRequest request) {
         try {
             // 1. Gửi email xác thực cho người dùng
             String subjectUser = "Xác thực địa chỉ email của bạn";
-            String verificationUrl = "http://localhost:8080/api/v1/auth/verify-email?token=" + request.getToken();
+            String verificationUrl = "http://137.184.31.152:8080/api/v1/auth/verify-email?token=" + request.getToken();
             String messageUser = "<html><body>" +
                     "Xin chào <b>" + request.getEmail() + "</b>,<br><br>" +
                     "Vui lòng nhấp vào liên kết sau để xác thực email của bạn:<br><br>" +
@@ -79,7 +79,7 @@ public class EmailService {
     public void sendResetPasswordEmail(EmailRequest emailRequest) {
 
         // Gửi email kèm link reset
-        String resetLink = "http://localhost:8080/api/v1/auth/check-reset-password?token=" + emailRequest.getToken();
+        String resetLink = "http://137.184.31.152:8080/api/v1/auth/check-reset-password?token=" + emailRequest.getToken();
         try{
             String subjectUser = "Xác thực mật khẩu mới";
             String messageUser = "<html><body>" +
@@ -102,5 +102,24 @@ public class EmailService {
             throw new RuntimeException("Không thể gửi email", e);
         }
 
+    }
+
+    public void sendHtmlEmail(String[] recipients, String subject, String htmlContent) {
+        if (recipients == null || recipients.length == 0) {
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(recipients);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            log.error("Failed to send email to recipients: {}", String.join(", ", recipients), e);
+            throw new RuntimeException("Không thấy email", e);
+        }
     }
 }

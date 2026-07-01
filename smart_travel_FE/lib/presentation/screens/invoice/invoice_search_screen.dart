@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_travel/injection_container.dart' as di;
 import 'package:smart_travel/presentation/blocs/invoice/search_bloc.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
 import 'package:smart_travel/presentation/widgets/invoice/empty_order_widget.dart';
@@ -213,6 +212,7 @@ class _InvoiceSearchScreenState extends State<InvoiceSearchScreen> {
                               endDate: invoice.endDate,
                               nights: invoice.nights,
                               status: invoice.status,
+                              paymentMethod: invoice.paymentMethod,
                               reviewed: invoice.reviewed,
                             ),
                           );

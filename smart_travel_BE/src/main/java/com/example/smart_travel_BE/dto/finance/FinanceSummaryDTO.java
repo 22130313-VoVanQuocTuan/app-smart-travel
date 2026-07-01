@@ -10,11 +10,25 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class FinanceSummaryDTO {
 
+    private Integer reportYear;
+
+    private Integer reportMonth;
+
     private BigDecimal totalRevenue;
 
     private BigDecimal totalCommission;
 
     private BigDecimal totalHomestayRevenue;
+
+    private BigDecimal monthlyCompletedRevenue;
+
+    private BigDecimal monthlyOnlineRevenue;
+
+    private BigDecimal monthlyCashRevenue;
+
+    private BigDecimal monthlyHostPayoutAmount;
+
+    private BigDecimal monthlyCashCommissionReceivable;
 
     private Long totalInvoices;
 

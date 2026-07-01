@@ -17,8 +17,17 @@ class AdminInvoiceDetail {
   final double totalPrice;
   final double discountAmount;
   final double finalPrice;
+  final double taxRate;
+  final double totalWithTax;
   final String paymentStatus;
+  final String paymentMethod;
   final double taxAmount;
+  final String? refundBankName;
+  final String? refundBankBranch;
+  final String? refundAccountNumber;
+  final String? refundAccountHolder;
+  final String? refundRequestedAt;
+  final String? refundApprovedAt;
   final String customerName;
   final String customerPhone;
   final String customerEmail;
@@ -42,8 +51,17 @@ class AdminInvoiceDetail {
     required this.totalPrice,
     required this.discountAmount,
     required this.finalPrice,
+    required this.taxRate,
+    required this.totalWithTax,
     required this.paymentStatus,
+    required this.paymentMethod,
     required this.taxAmount,
+    this.refundBankName,
+    this.refundBankBranch,
+    this.refundAccountNumber,
+    this.refundAccountHolder,
+    this.refundRequestedAt,
+    this.refundApprovedAt,
     required this.customerName,
     required this.customerPhone,
     required this.customerEmail,

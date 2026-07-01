@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_travel/core/usecases/usecase.dart';
 import 'package:smart_travel/domain/usecases/banner/create_banner_uc.dart';
@@ -32,7 +31,6 @@ class BannerBloc extends Bloc<BannerEvent, BannerState>{
       Emitter<BannerState> emit) async{
       emit(BannerDataLoading());
       final results = await allBannerUseCase(NoParams());
-      print(results);
       results.fold((failure) =>
         emit(BannerDataError(failure.message))
       ,

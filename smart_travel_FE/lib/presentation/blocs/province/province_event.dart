@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:smart_travel/domain/entities/province.dart';
 import 'package:smart_travel/domain/params/province_add_params.dart';
 import 'package:smart_travel/domain/params/province_update_params.dart';
 
@@ -15,7 +14,12 @@ class LoadProvinceIsPopular extends ProvinceEvent{
 
 class LoadProvince extends ProvinceEvent{
   final bool? loadAll;
-  LoadProvince({this.loadAll = false});
+  final bool forceRefresh;
+
+  LoadProvince({this.loadAll = false, this.forceRefresh = false});
+
+  @override
+  List<Object?> get props => [loadAll, forceRefresh];
 
 }
 

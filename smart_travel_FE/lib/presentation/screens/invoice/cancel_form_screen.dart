@@ -19,6 +19,11 @@ class CancelFormScreen extends StatefulWidget {
 
 class _CancelFormScreenState extends State<CancelFormScreen> {
   final TextEditingController _reasonController = TextEditingController();
+  final TextEditingController _bankNameController = TextEditingController();
+  final TextEditingController _bankBranchController = TextEditingController();
+  final TextEditingController _accountNumberController = TextEditingController();
+  final TextEditingController _accountHolderController = TextEditingController();
+
   bool _agreeTerms = false;
 
   String _formatDate(String date) {
@@ -26,10 +31,142 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
     return "${parts[2]}/${parts[1]}/${parts[0]}";
   }
 
+  String? get _paymentMethod {
+    final value = widget.bookingData['paymentMethod'];
+    if (value is String && value.trim().isNotEmpty) {
+      return value.trim().toUpperCase();
+    }
+    return null;
+  }
+
+  bool get _requiresRefundBankInfo {
+    final paymentMethod = _paymentMethod;
+    if (paymentMethod == null) {
+      return false;
+    }
+    return paymentMethod != 'CASH' && paymentMethod != 'UNKNOWN';
+  }
+
+  bool get _hasRequiredRefundInfo {
+    if (!_requiresRefundBankInfo) {
+      return true;
+    }
+    return _bankNameController.text.trim().isNotEmpty &&
+        _accountNumberController.text.trim().isNotEmpty &&
+        _accountHolderController.text.trim().isNotEmpty;
+  }
+
   @override
   void dispose() {
     _reasonController.dispose();
+    _bankNameController.dispose();
+    _bankBranchController.dispose();
+    _accountNumberController.dispose();
+    _accountHolderController.dispose();
     super.dispose();
+  }
+
+  void _submitCancel(BuildContext context) {
+    if (_requiresRefundBankInfo && !_hasRequiredRefundInfo) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Vui lòng nhập đầy đủ thông tin tài khoản ngân hàng để hoàn tiền."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    context.read<CancelBloc>().add(
+      SubmitCancelRequest(
+        bookingId: widget.bookingData['bookingId'],
+        reason: _reasonController.text.trim().isEmpty
+            ? "Không có lý do"
+            : _reasonController.text.trim(),
+        refundBankName: _bankNameController.text.trim(),
+        refundBankBranch: _bankBranchController.text.trim(),
+        refundAccountNumber: _accountNumberController.text.trim(),
+        refundAccountHolder: _accountHolderController.text.trim(),
+      ),
+    );
+  }
+
+  Widget _buildBankInfoSection() {
+    if (!_requiresRefundBankInfo) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Thông tin tài khoản nhận hoàn tiền",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Đơn này đã thanh toán qua ${_paymentMethod ?? 'ngân hàng'}. Vui lòng cung cấp tài khoản để hệ thống và quản lý hoàn tiền lại cho khách.",
+          style: TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.5),
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          controller: _bankNameController,
+          label: "Tên ngân hàng",
+          hintText: "Ví dụ: Vietcombank",
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          controller: _accountNumberController,
+          label: "Số tài khoản",
+          hintText: "Nhập số tài khoản nhận hoàn tiền",
+          keyboardType: TextInputType.number,
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          controller: _accountHolderController,
+          label: "Tên chủ tài khoản",
+          hintText: "Ví dụ: NGUYEN VAN A",
+        ),
+        const SizedBox(height: 12),
+        _buildTextField(
+          controller: _bankBranchController,
+          label: "Chi nhánh ngân hàng (tuỳ chọn)",
+          hintText: "Ví dụ: CN Quận 1",
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hintText,
+    TextInputType? keyboardType,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -41,7 +178,6 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
         create: (_) => di.sl<CancelBloc>(),
         child: Column(
           children: [
-            // HEADER
             Container(
               color: AppColors.primary,
               padding: EdgeInsets.fromLTRB(
@@ -70,7 +206,7 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                   ),
                   const SizedBox(width: 20),
                   const Text(
-                    "Biểu mẫu hủy đặt chỗ",
+                    "Biểu mẫu huỷ đặt chỗ",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -80,14 +216,13 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                 ],
               ),
             ),
-
             Expanded(
               child: BlocConsumer<CancelBloc, CancelState>(
                 listener: (context, state) {
                   if (state is CancelSuccess) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Yêu cầu hủy đã được gửi thành công!"),
+                        content: Text("Yêu cầu huỷ/hoàn tiền đã được gửi thành công!"),
                         backgroundColor: Colors.green,
                         duration: Duration(seconds: 2),
                       ),
@@ -96,7 +231,7 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                     Navigator.pushNamedAndRemoveUntil(
                       context,
                       RouteNames.myInvoices,
-                          (route) => false,
+                      (route) => false,
                     );
                   }
                   if (state is CancelError) {
@@ -112,7 +247,6 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                   return ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      // KHUNG THÔNG TIN ĐƠN HÀNG
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -125,12 +259,19 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                           children: [
                             Text(
                               widget.bookingData['itemName'],
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                Icon(Icons.calendar_today, color: AppColors.primary, size: 20),
+                                Icon(
+                                  Icons.calendar_today,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   "${_formatDate(widget.bookingData['startDate'])} · ${widget.bookingData['nights']} đêm",
@@ -149,13 +290,26 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                                 ),
                               ],
                             ),
+                            if (_paymentMethod != null) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(Icons.account_balance_wallet_outlined,
+                                      color: AppColors.primary, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Thanh toán: $_paymentMethod",
+                                    style: const TextStyle(fontSize: 15),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
                       const SizedBox(height: 16),
-
                       const Text(
-                        "Vui lòng cho chúng tôi biết lý do hủy đặt chỗ (tùy chọn)",
+                        "Vui lòng cho chúng tôi biết lý do huỷ đặt chỗ",
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 12),
@@ -173,14 +327,15 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // TUYÊN BỐ + CHECKBOX
+                      _buildBankInfoSection(),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
                         ),
                         child: const Text(
                           "Tuyên bố người dùng",
@@ -191,25 +346,38 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: const BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+                          borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(12),
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             RichText(
                               text: TextSpan(
-                                style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.6),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.black87,
+                                  height: 1.6,
+                                ),
                                 children: [
-                                  const TextSpan(text: "Khi nhấp vào \"Xác nhận hủy đặt chỗ\", tôi xác nhận rằng tôi đã đọc và đồng ý với các "),
+                                  const TextSpan(
+                                    text:
+                                        "Khi nhấn vào \"Xác nhận huỷ đặt chỗ\", tôi xác nhận rằng tôi đã đọc và đồng ý với các ",
+                                  ),
                                   TextSpan(
-                                    text: "Điều khoản & Điều kiện của Chính sách Hủy phòng",
+                                    text:
+                                        "Điều khoản & Điều kiện của Chính sách Huỷ phòng",
                                     style: TextStyle(
                                       color: AppColors.primary,
                                       decoration: TextDecoration.underline,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  const TextSpan(text: ". Tôi hiểu rằng phiếu xác nhận đã xuất trước đó cho đặt phòng này sẽ mất hiệu lực."),
+                                  const TextSpan(
+                                    text:
+                                        ". Tôi hiểu rằng phiếu xác nhận đã xuất trước đó cho đặt phòng này sẽ mất hiệu lực.",
+                                  ),
                                 ],
                               ),
                             ),
@@ -228,14 +396,18 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                                       });
                                     },
                                     activeColor: AppColors.primary,
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 const Expanded(
                                   child: Text(
                                     "Có, tôi đồng ý",
-                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -244,39 +416,37 @@ class _CancelFormScreenState extends State<CancelFormScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-
-                      // NÚT XÁC NHẬN HỦY
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: _agreeTerms && state is! CancelLoading
-                              ? () {
-                            context.read<CancelBloc>().add(
-                              SubmitCancelRequest(
-                                bookingId: widget.bookingData['bookingId'],
-                                reason: _reasonController.text.trim().isEmpty
-                                    ? "Không có lý do"
-                                    : _reasonController.text.trim(),
-                              ),
-                            );
-                          }
+                              ? () => _submitCancel(context)
                               : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             disabledBackgroundColor: Colors.red[200],
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           child: state is CancelLoading
                               ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
                               : const Text(
-                            "Xác nhận hủy đặt chỗ",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
+                                  "Xác nhận huỷ đặt chỗ",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 20),

@@ -3,7 +3,6 @@ import '../../screens/invoice/cancel_booking_screen.dart';
 import '../../screens/invoice/invoice_detail_screen.dart';
 import '../../screens/invoice/qr_display_screen.dart';
 import '../../theme/app_colors.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 class InvoiceCard extends StatelessWidget {
   final int bookingId;
@@ -13,6 +12,7 @@ class InvoiceCard extends StatelessWidget {
   final String endDate;
   final int nights;
   final String status;
+  final String? paymentMethod;
   final bool reviewed;
 
   const InvoiceCard({
@@ -24,6 +24,7 @@ class InvoiceCard extends StatelessWidget {
     required this.endDate,
     required this.nights,
     required this.status,
+    this.paymentMethod,
     required this.reviewed,
   }) : super(key: key);
 
@@ -35,7 +36,6 @@ class InvoiceCard extends StatelessWidget {
   void _onMenuSelected(BuildContext context, String value) {
     switch (value) {
       case 'cancel':
-      // ... Code phần cancel giữ nguyên ...
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -48,13 +48,13 @@ class InvoiceCard extends StatelessWidget {
                 "endDate": endDate,
                 "nights": nights,
                 "status": status,
+                "paymentMethod": paymentMethod,
                 "reviewed": reviewed,
               },
             ),
           ),
         );
         break;
-
       case 'export':
         Navigator.push(
           context,
@@ -97,13 +97,10 @@ class InvoiceCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          // === CHUYỂN SANG TRANG CHI TIẾT ĐƠN HÀNG ===
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => InvoiceDetailScreen(
-                bookingId: bookingId, // ← Chỉ truyền bookingId
-              ),
+              builder: (context) => InvoiceDetailScreen(bookingId: bookingId),
             ),
           );
         },
@@ -112,7 +109,6 @@ class InvoiceCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header với menu Tùy chọn
               Row(
                 children: [
                   Expanded(
@@ -136,19 +132,25 @@ class InvoiceCard extends StatelessWidget {
                       ),
                     ),
                     offset: const Offset(0, 36),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     color: Colors.white,
                     elevation: 6,
                     itemBuilder: (context) => [
-                      const PopupMenuItem(value: 'cancel', child: Text("Hủy đặt chỗ")),
-                      const PopupMenuItem(value: 'export', child: Text("Xuất phiếu thanh toán")),
+                      const PopupMenuItem(
+                        value: 'cancel',
+                        child: Text("Hủy đặt chỗ"),
+                      ),
+                      const PopupMenuItem(
+                        value: 'export',
+                        child: Text("Xuất phiếu thanh toán"),
+                      ),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 6),
-
-              // Tên tour/khách sạn
               Row(
                 children: [
                   Icon(
@@ -172,23 +174,35 @@ class InvoiceCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-
-              // Ngày + số đêm
               Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 18, color: Colors.grey),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 18,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
                         children: [
-                          TextSpan(text: "${_formatDate(startDate)} - ${_formatDate(endDate)}"),
+                          TextSpan(
+                            text:
+                            "${_formatDate(startDate)} - ${_formatDate(endDate)}",
+                          ),
                           if (isHotel) ...[
                             const TextSpan(text: " · "),
                             TextSpan(
                               text: "$nights đêm",
-                              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ],
@@ -198,20 +212,19 @@ class InvoiceCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-
-              // Trạng thái
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.green.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(
+                child: const Text(
                   "ĐÃ PHÁT HÀNH PHIẾU THANH TOÁN",
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green[700],
+                    color: Colors.green,
                   ),
                 ),
               ),

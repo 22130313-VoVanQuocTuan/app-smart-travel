@@ -150,7 +150,7 @@ class _AdminInvoiceScreenState extends State<AdminInvoiceScreen> {
                 _buildFilterChip("COMPLETED", "Đã hoàn thành"),
                 _buildFilterChip("PENDING_REFUND", "Chờ hoàn tiền"),
                 _buildFilterChip("REFUNDED", "Đã hoàn tiền"),
-                _buildFilterChip("CANCELED", "Đã hủy"),
+                _buildFilterChip("CANCELLED", "Đã hủy"),
               ],
             ),
           ),

@@ -1,5 +1,3 @@
-// src/main/java/com/example/smart_travel_BE/dto/invoice/response/InvoiceDetailResponse.java
-
 package com.example.smart_travel_BE.dto.invoice.response;
 
 import lombok.Builder;
@@ -40,6 +38,7 @@ public class InvoiceDetailResponse {
     private BigDecimal finalPrice;
 
     private String paymentStatus;
+    private String paymentMethod;
 
     private BigDecimal taxAmount;
 

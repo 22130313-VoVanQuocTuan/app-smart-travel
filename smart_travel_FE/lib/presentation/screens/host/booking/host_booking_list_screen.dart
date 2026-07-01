@@ -534,6 +534,7 @@ class BookingListItem extends StatelessWidget {
     final dateFormat = DateFormat('dd/MM/yyyy');
     final nights = booking.endDate.difference(booking.startDate).inDays;
     final formatter = NumberFormat('#,###');
+    final displayPrice = booking.totalWithTax > 0 ? booking.totalWithTax : booking.finalPrice;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -655,7 +656,7 @@ class BookingListItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${formatter.format(booking.finalPrice)}₫',
+                        '${formatter.format(displayPrice)}₫',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

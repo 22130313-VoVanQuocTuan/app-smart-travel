@@ -32,12 +32,49 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+    @Query("""
+            SELECT b
+            FROM Booking b
+            LEFT JOIN FETCH b.roomType rt
+            WHERE b.user.id = :userId
+            ORDER BY b.createdAt DESC
+            """)
+    List<Booking> findUserBookingsWithRoomTypeByUserId(@Param("userId") Long userId);
+
     List<Booking> findByUserIdAndEndDateGreaterThanEqualAndStatusNot(
             Long userId, LocalDate date, String excludeStatus
     );
 
+    @Query("""
+            SELECT b
+            FROM Booking b
+            LEFT JOIN FETCH b.roomType rt
+            WHERE b.user.id = :userId
+              AND b.endDate >= :date
+              AND b.status <> :excludeStatus
+            ORDER BY b.createdAt DESC
+            """)
+    List<Booking> findCurrentBookingsWithRoomType(
+            @Param("userId") Long userId,
+            @Param("date") LocalDate date,
+            @Param("excludeStatus") String excludeStatus
+    );
+
     List<Booking> findByUserIdAndStatusInOrderByCreatedAtDesc(
             Long userId, List<String> statuses
+    );
+
+    @Query("""
+            SELECT b
+            FROM Booking b
+            LEFT JOIN FETCH b.roomType rt
+            WHERE b.user.id = :userId
+              AND b.status IN :statuses
+            ORDER BY b.createdAt DESC
+            """)
+    List<Booking> findBookingHistoryWithRoomType(
+            @Param("userId") Long userId,
+            @Param("statuses") List<String> statuses
     );
 
 }

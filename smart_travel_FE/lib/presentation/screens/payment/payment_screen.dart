@@ -20,22 +20,14 @@ class PaymentScreen extends StatelessWidget {
   }) : super(key: key);
 
   double _calculateTotalAmount() {
-    double total = 0;
-    int nights = bookingInfo.endDate.difference(bookingInfo.startDate).inDays;
-    if (nights < 1) nights = 1;
-    total += bookingInfo.pricePerNight * bookingInfo.numberOfRooms * nights;
-    for (var tour in bookingInfo.selectedTours) {
-      total += tour.pricePerPerson * tour.numberOfPeople;
-    }
-    if (bookingInfo.discountAmount > 0) {
-      total -= bookingInfo.discountAmount;
-    }
-    return total > 0 ? total : 0;
+    return bookingInfo.totalWithTax;
   }
 
   @override
   Widget build(BuildContext context) {
     final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'VND');
+    final amountBeforeTax = bookingInfo.amountBeforeTax;
+    final taxAmount = bookingInfo.taxAmount;
     final totalAmount = _calculateTotalAmount();
     final formattedAmount = currencyFormatter.format(totalAmount);
 
@@ -83,6 +75,18 @@ class PaymentScreen extends StatelessWidget {
                       Text('Tổng số tiền cần thanh toán:', style: TextStyle(fontSize: 18, color: AppColors.textGray)),
                       const SizedBox(height: 8),
                       Text(formattedAmount, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      if (bookingInfo.taxRate > 0) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Tam tinh: ${currencyFormatter.format(amountBeforeTax)}',
+                          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Thue (${bookingInfo.taxRate.toStringAsFixed(bookingInfo.taxRate.truncateToDouble() == bookingInfo.taxRate ? 0 : 2)}%): ${currencyFormatter.format(taxAmount)}',
+                          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                        ),
+                      ],
                       const SizedBox(height: 32),
                       Text('Chọn phương thức thanh toán:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textGray)),
                       const SizedBox(height: 16),

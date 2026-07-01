@@ -57,6 +57,7 @@ public class InvoiceDetailMapper {
                 .finalPrice(booking.getFinalPrice())
 
                 .paymentStatus(payment != null ? payment.getStatus() : null)
+                .paymentMethod(payment != null ? payment.getPaymentMethod() : null)
                 .taxAmount(invoice != null ? invoice.getTaxAmount() : BigDecimal.ZERO)
 
                 .customerName(user != null ? user.getFullName() : "Khách lẻ")

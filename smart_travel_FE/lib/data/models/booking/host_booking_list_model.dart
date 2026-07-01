@@ -12,6 +12,7 @@ class HostBookingListModel {
   final int numberOfPeople;
   final double totalPrice;
   final double finalPrice;
+  final double totalWithTax;
   final String status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -30,6 +31,7 @@ class HostBookingListModel {
     required this.numberOfPeople,
     required this.totalPrice,
     required this.finalPrice,
+    required this.totalWithTax,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
@@ -50,6 +52,7 @@ class HostBookingListModel {
       numberOfPeople: json['numberOfPeople'] as int? ?? 0,
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
       finalPrice: (json['finalPrice'] as num?)?.toDouble() ?? 0.0,
+      totalWithTax: (json['totalWithTax'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] as String? ?? 'PENDING',
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
@@ -71,6 +74,7 @@ class HostBookingListModel {
       'numberOfPeople': numberOfPeople,
       'totalPrice': totalPrice,
       'finalPrice': finalPrice,
+      'totalWithTax': totalWithTax,
       'status': status,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),

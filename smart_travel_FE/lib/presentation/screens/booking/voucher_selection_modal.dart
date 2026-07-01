@@ -179,6 +179,7 @@ class _VoucherSelectionModalState extends State<VoucherSelectionModal> with Sing
           expiryDate: DateTime.parse(voucher['expiryDate']),
           isActive: voucher['isActive'],
           usageLimit: 0,
+          pointsRequired: (voucher['pointsRequired'] as num?)?.toInt() ?? 0,
         );
 
         return Opacity(

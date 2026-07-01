@@ -14,10 +14,10 @@ class RefreshableScrollView extends StatelessWidget {
   final Color? color; // màu của RefreshIndicator
 
   const RefreshableScrollView({
-    Key? key,
+    super.key,
     required this.slivers,
     this.color,
-  }) : super(key: key);
+  });
 
   /// Hàm refresh chung cho toàn app
   Future<void> _refreshAllData(BuildContext context) async {
@@ -28,8 +28,8 @@ class RefreshableScrollView extends StatelessWidget {
 
 
     // Bắt đồng thời tất cả event
-    destinationBloc.add(LoadAllDestinations());
-    provinceBloc.add(LoadProvince());
+    destinationBloc.add(LoadAllDestinations(forceRefresh: true));
+    provinceBloc.add(LoadProvince(forceRefresh: true));
     profileBloc.add(LoadProfile());
     bannerBloc.add(LoadAllBanner());
 

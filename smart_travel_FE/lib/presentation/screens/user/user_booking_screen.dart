@@ -8,10 +8,9 @@ import 'package:smart_travel/presentation/blocs/user_booking/user_booking_bloc.d
 import 'package:smart_travel/presentation/blocs/user_booking/user_booking_event.dart';
 import 'package:smart_travel/presentation/blocs/user_booking/user_booking_state.dart';
 import 'package:smart_travel/presentation/screens/user/user_booking_detail_screen.dart';
-import 'package:smart_travel/presentation/theme/app_colors.dart';
 
 class UserBookingScreen extends StatefulWidget {
-  const UserBookingScreen({Key? key}) : super(key: key);
+  const UserBookingScreen({super.key});
 
   @override
   State<UserBookingScreen> createState() => _UserBookingScreenState();
@@ -92,6 +91,13 @@ class _UserBookingScreenState extends State<UserBookingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(); // Quay lại màn hình trước
+          },
+          tooltip: 'Quay lại',
+        ),
         title: const Text('Booking của tôi'),
         centerTitle: true,
         elevation: 2,
@@ -195,9 +201,7 @@ class _UserBookingScreenState extends State<UserBookingScreen>
   }
 
   Widget _buildCurrentBookingsTab(List<UserBooking> bookings) {
-    final activeBookings = bookings.where((b) => b.isActive).toList();
-
-    if (activeBookings.isEmpty) {
+    if (bookings.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -216,18 +220,16 @@ class _UserBookingScreenState extends State<UserBookingScreen>
       },
       child: ListView.builder(
         padding: const EdgeInsets.all(12),
-        itemCount: activeBookings.length,
+        itemCount: bookings.length,
         itemBuilder: (context, index) {
-          return _buildBookingCard(activeBookings[index]);
+          return _buildBookingCard(bookings[index]);
         },
       ),
     );
   }
 
   Widget _buildHistoryTab(List<UserBooking> bookings) {
-    final pastBookings = bookings.where((b) => b.isPast).toList();
-
-    if (pastBookings.isEmpty) {
+    if (bookings.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -246,9 +248,9 @@ class _UserBookingScreenState extends State<UserBookingScreen>
       },
       child: ListView.builder(
         padding: const EdgeInsets.all(12),
-        itemCount: pastBookings.length,
+        itemCount: bookings.length,
         itemBuilder: (context, index) {
-          return _buildBookingCard(pastBookings[index]);
+          return _buildBookingCard(bookings[index]);
         },
       ),
     );
@@ -257,6 +259,7 @@ class _UserBookingScreenState extends State<UserBookingScreen>
   Widget _buildBookingCard(UserBooking booking) {
     final dateFormat = DateFormat('dd/MM/yyyy');
     final formatter = NumberFormat('#,###');
+    final displayPrice = booking.totalWithTax > 0 ? booking.totalWithTax : booking.finalPrice;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -270,6 +273,7 @@ class _UserBookingScreenState extends State<UserBookingScreen>
               builder: (_) => UserBookingDetailScreen(booking: booking),
             ),
           ).then((_) {
+            if (!mounted) return;
             context.read<UserBookingBloc>().add(const RefreshUserBookingsEvent());
           });
         },
@@ -359,7 +363,7 @@ class _UserBookingScreenState extends State<UserBookingScreen>
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${formatter.format(booking.finalPrice)}₫',
+                        '${formatter.format(displayPrice)}₫',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -412,7 +416,7 @@ class _UserBookingScreenState extends State<UserBookingScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

@@ -5,7 +5,21 @@ class CancelBookingUseCase {
 
   CancelBookingUseCase(this.repository);
 
-  Future<void> call({required int bookingId, required String reason}) async {
-    return await repository.cancelBooking(bookingId: bookingId, reason: reason);
+  Future<void> call({
+    required int bookingId,
+    required String reason,
+    String? refundBankName,
+    String? refundBankBranch,
+    String? refundAccountNumber,
+    String? refundAccountHolder,
+  }) async {
+    return await repository.cancelBooking(
+      bookingId: bookingId,
+      reason: reason,
+      refundBankName: refundBankName,
+      refundBankBranch: refundBankBranch,
+      refundAccountNumber: refundAccountNumber,
+      refundAccountHolder: refundAccountHolder,
+    );
   }
 }

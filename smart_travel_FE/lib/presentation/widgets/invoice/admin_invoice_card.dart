@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
 
 class AdminInvoiceCard extends StatelessWidget {
   final int bookingId;
@@ -37,7 +36,8 @@ class AdminInvoiceCard extends StatelessWidget {
       case 'CHECKED': return Colors.blue;
       case 'COMPLETED': return Colors.teal;
       case 'PENDING_REFUND': return Colors.orange;
-      case 'CANCELED': return Colors.red;
+      case 'CANCELED':
+      case 'CANCELLED': return Colors.red;
       default: return Colors.grey;
     }
   }

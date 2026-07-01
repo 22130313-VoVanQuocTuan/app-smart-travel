@@ -6,6 +6,7 @@ class Invoice {
   final String endDate;
   final int nights;
   final String status;
+  final String? paymentMethod;
   final bool reviewed;
 
   const Invoice({
@@ -16,6 +17,7 @@ class Invoice {
     required this.endDate,
     required this.nights,
     required this.status,
+    this.paymentMethod,
     required this.reviewed,
   });
 }

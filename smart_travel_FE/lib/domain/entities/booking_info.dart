@@ -10,6 +10,7 @@ class BookingInfo {
   final int numberOfRooms;
   final String? couponCode;
   final double discountAmount;
+  final double taxRate;
   final List<TourBookingData> selectedTours;
 
   BookingInfo({
@@ -23,8 +24,29 @@ class BookingInfo {
     required this.numberOfRooms,
     this.couponCode,
     this.discountAmount = 0,
+    this.taxRate = 0,
     required this.selectedTours,
   });
+
+  double get subtotal {
+    int nights = endDate.difference(startDate).inDays;
+    if (nights < 1) nights = 1;
+
+    double total = pricePerNight * numberOfRooms * nights;
+    for (final tour in selectedTours) {
+      total += tour.pricePerPerson * tour.numberOfPeople;
+    }
+    return total;
+  }
+
+  double get amountBeforeTax {
+    final amount = subtotal - discountAmount;
+    return amount > 0 ? amount : 0;
+  }
+
+  double get taxAmount => amountBeforeTax * taxRate / 100;
+
+  double get totalWithTax => amountBeforeTax + taxAmount;
 }
 
 class TourBookingData {

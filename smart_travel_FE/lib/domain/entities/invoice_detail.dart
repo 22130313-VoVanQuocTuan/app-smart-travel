@@ -20,6 +20,7 @@ class InvoiceDetail {
   final double discountAmount;
   final double finalPrice;
   final String paymentStatus;
+  final String paymentMethod;
   final double taxAmount;
   final String customerName;
   final String customerPhone;
@@ -48,6 +49,7 @@ class InvoiceDetail {
     required this.discountAmount,
     required this.finalPrice,
     required this.paymentStatus,
+    required this.paymentMethod,
     required this.taxAmount,
     required this.customerName,
     required this.customerPhone,

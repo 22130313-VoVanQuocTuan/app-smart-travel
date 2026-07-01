@@ -5,6 +5,7 @@ class Voucher {
   final DateTime expiryDate;
   final bool isActive;
   final int usageLimit;
+  final int pointsRequired;
 
   const Voucher({
     required this.id,
@@ -13,6 +14,7 @@ class Voucher {
     required this.expiryDate,
     required this.isActive,
     required this.usageLimit,
+    required this.pointsRequired,
   });
 
   factory Voucher.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class Voucher {
       expiryDate: DateTime.parse(json['expiryDate']),
       isActive: json['isActive'] ?? true,
       usageLimit: json['usageLimit'] ?? 0,
+      pointsRequired: (json['pointsRequired'] as num?)?.toInt() ?? 0,
     );
   }
 }

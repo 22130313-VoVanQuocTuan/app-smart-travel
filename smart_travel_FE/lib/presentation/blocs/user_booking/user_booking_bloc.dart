@@ -24,9 +24,7 @@ class UserBookingBloc extends Bloc<UserBookingEvent, UserBookingState> {
       ) async {
     emit(UserBookingLoading());
     try {
-      final current = await bookingService.getCurrentBookings();
-      final history = await bookingService.getBookingHistory();
-      emit(UserBookingLoaded(currentBookings: current, bookingHistory: history));
+      emit(await _loadBookingsState());
     } catch (e) {
       emit(UserBookingError(e.toString()));
     }
@@ -38,9 +36,7 @@ class UserBookingBloc extends Bloc<UserBookingEvent, UserBookingState> {
       ) async {
     emit(UserBookingLoading());
     try {
-      final current = await bookingService.getCurrentBookings();
-      final history = await bookingService.getBookingHistory();
-      emit(UserBookingLoaded(currentBookings: current, bookingHistory: history));
+      emit(await _loadBookingsState());
     } catch (e) {
       emit(UserBookingError(e.toString()));
     }
@@ -52,9 +48,7 @@ class UserBookingBloc extends Bloc<UserBookingEvent, UserBookingState> {
       ) async {
     emit(UserBookingLoading());
     try {
-      final current = await bookingService.getCurrentBookings();
-      final history = await bookingService.getBookingHistory();
-      emit(UserBookingLoaded(currentBookings: current, bookingHistory: history));
+      emit(await _loadBookingsState());
     } catch (e) {
       emit(UserBookingError(e.toString()));
     }
@@ -96,9 +90,7 @@ class UserBookingBloc extends Bloc<UserBookingEvent, UserBookingState> {
       ) async {
     if (state is UserBookingLoaded) {
       try {
-        final current = await bookingService.getCurrentBookings();
-        final history = await bookingService.getBookingHistory();
-        emit(UserBookingLoaded(currentBookings: current, bookingHistory: history));
+        emit(await _loadBookingsState());
       } catch (e) {
         emit(UserBookingError(e.toString()));
       }
@@ -133,4 +125,16 @@ class UserBookingBloc extends Bloc<UserBookingEvent, UserBookingState> {
     }
   }
 
+  Future<UserBookingLoaded> _loadBookingsState() async {
+    final bookings = await bookingService.getUserBookings();
+    final current =
+        bookings.where((booking) => booking.isCurrentBooking).toList();
+    final history =
+        bookings.where((booking) => booking.isHistoryBooking).toList();
+
+    return UserBookingLoaded(
+      currentBookings: current,
+      bookingHistory: history,
+    );
+  }
 }

@@ -8,6 +8,7 @@ class InvoiceModel {
   final String endDate;
   final int nights;
   final String status;
+  final String? paymentMethod;
   final bool reviewed;
 
   InvoiceModel({
@@ -18,6 +19,7 @@ class InvoiceModel {
     required this.endDate,
     required this.nights,
     required this.status,
+    this.paymentMethod,
     required this.reviewed,
   });
 
@@ -30,6 +32,7 @@ class InvoiceModel {
       endDate: json['endDate'] as String,
       nights: json['nights'] as int,
       status: json['status'] as String,
+      paymentMethod: json['paymentMethod'] as String?,
       reviewed: json['reviewed'] as bool,
     );
   }
@@ -43,6 +46,7 @@ class InvoiceModel {
       endDate: endDate,
       nights: nights,
       status: status,
+      paymentMethod: paymentMethod,
       reviewed: reviewed,
     );
   }

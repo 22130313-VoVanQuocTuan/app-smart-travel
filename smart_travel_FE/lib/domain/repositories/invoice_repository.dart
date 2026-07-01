@@ -9,7 +9,14 @@ abstract class InvoiceRepository {
   Future<List<Invoice>> getRefundedInvoices();
   Future<List<Invoice>> getReviewableInvoices();
   Future<List<Invoice>> searchActiveInvoices({required String keyword});
-  Future<void> cancelBooking({required int bookingId, required String reason});
+  Future<void> cancelBooking({
+    required int bookingId,
+    required String reason,
+    String? refundBankName,
+    String? refundBankBranch,
+    String? refundAccountNumber,
+    String? refundAccountHolder,
+  });
   Future<InvoiceDetail> getInvoiceDetail({required int bookingId});
   Future<List<AdminInvoice>> getAdminInvoices({
     String? status,

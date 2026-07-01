@@ -1,13 +1,18 @@
 import 'package:dio/dio.dart';
 import 'package:smart_travel/core/network/dio_client.dart';
 import 'package:smart_travel/core/constants/api_constants.dart';
+import '../../models/finance/finance_host_settlement_model.dart';
 import '../../models/finance/finance_monthly_model.dart';
 import '../../models/finance/finance_summary_model.dart';
 
 abstract class FinanceDataSource {
-  Future<FinanceSummaryModel> getSummary();
+  Future<FinanceSummaryModel> getSummary({int? year, int? month});
   Future<List<FinanceMonthlyModel>> getMonthlyData(int year);
-  Future<List<int>> exportPdf();
+  Future<List<FinanceHostSettlementModel>> getHostSettlements({
+    required int year,
+    required int month,
+  });
+  Future<List<int>> exportPdf({int? year, int? month});
 }
 
 class FinanceDataSourceImpl implements FinanceDataSource {
@@ -18,9 +23,13 @@ class FinanceDataSourceImpl implements FinanceDataSource {
   });
 
   @override
-  Future<FinanceSummaryModel> getSummary() async {
+  Future<FinanceSummaryModel> getSummary({int? year, int? month}) async {
     final response = await dioClient.get(
       ApiConstants.financeSummary,
+      queryParameters: {
+        if (year != null) 'year': year,
+        if (month != null) 'month': month,
+      },
     );
 
     return FinanceSummaryModel.fromJson(
@@ -41,9 +50,32 @@ class FinanceDataSourceImpl implements FinanceDataSource {
   }
 
   @override
-  Future<List<int>> exportPdf() async {
+  Future<List<FinanceHostSettlementModel>> getHostSettlements({
+    required int year,
+    required int month,
+  }) async {
+    final response = await dioClient.get(
+      ApiConstants.financeHostSettlements,
+      queryParameters: {
+        'year': year,
+        'month': month,
+      },
+    );
+
+    final data = response.data['data'] as List<dynamic>;
+    return data
+        .map((item) => FinanceHostSettlementModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<List<int>> exportPdf({int? year, int? month}) async {
     final response = await dioClient.dio.get(
       ApiConstants.financePdf,
+      queryParameters: {
+        if (year != null) 'year': year,
+        if (month != null) 'month': month,
+      },
       options: Options(
         responseType: ResponseType.bytes,
         headers: {

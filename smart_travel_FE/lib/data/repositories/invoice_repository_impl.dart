@@ -41,8 +41,22 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
-  Future<void> cancelBooking({required int bookingId, required String reason}) async {
-    await remoteDataSource.cancelBooking(bookingId: bookingId, reason: reason);
+  Future<void> cancelBooking({
+    required int bookingId,
+    required String reason,
+    String? refundBankName,
+    String? refundBankBranch,
+    String? refundAccountNumber,
+    String? refundAccountHolder,
+  }) async {
+    await remoteDataSource.cancelBooking(
+      bookingId: bookingId,
+      reason: reason,
+      refundBankName: refundBankName,
+      refundBankBranch: refundBankBranch,
+      refundAccountNumber: refundAccountNumber,
+      refundAccountHolder: refundAccountHolder,
+    );
   }
 
   @override

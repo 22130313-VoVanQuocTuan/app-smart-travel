@@ -133,6 +133,8 @@ public enum ErrorCode {
     REFUND_ALREADY_REQUESTED(1042, "Yêu cầu hoàn tiền đã được gửi trước đó", HttpStatus.BAD_REQUEST),
     BOOKING_CANNOT_CANCEL(1043, "Không thể hủy booking ở thời điểm hiện tại!", HttpStatus.BAD_REQUEST),
 
+    REFUND_BANK_INFO_REQUIRED(1044, "Vui lÃ²ng cung cáº¥p Ä‘áº§y Ä‘á»§ thÃ´ng tin tÃ i khoáº£n ngÃ¢n hÃ ng Ä‘á»ƒ hoÃ n tiá»n", HttpStatus.BAD_REQUEST),
+
     // Homestay errors
     HOMESTAY_NOT_FOUND(1050, "Không tìm thấy homestay", HttpStatus.NOT_FOUND),
     HOMESTAY_NOT_ACTIVE(1051, "Homestay hiện không khả dụng", HttpStatus.BAD_REQUEST),

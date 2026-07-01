@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_travel/injection_container.dart' as di;
 import 'package:smart_travel/presentation/blocs/invoice/detail_bloc.dart';
@@ -7,7 +6,6 @@ import 'package:smart_travel/presentation/screens/invoice/cancel_booking_screen.
 import 'package:smart_travel/presentation/screens/invoice/qr_display_screen.dart';
 import 'package:smart_travel/presentation/theme/app_colors.dart';
 import '../../../router/route_names.dart';
-import '../../theme/app_colors.dart';
 
 class InvoiceDetailScreen extends StatelessWidget {
   final int bookingId;
@@ -37,6 +35,7 @@ class InvoiceDetailScreen extends StatelessWidget {
       case 'COMPLETED':
         return Colors.green;
       case 'CANCELED':
+      case 'CANCELLED':
         return Colors.red;
       case 'PENDING_REFUND':
         return Colors.orange;
@@ -61,6 +60,38 @@ class InvoiceDetailScreen extends StatelessWidget {
         return "Đã hoàn tiền";
       default:
         return status;
+    }
+  }
+
+  String _getPaymentMethodText(String? paymentMethod) {
+    switch (paymentMethod?.toUpperCase()) {
+      case 'VNPAY':
+        return 'VNPay';
+      case 'MOMO':
+        return 'MoMo';
+      case 'BANK_TRANSFER':
+        return 'Chuyen khoan ngan hang';
+      case 'CASH':
+        return 'Tien mat';
+      default:
+        return paymentMethod?.trim().isNotEmpty == true ? paymentMethod! : 'Chua cap nhat';
+    }
+  }
+
+  String _getPaymentStatusText(String? paymentStatus) {
+    switch (paymentStatus?.toUpperCase()) {
+      case 'PAID':
+      case 'COMPLETED':
+      case 'PAID_AT_HOMESTAY':
+        return 'Da thanh toan';
+      case 'PENDING':
+        return 'Cho thanh toan';
+      case 'FAILED':
+        return 'Thanh toan that bai';
+      case 'REFUNDED':
+        return 'Da hoan tien';
+      default:
+        return paymentStatus?.trim().isNotEmpty == true ? paymentStatus! : 'Chua cap nhat';
     }
   }
 
@@ -666,6 +697,28 @@ class InvoiceDetailScreen extends StatelessWidget {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Hinh thuc"),
+                                    Text(
+                                      _getPaymentMethodText(detail.paymentMethod),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Trang thai"),
+                                    Text(
+                                      _getPaymentStatusText(detail.paymentStatus),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -692,6 +745,10 @@ class InvoiceDetailScreen extends StatelessWidget {
                                                   'startDate': detail.startDate,
                                                   'endDate': detail.endDate,
                                                   'nights': detail.nights,
+                                                  'paymentMethod':
+                                                      detail.paymentMethod,
+                                                  'paymentStatus':
+                                                      detail.paymentStatus,
                                                 },
                                               ),
                                         ),
@@ -722,7 +779,7 @@ class InvoiceDetailScreen extends StatelessWidget {
                                         builder: (_) => QRDisplayScreen(
                                           invoiceNumber: detail.invoiceNumber, // d là biến detail của bạn
                                           bookingId: detail.bookingId,
-                                          itemName: detail.serviceName ?? "Đơn hàng",
+                                          itemName: detail.serviceName,
                                         ),
                                       ),
                                     );

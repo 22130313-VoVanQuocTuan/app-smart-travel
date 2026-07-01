@@ -27,8 +27,13 @@ public class UserBookingResponse {
     private BigDecimal totalPrice;
     private BigDecimal discountAmount;
     private BigDecimal finalPrice;
+    private BigDecimal taxRate;
+    private BigDecimal taxAmount;
+    private BigDecimal totalWithTax;
     private String status;
     private String cancellationReason;
+    private String paymentStatus;
+    private String paymentMethod;
     private String hotelAddress;
     private String hotelPhone;
     private String qrCode;

@@ -28,6 +28,7 @@ public class HostBookingListResponse {
     private Integer numberOfPeople;
     private BigDecimal totalPrice;
     private BigDecimal finalPrice;
+    private BigDecimal totalWithTax;
     private String status; // PENDING, CONFIRMED, CHECKED_IN, CHECKED_OUT, CANCELLED, COMPLETED
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

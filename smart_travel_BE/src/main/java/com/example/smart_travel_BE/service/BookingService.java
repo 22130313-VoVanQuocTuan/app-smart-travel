@@ -21,6 +21,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +38,8 @@ public class BookingService {
     private final BookingTourRepository bookingTourRepository;
     private final UserRepository userRepository;
     private final SystemConfigRepository systemConfigRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final UserProfileRepository userProfileRepository;
 
     @Transactional
     public BookingResponse createBooking(BookingRequest request, User currentUser) {
@@ -250,6 +254,9 @@ public class BookingService {
             finalPrice = BigDecimal.ZERO;
         }
         booking.setFinalPrice(finalPrice);
+        BigDecimal taxRate = getTaxRate();
+        BigDecimal taxAmount = getTaxAmount(finalPrice, taxRate);
+        booking.setTotalWithTax(calculateTotalWithTax(finalPrice, taxAmount));
 
         // 9. Lưu booking (không trừ số phòng vì kiểm tra theo từng ngày cụ thể dựa vào lịch booking hiện có)
         Booking savedBooking = bookingRepository.save(booking);
@@ -301,6 +308,9 @@ public class BookingService {
                 .discountAmount(discountAmount)
                 .couponCode(savedBooking.getCouponCode())
                 .finalPrice(savedBooking.getFinalPrice())
+                .taxRate(taxRate)
+                .taxAmount(taxAmount)
+                .totalWithTax(resolveStoredTotalWithTax(savedBooking, taxRate))
                 .status(savedBooking.getStatus())
                 .message(message)
                 .build();
@@ -337,7 +347,7 @@ public class BookingService {
      * Lấy booking detail với full information
      */
     public BookingResponse getHostBookingDetail(Long bookingId, Long userId) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = invoiceRepository.findFullBookingById(bookingId)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
         
         // Verify authorization - host must own this homestay
@@ -426,6 +436,10 @@ public class BookingService {
             homestay.setAvailableRooms(homestay.getAvailableRooms() + booking.getNumberOfRooms());
             homestayRepository.save(homestay);
         }
+
+        if ("COMPLETED".equals(newStatus)) {
+            rewardExperiencePointsIfEligible(booking);
+        }
         
         booking.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
@@ -464,6 +478,7 @@ public class BookingService {
      * Convert Booking to HostBookingListResponse
      */
     private HostBookingListResponse convertToHostBookingListResponse(Booking booking) {
+        BigDecimal taxRate = getTaxRate();
         return HostBookingListResponse.builder()
                 .id(booking.getId())
                 .bookingType(booking.getBookingType())
@@ -478,6 +493,7 @@ public class BookingService {
                 .numberOfPeople(booking.getNumberOfPeople())
                 .totalPrice(booking.getTotalPrice())
                 .finalPrice(booking.getFinalPrice())
+                .totalWithTax(resolveStoredTotalWithTax(booking, taxRate))
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())
                 .updatedAt(booking.getUpdatedAt())
@@ -527,7 +543,12 @@ public class BookingService {
         }
         
         Homestay homestay = homestayRepository.findById(booking.getHotelId()).orElse(null);
-        
+        Payment payment = booking.getPayment();
+        User customer = booking.getUser();
+        BigDecimal taxRate = getTaxRate();
+        BigDecimal taxAmount = getTaxAmount(booking, taxRate);
+        BigDecimal totalWithTax = resolveStoredTotalWithTax(booking, taxRate);
+
         return BookingResponse.builder()
                 .id(booking.getId())
                 .bookingType(booking.getBookingType())
@@ -547,8 +568,16 @@ public class BookingService {
                 .discountAmount(booking.getDiscountAmount())
                 .couponCode(booking.getCouponCode())
                 .finalPrice(booking.getFinalPrice())
+                .taxRate(taxRate)
+                .taxAmount(taxAmount)
+                .totalWithTax(totalWithTax)
                 .status(booking.getStatus())
                 .cancellationReason(booking.getCancellationReason())
+                .paymentStatus(payment != null ? payment.getStatus() : null)
+                .paymentMethod(payment != null ? payment.getPaymentMethod() : null)
+                .customerName(customer != null ? customer.getFullName() : "KhÃ¡ch hÃ ng")
+                .customerPhone(customer != null ? customer.getPhone() : null)
+                .customerEmail(customer != null ? customer.getEmail() : null)
                 .build();
     }
 
@@ -558,51 +587,49 @@ public class BookingService {
     /**
      * Lấy tất cả booking của user hiện tại
      */
+    @Transactional(readOnly = true)
     public List<UserBookingResponse> getUserBookings(User currentUser) {
-        List<Booking> bookings = bookingRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
-
-        return bookings.stream()
-                .map(this::convertToUserBookingResponse)
-                .collect(Collectors.toList());
+        List<Booking> bookings = bookingRepository.findUserBookingsWithRoomTypeByUserId(currentUser.getId());
+        return convertToUserBookingResponses(bookings);
     }
 
     /**
      * Lấy booking hiện tại (đang diễn ra hoặc sắp diễn ra)
      */
+    @Transactional(readOnly = true)
     public List<UserBookingResponse> getCurrentBookings(User currentUser) {
         LocalDate today = LocalDate.now();
 
-        List<Booking> bookings = bookingRepository.findByUserIdAndEndDateGreaterThanEqualAndStatusNot(
+        List<Booking> bookings = bookingRepository.findCurrentBookingsWithRoomType(
                 currentUser.getId(),
                 today,
                 "CANCELLED"
         );
 
-        return bookings.stream()
+        List<Booking> currentBookings = bookings.stream()
                 .filter(b -> !"COMPLETED".equals(b.getStatus()))
-                .map(this::convertToUserBookingResponse)
                 .collect(Collectors.toList());
+
+        return convertToUserBookingResponses(currentBookings);
     }
 
     /**
      * Lấy lịch sử booking (đã kết thúc)
      */
+    @Transactional(readOnly = true)
     public List<UserBookingResponse> getBookingHistory(User currentUser) {
-        LocalDate today = LocalDate.now();
-
-        List<Booking> bookings = bookingRepository.findByUserIdAndStatusInOrderByCreatedAtDesc(
+        List<Booking> bookings = bookingRepository.findBookingHistoryWithRoomType(
                 currentUser.getId(),
                 List.of("COMPLETED", "CANCELLED")
         );
 
-        return bookings.stream()
-                .map(this::convertToUserBookingResponse)
-                .collect(Collectors.toList());
+        return convertToUserBookingResponses(bookings);
     }
 
     /**
      * Lấy chi tiết booking cho user
      */
+    @Transactional(readOnly = true)
     public UserBookingResponse getUserBookingDetail(Long bookingId, User currentUser) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
@@ -612,7 +639,10 @@ public class BookingService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        return convertToUserBookingResponse(booking);
+        Homestay homestay = booking.getHotelId() != null
+                ? homestayRepository.findById(booking.getHotelId()).orElse(null)
+                : null;
+        return convertToUserBookingResponse(booking, homestay);
     }
 
     /**
@@ -657,6 +687,7 @@ public class BookingService {
     /**
      * Tìm booking bằng QR code (booking ID)
      */
+    @Transactional(readOnly = true)
     public UserBookingResponse findBookingByQR(String qrData, User currentUser) {
         try {
             Long bookingId = Long.parseLong(qrData);
@@ -668,7 +699,10 @@ public class BookingService {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
 
-            return convertToUserBookingResponse(booking);
+            Homestay homestay = booking.getHotelId() != null
+                    ? homestayRepository.findById(booking.getHotelId()).orElse(null)
+                    : null;
+            return convertToUserBookingResponse(booking, homestay);
         } catch (NumberFormatException e) {
             throw new AppException(ErrorCode.INVALID_QR_CODE);
         }
@@ -716,12 +750,42 @@ public class BookingService {
     /**
      * Convert Booking to UserBookingResponse
      */
+    private List<UserBookingResponse> convertToUserBookingResponses(List<Booking> bookings) {
+        Map<Long, Homestay> homestayMap = buildHomestayMap(bookings);
+        BigDecimal taxRate = getTaxRate();
+        return bookings.stream()
+                .map(booking -> convertToUserBookingResponse(booking, homestayMap.get(booking.getHotelId()), taxRate))
+                .collect(Collectors.toList());
+    }
+
+    private Map<Long, Homestay> buildHomestayMap(List<Booking> bookings) {
+        Set<Long> hotelIds = bookings.stream()
+                .map(Booking::getHotelId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+
+        return homestayRepository.findAllById(hotelIds).stream()
+                .collect(Collectors.toMap(Homestay::getId, homestay -> homestay));
+    }
+
     private UserBookingResponse convertToUserBookingResponse(Booking booking) {
+        Homestay homestay = booking.getHotelId() != null
+                ? homestayRepository.findById(booking.getHotelId()).orElse(null)
+                : null;
+        return convertToUserBookingResponse(booking, homestay);
+    }
+
+    private UserBookingResponse convertToUserBookingResponse(Booking booking, Homestay homestay) {
+        return convertToUserBookingResponse(booking, homestay, getTaxRate());
+    }
+
+    private UserBookingResponse convertToUserBookingResponse(Booking booking, Homestay homestay, BigDecimal taxRate) {
         long nights = java.time.temporal.ChronoUnit.DAYS.between(
                 booking.getStartDate(), booking.getEndDate()
         );
-
-        Homestay homestay = homestayRepository.findById(booking.getHotelId()).orElse(null);
+        Payment payment = booking.getPayment();
+        BigDecimal taxAmount = getTaxAmount(booking, taxRate);
+        BigDecimal totalWithTax = resolveStoredTotalWithTax(booking, taxRate);
 
         return UserBookingResponse.builder()
                 .id(booking.getId())
@@ -737,8 +801,13 @@ public class BookingService {
                 .totalPrice(booking.getTotalPrice())
                 .discountAmount(booking.getDiscountAmount())
                 .finalPrice(booking.getFinalPrice())
+                .taxRate(taxRate)
+                .taxAmount(taxAmount)
+                .totalWithTax(totalWithTax)
                 .status(booking.getStatus())
                 .cancellationReason(booking.getCancellationReason())
+                .paymentStatus(payment != null ? payment.getStatus() : null)
+                .paymentMethod(payment != null ? payment.getPaymentMethod() : null)
                 .hotelAddress(homestay != null ? homestay.getAddress() : "")
                 .hotelPhone(homestay != null ? homestay.getPhone() : "")
                 .qrCode(String.valueOf(booking.getId())) // QR code = booking ID
@@ -746,6 +815,89 @@ public class BookingService {
                 .checkInTime(booking.getCreatedAt())
                 .checkOutTime(booking.getUpdatedAt())
                 .build();
+    }
+
+    private BigDecimal getTaxRate() {
+        return systemConfigRepository.findFirstConfig()
+                .map(config -> config.getTaxRate() != null ? config.getTaxRate() : BigDecimal.ZERO)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    private BigDecimal getTaxAmount(Booking booking, BigDecimal taxRate) {
+        if (booking.getInvoice() != null && booking.getInvoice().getTaxAmount() != null) {
+            return booking.getInvoice().getTaxAmount();
+        }
+
+        BigDecimal baseAmount = booking.getFinalPrice() != null ? booking.getFinalPrice() : BigDecimal.ZERO;
+        return getTaxAmount(baseAmount, taxRate);
+    }
+
+    private BigDecimal getTaxAmount(BigDecimal baseAmount, BigDecimal taxRate) {
+        BigDecimal safeBaseAmount = baseAmount != null ? baseAmount : BigDecimal.ZERO;
+        BigDecimal safeTaxRate = taxRate != null ? taxRate : BigDecimal.ZERO;
+        return safeBaseAmount.multiply(safeTaxRate)
+                .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateTotalWithTax(BigDecimal finalPrice, BigDecimal taxAmount) {
+        BigDecimal safeFinalPrice = finalPrice != null ? finalPrice : BigDecimal.ZERO;
+        BigDecimal safeTaxAmount = taxAmount != null ? taxAmount : BigDecimal.ZERO;
+        return safeFinalPrice.add(safeTaxAmount);
+    }
+
+    private BigDecimal resolveStoredTotalWithTax(Booking booking, BigDecimal taxRate) {
+        if (booking.getTotalWithTax() != null) {
+            return booking.getTotalWithTax();
+        }
+        return calculateTotalWithTax(booking.getFinalPrice(), getTaxAmount(booking, taxRate));
+    }
+
+    private void rewardExperiencePointsIfEligible(Booking booking) {
+        // Kiểm tra payment
+        Payment payment = booking.getPayment();
+        if (payment == null) {
+            return;
+        }
+
+        // Kiểm tra trạng thái booking - chỉ cộng điểm khi hoàn thành hoặc đã thanh toán
+        String bookingStatus = booking.getStatus();
+        if (bookingStatus == null || !List.of("COMPLETED", "PAID", "PAID_AT_HOMESTAY").contains(bookingStatus)) {
+            return;
+        }
+
+        // Lấy thông tin khách hàng
+        User customer = booking.getUser();
+        if (customer == null) {
+            return;
+        }
+
+        // Tính điểm kinh nghiệm dựa trên giá cuối cùng
+        // Mỗi 100.000 VND được 100 điểm
+        BigDecimal finalPrice = booking.getFinalPrice();
+        long expEarned = finalPrice != null
+                ? finalPrice.divide(new BigDecimal("100000"), java.math.RoundingMode.FLOOR).longValue() * 100
+                : 0;
+
+        if (expEarned <= 0) {
+            return;
+        }
+
+        // Lấy hoặc tạo mới UserProfile
+        UserProfile profile = userProfileRepository.findByUser(customer).orElseGet(() -> {
+            UserProfile newProfile = UserProfile.builder()
+                    .user(customer)
+                    .experiencePoints(0L)
+                    .darkModeEnabled(false)
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+            return userProfileRepository.save(newProfile);
+        });
+
+        // Cộng điểm kinh nghiệm
+        Long currentPoints = profile.getExperiencePoints() != null ? profile.getExperiencePoints() : 0L;
+        profile.setExperiencePoints(currentPoints + expEarned);
+        profile.setUpdatedAt(LocalDateTime.now());
+        userProfileRepository.save(profile);
     }
     /**
      * Lấy thông tin chính sách hủy cho booking

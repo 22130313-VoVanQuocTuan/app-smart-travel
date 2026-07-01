@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:smart_travel/domain/entities/destinations.dart';
 import 'package:smart_travel/domain/params/destination_add_params.dart';
 import 'package:smart_travel/domain/params/destination_update_params.dart';
-import 'package:smart_travel/domain/params/get_weather_params.dart';
 
 abstract class DestinationEvent extends Equatable {
   @override
@@ -18,8 +16,12 @@ class FilterDestinationsByCategory extends DestinationEvent {
 // Lấy danh sách địa điểm
 class LoadAllDestinations extends DestinationEvent {
   final bool? loadAll;
+  final bool forceRefresh;
 
-  LoadAllDestinations({this.loadAll = false});
+  LoadAllDestinations({this.loadAll = false, this.forceRefresh = false});
+
+  @override
+  List<Object?> get props => [loadAll, forceRefresh];
 }
 
 //lọc địa điểm theo giá trị
